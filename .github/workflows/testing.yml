@@ -1,0 +1,28 @@
+name: Code testing
+
+on: [pull_request]
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start the containers
+        run: make start-ci
+
+      - name: Run Vitest
+        run: make test-unit-front
+
+  fastify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start the containers
+        run: make start-ci
+
+      - name: Run Fastify test
+        run: make test-unit-api

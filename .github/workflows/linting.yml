@@ -1,0 +1,32 @@
+name: Code linting
+
+on: [pull_request]
+
+jobs:
+  eslint-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        working-directory: ./api
+        run: yarn install
+
+      - name: Run ESLint (includes Prettier)
+        working-directory: ./api
+        run: yarn lint
+
+  eslint-front:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        working-directory: ./front
+        run: yarn install
+
+      - name: Run ESLint (includes Prettier)
+        working-directory: ./front
+        run: yarn lint

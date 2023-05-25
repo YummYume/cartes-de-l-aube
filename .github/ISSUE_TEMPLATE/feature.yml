@@ -1,0 +1,50 @@
+name: Feature
+description: Request a new feature
+title: "[FEATURE] <title>"
+labels: [feature]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open a new feature to improve the project. Please check out for other existing issues first that could resemble your demand.
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of feature
+      description: "What kind of feature are you requesting?"
+      options:
+        - Something new
+        - An improvement to something that already exists
+        - Something that could be nice to have
+        - Something that only concerns the development phase
+        - Something else (specify in the description below)
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: The name of the feature
+      description: "Give a name, preferably unique, to this new feature!"
+      placeholder: "Add a minigame in the login form..."
+    validations:
+      required: true
+  - type: textarea
+    id: desc
+    attributes:
+      label: Feature description
+      description: Describe your feature.
+    validations:
+      required: true
+  - type: textarea
+    id: info
+    attributes:
+      label: Additional information
+      description: Add anything you feel like is necessary for this feature.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
