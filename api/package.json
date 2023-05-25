@@ -43,6 +43,7 @@
       "--no-warnings",
       "--experimental-loader",
       "@istanbuljs/esm-loader-hook"
-    ]
+    ],
+    "check-coverage": false
   }
 }

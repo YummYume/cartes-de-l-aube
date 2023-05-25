@@ -1,7 +1,7 @@
 // This file contains code that we reuse
 // between our tests.
 
-import helper from 'fastify-cli/helper';
+import helper from 'fastify-cli/helper.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
