@@ -4,7 +4,7 @@
   import { getExample } from '../api/example';
 
   /**
-   * @type {import('vue').Ref<import('../api/example').Example|null>} example
+   * @type {import('vue').Ref<import('@/api/example').Example|null>} example
    */
   const example = ref(null);
   /**
