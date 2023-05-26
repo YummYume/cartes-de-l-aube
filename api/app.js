@@ -1,4 +1,5 @@
 import AutoLoad from '@fastify/autoload';
+import cors from '@fastify/cors';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,7 +19,9 @@ export const options = {};
  * @param {{}} opts Options passed on startup
  */
 export default async function app(fastify, opts) {
-  // Place here your custom code!
+  await fastify.register(cors, {
+    origin: new RegExp(process.env.CORS_ALLOW_ORIGIN),
+  });
 
   // Do not touch the following lines
 

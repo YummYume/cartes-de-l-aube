@@ -2,9 +2,61 @@ version: '3.9'
 
 services:
   api:
+    build:
+      context: .
+      dockerfile: docker/api/CI/Dockerfile
     ports:
       - 3000:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    container_name: vue-game-api
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
+      timeout: 30s
+      interval: 2s
+      retries: 30
 
   front:
+    build:
+      context: .
+      dockerfile: docker/front/CI/Dockerfile
     ports:
       - 5173:5173
+    depends_on:
+      api:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    container_name: vue-game-front
+
+  mongodb:
+    image: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?err}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?err}"
+    container_name: vue-game-mongodb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/ping --quiet
+      timeout: 30s
+      interval: 2s
+      retries: 30
+
+  mariadb:
+    image: mariadb:10.10.2
+    restart: unless-stopped
+    container_name: vue-game-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 30s
+      interval: 2s
+      retries: 30

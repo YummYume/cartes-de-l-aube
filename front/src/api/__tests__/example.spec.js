@@ -4,10 +4,11 @@ import { getExample } from '@/api/example';
 
 describe('Example endpoint', () => {
   it('Responds properly', async () => {
-    const res = await getExample();
-    /** @type {{ message: string }} */
-    const json = await res.json();
+    /**
+     * @type {import('@/api/example/index').Example} example
+     */
+    const example = await getExample();
 
-    expect('Hi example!', json.message);
+    expect('Hi example!', example.message);
   });
 });

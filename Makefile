@@ -1,5 +1,5 @@
 COMPOSE=docker compose
-COMPOSECI=docker compose -f compose.yml -f compose.ci.yml
+COMPOSECI=docker compose -f compose.ci.yml
 EXECAPI=$(COMPOSE) exec api
 EXECFRONT=$(COMPOSE) exec front
 ifeq (up,$(firstword $(MAKECMDGOALS)))
