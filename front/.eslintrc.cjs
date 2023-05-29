@@ -49,6 +49,7 @@ module.exports = {
       },
     ],
     'no-unused-vars': 'warn',
+    'no-param-reassign': 'off',
     'jsdoc/require-jsdoc': 'warn',
     'jsdoc/require-param-description': 'off',
     'jsdoc/require-returns-description': 'off',

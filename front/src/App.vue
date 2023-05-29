@@ -1,86 +1,66 @@
 <script setup>
-  import { RouterLink, RouterView } from 'vue-router';
+  import {
+    IconHome,
+    IconUserPlus,
+    IconPlayerPlay,
+    IconHistory,
+    IconShoppingBag,
+    IconMoneybag,
+    IconCards,
+    IconLogin,
+    IconLogout,
+  } from '@tabler/icons-vue';
+  import { RouterView } from 'vue-router';
 
-  import HelloWorld from './components/HelloWorld.vue';
+  import SideBar from './components/SideBar.vue';
+
+  /**
+   * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
+   */
+  const sidebarItems = [
+    { icon: IconHome, label: 'Home', to: '/' },
+    { icon: IconPlayerPlay, label: 'Play', to: '/play', active: true },
+    { icon: IconCards, label: 'Squad', to: '/squad', active: true },
+    { icon: IconHistory, label: 'History', to: '/history', active: true },
+    { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: true },
+    { icon: IconShoppingBag, label: 'Store', to: '/store', active: true },
+    { icon: IconLogin, label: 'Login', to: '/login', active: true },
+    {
+      icon: IconLogout,
+      label: 'Logout',
+      onClick: () => {
+        // TODO logout the user using a confirmation modal
+        // eslint-disable-next-line no-alert, no-restricted-globals
+        confirm('Are you sure you want to logout?');
+      },
+      active: false,
+    },
+    { icon: IconUserPlus, label: 'Register', to: '/register', active: false },
+  ];
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="flex h-full w-full flex-col overflow-hidden">
+    <header class="z-10 flex-none">
+      <div class="flex flex-col space-y-4 bg-primary p-4">
+        <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+          <div class="flex flex-none items-center justify-between">
+            <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="50" height="50" />
+          </div>
+          <div class="flex-auto"></div>
+          <div class="flex flex-none items-center space-x-4"></div>
+        </div>
+      </div>
+    </header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <div class="flex h-full w-full flex-auto flex-col overflow-hidden md:flex-row">
+      <div class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <div class="flex-auto">
+          <RouterView />
+        </div>
+      </div>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+      <SideBar :items="sidebarItems" />
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
-
-<style scoped>
-  header {
-    line-height: 1.5;
-    max-height: 100vh;
-  }
-
-  .logo {
-    display: block;
-    margin: 0 auto 2rem;
-  }
-
-  nav {
-    width: 100%;
-    font-size: 12px;
-    text-align: center;
-    margin-top: 2rem;
-  }
-
-  nav a.router-link-exact-active {
-    color: var(--color-text);
-  }
-
-  nav a.router-link-exact-active:hover {
-    background-color: transparent;
-  }
-
-  nav a {
-    display: inline-block;
-    padding: 0 1rem;
-    border-left: 1px solid var(--color-border);
-  }
-
-  nav a:first-of-type {
-    border: 0;
-  }
-
-  @media (min-width: 1024px) {
-    header {
-      display: flex;
-      place-items: center;
-      padding-right: calc(var(--section-gap) / 2);
-    }
-
-    .logo {
-      margin: 0 2rem 0 0;
-    }
-
-    header .wrapper {
-      display: flex;
-      place-items: flex-start;
-      flex-wrap: wrap;
-    }
-
-    nav {
-      text-align: left;
-      margin-left: -1rem;
-      font-size: 1rem;
-
-      padding: 1rem 0;
-      margin-top: 1rem;
-    }
-  }
-</style>
