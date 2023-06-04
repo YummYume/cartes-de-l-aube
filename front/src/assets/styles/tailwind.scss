@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 px-2 py-4 leading-3 shadow-inner transition-all duration-300 ease-in-out;
+  }
+
+  .dialog {
+    @apply fixed inset-0 z-[99] grid items-center justify-center overflow-y-auto;
+
+    &__panel {
+      @apply z-[100] my-8 inline-block w-full rounded-lg p-6 align-middle shadow-lg;
+
+      &--title {
+        @apply text-2xl font-bold;
+      }
+
+      &--description {
+        @apply text-xl;
+      }
+
+      &--section {
+        @apply text-base;
+      }
+
+      &--actions {
+        @apply flex flex-col items-end;
+      }
+    }
+  }
+}

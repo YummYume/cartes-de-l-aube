@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
@@ -18,5 +20,5 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/container-queries')],
 };

@@ -8,7 +8,7 @@
    */
 
   /**
-   * @type {defineProps<{ sidebarItems: SidebarItem[] }>} props
+   * @type {{ readonly items: SidebarItem[] }} props
    */
   const props = defineProps({
     items: {
@@ -16,7 +16,6 @@
       default: () => [],
     },
   });
-
   const { items: sidebarItems } = toRefs(props);
   const activeElement = useActiveElement();
   const isHovered = ref(false);
@@ -192,7 +191,7 @@
           <RouterLink
             :to="item.to"
             :class="itemClass"
-            exact-active-class="text-secondary"
+            exact-active-class="text-accent"
             v-if="item.to"
           >
             <component v-bind:is="item.icon" class="h-6 w-6" />

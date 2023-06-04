@@ -12,7 +12,9 @@
   } from '@tabler/icons-vue';
   import { RouterView } from 'vue-router';
 
+  import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
+  import IconLogo from './components/icon/IconLogo.vue';
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
@@ -42,13 +44,27 @@
 <template>
   <div class="flex h-full w-full flex-col overflow-hidden">
     <header class="z-10 flex-none">
-      <div class="flex flex-col space-y-4 bg-primary p-4">
+      <div class="flex flex-col space-y-4 border-b border-surface/30 bg-primary p-4 shadow-md">
         <div class="grid grid-cols-[auto_1fr_auto] items-center gap-4">
-          <div class="flex flex-none items-center justify-between">
-            <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="50" height="50" />
-          </div>
+          <RouterLink
+            to="/"
+            class="flex flex-none items-center justify-between gap-3"
+            aria-label="Go to homepage"
+            aria-describedby="app-title"
+          >
+            <IconLogo class="h-12 w-12" aria-hidden="true" />
+            <span
+              id="app-title"
+              class="max-w-[7.5rem] break-words bg-gradient-to-br from-accent to-secondary bg-clip-text text-2xl font-bold leading-tight text-transparent"
+              aria-hidden="true"
+            >
+              Cartes de l'aube
+            </span>
+          </RouterLink>
           <div class="flex-auto"></div>
-          <div class="flex flex-none items-center space-x-4"></div>
+          <div class="flex flex-none items-center space-x-4">
+            <OrundumCount :count="500" />
+          </div>
         </div>
       </div>
     </header>
