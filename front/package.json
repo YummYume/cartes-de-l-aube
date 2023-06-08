@@ -21,6 +21,7 @@
     "@vueuse/core": "^10.1.2",
     "pinia": "^2.0.36",
     "tippy.js": "^6.3.7",
+    "socket.io-client": "^4.6.2",
     "vue": "^3.3.2",
     "vue-router": "^4.2.0",
     "vue-tippy": "v6"
