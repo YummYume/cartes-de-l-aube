@@ -1,5 +1,5 @@
-import { reactive } from 'vue';
 import { io } from 'socket.io-client';
+import { reactive } from 'vue';
 
 export const state = reactive({
   connected: false,
