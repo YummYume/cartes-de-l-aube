@@ -26,40 +26,50 @@ export default fp(async (fastify) => {
     },
   });
 
+  /**
+   * @typedef {import("../app").Request} Request
+   * @typedef {import("../app").Reply} Reply
+   */
   // Middleware to check current token and use refresh token
-  fastify.decorate('tokenVerify', async (request, reply) => {
-    try {
-      await request.jwtVerify({ onlyCookie: true });
-    } catch (err) {
-      // Check if the current token is expired
-      if (err.code === JWT_ERRORS_CODE.AuthorizationTokenExpiredError) {
-        const oldToken = request.cookies[env.cookie.name];
-        const { id } = await fastify.jwt.decode(oldToken);
+  fastify.decorate(
+    'tokenVerify',
+    async (/** @type {Request} */ request, /** @type {Reply} */ reply) => {
+      try {
+        await request.jwtVerify({ onlyCookie: true });
+      } catch (err) {
+        // Check if the current token is expired
+        if (err.code === JWT_ERRORS_CODE.AuthorizationTokenExpiredError) {
+          /** @type {string} */
+          const oldToken = request.cookies[env.cookie.name];
 
-        // Get refresh token associate to the current token and the current user
-        const oldRefreshToken = await RefreshToken.findOne({ tk: oldToken, user: id }).exec();
+          /** @type {{id: number}} */
+          const { id } = await fastify.jwt.decode(oldToken);
 
-        if (!oldRefreshToken) {
-          reply.code(401).send({ message: 'Session expired, you need to signin' });
-        } else {
-          try {
-            // Create a new token and refresh token and delete the old one
-            await fastify.jwt.verify(oldRefreshToken.refreshTk);
+          // Get refresh token associate to the current token and the current user
+          const oldRefreshToken = await RefreshToken.findOne({ tk: oldToken, user: id }).exec();
 
-            const tk = await reply.jwtSign({ id }, { expiresIn: '15min' });
-            const newRefreshTk = await reply.jwtSign({ id }, { expiresIn: '7d' });
-
-            await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
-            await RefreshToken.deleteOne({ tk: oldToken });
-
-            reply.setCookie(env.cookie.name, tk, env.cookie.config);
-          } catch (err) {
+          if (!oldRefreshToken) {
             reply.code(401).send({ message: 'Session expired, you need to signin' });
+          } else {
+            try {
+              // Create a new token and refresh token and delete the old one
+              await fastify.jwt.verify(oldRefreshToken.refreshTk);
+
+              const tk = await reply.jwtSign({ id }, { expiresIn: '15min' });
+              const newRefreshTk = await reply.jwtSign({ id }, { expiresIn: '7d' });
+
+              await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
+              await RefreshToken.deleteOne({ tk: oldToken });
+
+              reply.setCookie(env.cookie.name, tk, env.cookie.config);
+            } catch (err) {
+              reply.code(401).send({ message: 'Session expired, you need to signin' });
+            }
           }
+        } else {
+          reply.send(err);
         }
-      } else {
-        reply.send(err);
       }
     }
-  });
+  );
 });

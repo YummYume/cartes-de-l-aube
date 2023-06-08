@@ -15,7 +15,7 @@ export default fp(async (fastify) => {
       fastify.log.info('MongoDB: Disconnected');
     });
 
-    await mongoose.connect(`mongodb://${mongodb.host}:${mongodb.port}/db`, {
+    await mongoose.connect(`${mongodb.type}://${mongodb.host}:${mongodb.port}/db`, {
       authSource: 'admin',
       user: mongodb.username,
       pass: mongodb.password,

@@ -4,6 +4,7 @@ import path from 'path';
 const schemaPath = path.resolve('typeorm/schema');
 
 export const mongodb = {
+  type: process.env.MONGODB_TYPE || 'mongodb',
   username: process.env.MONGODB_USERNAME,
   password: process.env.MONGODB_PASSWORD,
   host: process.env.MONGODB_HOST,

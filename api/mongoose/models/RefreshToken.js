@@ -10,7 +10,7 @@ const tokenValidator = {
     const { err } = await fastify.jwt.verify(tk);
     return !err;
   },
-  message: 'Token invalid',
+  message: 'Invalid token',
 };
 
 /**
@@ -20,16 +20,16 @@ const schema = new Schema({
   refreshTk: {
     type: String,
     validator: tokenValidator,
-    required: [true, 'Refresh token required'],
+    required: [true, 'Refresh token is required'],
   },
   tk: {
     type: String,
     validator: tokenValidator,
-    required: [true, 'Token required'],
+    required: [true, 'Token is required'],
   },
   user: {
     type: Number,
-    required: [true, "User id's required"],
+    required: [true, 'User id is required'],
   },
   createdAt: { type: Date, default: Date.now },
 });
