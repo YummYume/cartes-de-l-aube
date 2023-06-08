@@ -27,7 +27,10 @@ const schema = new Schema({
     validator: tokenValidator,
     required: [true, 'Token required'],
   },
-  user: Number,
+  user: {
+    type: Number,
+    required: [true, "User id's required"],
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

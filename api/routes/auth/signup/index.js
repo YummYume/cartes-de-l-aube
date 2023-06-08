@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { env } from '../../../config/config.js';
+import { RefreshToken } from '../../../mongoose/models/RefreshToken.js';
 import { User } from '../../../typeorm/models/User.js';
 import { userSignupValidation } from '../../../typeorm/schema/UserSchema.js';
 
@@ -15,21 +16,29 @@ export default async (fastify) => {
      */
     const { userRepository } = fastify.typeorm;
 
+    // Validation
     const { error } = userSignupValidation(body);
     if (error) {
       return reply.code(422).send({ errors: error.issues });
     }
 
+    // Create User
     const salt = await bcrypt.genSalt(env.saltFactor);
 
-    let user = new User();
-    user.username = body.username;
-    user.password = await bcrypt.hash(body.password, salt);
-    user.image = 'image';
-    user.originium = 100;
+    const newUser = new User();
+    newUser.username = body.username;
+    newUser.password = await bcrypt.hash(body.password, salt);
+    newUser.image = 'image';
+    newUser.originium = 100;
 
-    user = await userRepository.save(user);
+    const { password, ...user } = await userRepository.save(newUser);
 
-    return reply.code(201).send(user);
+    // Create Cookie HTTP Jwt & Refresh Jwt Token
+    const tk = await reply.jwtSign({ id: user.id }, { expiresIn: '15m' });
+    const refreshTk = await reply.jwtSign({ id: user.id }, { expiresIn: '7d' });
+
+    await RefreshToken.create({ refreshTk, tk, user: user.id });
+
+    return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
   });
 };

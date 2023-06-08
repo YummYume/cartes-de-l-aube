@@ -60,6 +60,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?err}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?err}"
+    ports:
+      - "27017:27017"
     volumes:
       - ./data/db:/data/db
     container_name: vue-game-mongodb

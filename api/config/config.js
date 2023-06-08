@@ -36,5 +36,12 @@ export const env = {
   cookie: {
     name: 'token',
     secretKey: process.env.SECRET || 'need-to-add-a-cookie-key',
+    config: {
+      domain: 'api.carte.local',
+      path: '/',
+      secure: false,
+      httpOnly: true,
+      sameSite: true,
+    },
   },
 };
