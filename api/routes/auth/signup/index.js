@@ -31,14 +31,23 @@ export default async (fastify) => {
     newUser.image = 'image';
     newUser.originium = 100;
 
-    const { password, ...user } = await userRepository.save(newUser);
+    try {
+      const { password, ...user } = await userRepository.save(newUser);
 
-    // Create Cookie HTTP Jwt & Refresh Jwt Token
-    const tk = await reply.jwtSign({ id: user.id }, { expiresIn: '15m' });
-    const refreshTk = await reply.jwtSign({ id: user.id }, { expiresIn: '7d' });
+      // Create Cookie HTTP Jwt & Refresh Jwt Token
+      const tk = await reply.jwtSign({ id: user.id }, { expiresIn: '15m' });
+      const refreshTk = await reply.jwtSign({ id: user.id }, { expiresIn: '7d' });
 
-    await RefreshToken.create({ refreshTk, tk, user: user.id });
+      await RefreshToken.create({ refreshTk, tk, user: user.id });
 
-    return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
+      return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
+    } catch (err) {
+      const message =
+        err.code === 'ER_DUP_ENTRY'
+          ? 'Username already taken, please choose another one.'
+          : 'Error when you try to signup, please try again.';
+
+      return reply.code(409).send({ message });
+    }
   });
 };

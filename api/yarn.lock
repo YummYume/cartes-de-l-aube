@@ -463,6 +463,14 @@
   dependencies:
     fast-json-stringify "^5.7.0"
 
+"@fastify/helmet@^10.1.1":
+  version "10.1.1"
+  resolved "https://registry.yarnpkg.com/@fastify/helmet/-/helmet-10.1.1.tgz#3028fa5ab4100214a9dec1fea27ebcd983e58e9b"
+  integrity sha512-z9abyIlCHPU25llOTyo3uz8F8TJ+uDqtOC4+38dxODPw8Ro9sTZjbm2U7ZIF0IAv3/E0ke6vbUQ4sB376WuKJA==
+  dependencies:
+    fastify-plugin "^4.2.1"
+    helmet "^6.0.0"
+
 "@fastify/jwt@^7.0.0":
   version "7.0.0"
   resolved "https://registry.npmjs.org/@fastify/jwt/-/jwt-7.0.0.tgz"
@@ -1880,7 +1888,7 @@ fastify-plugin@^3.0.0:
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-3.0.1.tgz"
   integrity sha512-qKcDXmuZadJqdTm6vlCqioEbyewF60b/0LOFCcYN1B6BIZGlYJumWWOYs70SFYLDAH4YqdE1cxH/RKMG7rFxgA==
 
-fastify-plugin@^4.0.0:
+fastify-plugin@^4.0.0, fastify-plugin@^4.2.1:
   version "4.5.0"
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-4.5.0.tgz"
   integrity sha512-79ak0JxddO0utAXAQ5ccKhvs6vX2MGyHHMMsmZkBANrq3hXc1CHzvNPHOcvTsVMEPl5I+NT+RO4YKMGehOfSIg==
@@ -2278,6 +2286,11 @@ hasha@^5.0.0:
   dependencies:
     is-stream "^2.0.0"
     type-fest "^0.8.0"
+
+helmet@^6.0.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/helmet/-/helmet-6.2.0.tgz#c29d62014be4c70b8ef092c9c5e54c8c26b8e16e"
+  integrity sha512-DWlwuXLLqbrIOltR6tFQXShj/+7Cyp0gLi6uAb8qMdFh/YBBFbKSgQ6nbXmScYd8emMctuthmgIa7tUfo9Rtyg==
 
 help-me@^4.0.1:
   version "4.2.0"

@@ -38,11 +38,13 @@ export const env = {
     name: 'token',
     secretKey: process.env.SECRET || 'need-to-add-a-cookie-key',
     config: {
-      domain: 'api.carte.local',
+      domain: process.env.DOMAIN_API || 'api.carte.local',
       path: '/',
       secure: false,
       httpOnly: true,
       sameSite: true,
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   },
+  helmet: {},
 };
