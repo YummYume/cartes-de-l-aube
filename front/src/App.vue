@@ -10,11 +10,19 @@
     IconLogin,
     IconLogout,
   } from '@tabler/icons-vue';
+  import { storeToRefs } from 'pinia';
+  import { watch } from 'vue';
   import { RouterView } from 'vue-router';
+
+  import { useAuth } from '@/stores/auth';
 
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
+
+  const store = useAuth();
+  const { signin } = store;
+  const { auth } = storeToRefs(store);
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
@@ -39,6 +47,11 @@
     },
     { icon: IconUserPlus, label: 'Register', to: '/register', active: false },
   ];
+
+  watch(auth, () => console.log('auth state'));
+  const login = async () => {
+    await signin({ username: 'bobby', password: 'Qwertyuiop1' });
+  };
 </script>
 
 <template>
@@ -64,6 +77,7 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
+            <button @click="login()">button</button>
           </div>
         </div>
       </div>

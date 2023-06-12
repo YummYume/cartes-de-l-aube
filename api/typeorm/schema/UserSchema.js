@@ -22,7 +22,7 @@ export default new EntitySchema({
     image: {
       type: 'varchar',
     },
-    originium: {
+    orundum: {
       type: 'int',
     },
   },
