@@ -1,27 +1,3 @@
-import { toast } from 'vue3-toastify';
-
-/**
- * @param {("POST"|"GET"|"PUT"|"PATCH")} method
- */
-function request(method) {
-  /**
-   * @param {string} url
-   * @param {{}} body
-   * @param {{}} headers
-   */
-  return (url, body, headers = {}) => {
-    const requestOptions = {
-      method,
-      headers,
-    };
-    if (body) {
-      requestOptions.headers['Content-Type'] = 'application/json';
-      requestOptions.body = JSON.stringify(body);
-    }
-    return fetch(`${import.meta.env.VITE_API_HOST}/${url}`, requestOptions).then(responseHandler);
-  };
-}
-
 /**
  * @param {Response} response
  */
@@ -35,12 +11,39 @@ function responseHandler(response) {
       }
 
       const error = (data && data.message) || response.statusText;
-      toast.error(error);
       return Promise.reject(error);
     }
 
     return data;
   });
+}
+
+/**
+ * @param {("POST"|"GET"|"PUT"|"PATCH")} method
+ */
+function request(method) {
+  /**
+   * @param {string} url
+   * @param {{}} body
+   * @param {{}} headers
+   * @param options
+   */
+  return (url, body, options = { credentials: 'include' }) => {
+    options = { ...options, method };
+
+    if (!options.headers) {
+      options.headers = new Headers({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      });
+    }
+
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    return fetch(`${import.meta.env.VITE_API_HOST}/${url}`, options).then(responseHandler);
+  };
 }
 
 export default {

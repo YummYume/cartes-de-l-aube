@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 
-import { getMe, postSignin } from '@/api/auth';
+import { getMe, postSignin, postSignup, postSignout } from '@/api/auth';
 import { asyncToast } from '@/utils/toast';
 
 export const useAuth = defineStore('auth', () => {
@@ -12,21 +12,35 @@ export const useAuth = defineStore('auth', () => {
   /**
    *
    */
-  async function signout() {}
-  /**
-   *
-   */
-  async function signup() {}
+  async function signout() {
+    await postSignout();
+    auth.value = null;
+  }
+
+  /** @param {SignupPayload} payload */
+  async function signup(payload) {
+    asyncToast(
+      async () => {
+        auth.value = await postSignup(payload);
+      },
+      { successMsg: 'Successful Registration ', pendingMsg: 'Pending Registration...' }
+    );
+  }
 
   /** @param {SigninPayload} payload */
   async function signin(payload) {
     // asyncToast(
     //   async () => {
-    //     auth.value.me = await postSignin(payload);
+    //     auth.value = await postSignin(payload);
     //   },
-    //   { successMsg: 'Auth done', pendingMsg: 'Auth pending...' }
+    //   { successMsg: 'Successful Authenfication ', pendingMsg: 'Pending Authenfication...' }
     // );
-    auth.value.me = await postSignin(payload);
+    try {
+      auth.value = await postSignin(payload);
+      console.log('Success');
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   /**
@@ -34,11 +48,11 @@ export const useAuth = defineStore('auth', () => {
    */
   async function me() {
     try {
-      auth.value.me = await getMe();
+      auth.value = await getMe();
     } catch (err) {
       console.log(err);
     }
   }
 
-  return { auth, me, signin };
+  return { auth, me, signin, signup, signout };
 });

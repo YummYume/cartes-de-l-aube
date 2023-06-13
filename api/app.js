@@ -23,6 +23,7 @@ export const options = {};
 export default async function app(fastify, opts) {
   await fastify.register(cors, {
     origin: new RegExp(process.env.CORS_ALLOW_ORIGIN),
+    credentials: true,
   });
 
   // Do not touch the following lines

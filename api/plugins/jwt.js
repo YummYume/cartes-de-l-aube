@@ -23,6 +23,7 @@ export default fp(async (fastify) => {
     secret: env.secretKey,
     cookie: {
       cookieName: env.cookie.name,
+      signed: env.cookie.config.signed,
     },
   });
 
@@ -49,7 +50,7 @@ export default fp(async (fastify) => {
           const oldRefreshToken = await RefreshToken.findOne({ tk: oldToken, user: id }).exec();
 
           if (!oldRefreshToken) {
-            reply.code(401).send({ message: 'Session expired, you need to signin' });
+            reply.code(401).send({ message: 'Session expired, you need to sign in' });
           } else {
             try {
               // Create a new token and refresh token and delete the old one
@@ -61,11 +62,15 @@ export default fp(async (fastify) => {
               await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
               await RefreshToken.deleteOne({ tk: oldToken });
 
+              request.userId = id;
+
               reply.setCookie(env.cookie.name, tk, env.cookie.config);
             } catch (err) {
-              reply.code(401).send({ message: 'Session expired, you need to signin' });
+              reply.code(401).send({ message: 'Session expired, you need to sign in' });
             }
           }
+        } else if (err.code === JWT_ERRORS_CODE.NoAuthorizationInCookieError) {
+          reply.code(404).send({ message: 'No Session, please sign up' });
         } else {
           reply.send(err);
         }

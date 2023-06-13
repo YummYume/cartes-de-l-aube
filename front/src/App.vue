@@ -11,7 +11,7 @@
     IconLogout,
   } from '@tabler/icons-vue';
   import { storeToRefs } from 'pinia';
-  import { watch } from 'vue';
+  import { onBeforeMount, watch } from 'vue';
   import { RouterView } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
@@ -21,7 +21,7 @@
   import IconLogo from './components/icon/IconLogo.vue';
 
   const store = useAuth();
-  const { signin } = store;
+  const { me, signin, signout } = store;
   const { auth } = storeToRefs(store);
 
   /**
@@ -49,8 +49,16 @@
   ];
 
   watch(auth, () => console.log('auth state'));
+
+  onBeforeMount(async () => {
+    await me();
+  });
+
   const login = async () => {
     await signin({ username: 'bobby', password: 'Qwertyuiop1' });
+  };
+  const logout = async () => {
+    await signout();
   };
 </script>
 
@@ -77,7 +85,8 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
-            <button @click="login()">button</button>
+            <button @click="!auth ? login() : logout()">{{ !auth ? 'login' : 'logout' }}</button>
+            <p v-if="auth">{{ auth.username }}</p>
           </div>
         </div>
       </div>

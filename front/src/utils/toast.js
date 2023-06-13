@@ -8,7 +8,7 @@ export const asyncToast = (asyncCallback, { successMsg, pendingMsg, failMsg }) =
       },
     },
     success: {
-      render() {
+      render({ data }) {
         return successMsg;
       },
     },
