@@ -17,6 +17,7 @@
   import { useAuth } from '@/stores/auth';
 
   import OrundumCount from './components/OrundumCount.vue';
+  import Auth from './components/Auth.vue'
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
 
@@ -85,8 +86,7 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
-            <button @click="!auth ? login() : logout()">{{ !auth ? 'login' : 'logout' }}</button>
-            <p v-if="auth">{{ auth.username }}</p>
+            <Auth />
           </div>
         </div>
       </div>

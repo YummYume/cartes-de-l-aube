@@ -51,4 +51,5 @@ export default {
   get: request('GET'),
   put: request('PUT'),
   patch: request('PATCH'),
+  delete: request('DELETE'),
 };

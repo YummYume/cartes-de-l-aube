@@ -34,7 +34,7 @@
       formattedCount
     }}</span>
     <IconPlus
-      class="h-5 w-5 rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50"
+      class="h-5 w-5 rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50 cursor-pointer"
       aria-label="Buy"
       ref="plusBtn"
       @click="storeModalOpened = true"
