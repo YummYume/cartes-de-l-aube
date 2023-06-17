@@ -5,6 +5,7 @@
 <template>
   <form>
     <InputField
+      id="username"
       class="mb-5"
       label="Username"
       type="text"
@@ -13,6 +14,7 @@
       isInvalid
     />
     <InputField
+      id="password"
       label="Password"
       type="'password"
       placeholder="Enter your password"

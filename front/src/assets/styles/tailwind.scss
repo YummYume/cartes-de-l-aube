@@ -30,4 +30,20 @@
       }
     }
   }
+
+  .form-field {
+    @apply flex flex-col gap-2;
+
+    &__label {
+      @apply text-sm font-bold;
+    }
+
+    &__input {
+      @apply form-input block w-full rounded-lg border border-primary bg-gray-200 p-2.5 text-sm text-gray-900 transition-all  invalid:border-warning invalid:ring-warning focus:[&:not(:invalid)]:border-primary focus:[&:not(:invalid)]:ring-2 focus:[&:not(:invalid)]:ring-primary;
+    }
+
+    &__error {
+      @apply text-sm text-warning;
+    }
+  }
 }

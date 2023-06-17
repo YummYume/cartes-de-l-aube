@@ -1,5 +1,11 @@
 <script setup>
+  import { computed } from 'vue';
+
   const props = defineProps({
+    id: {
+      type: String,
+      required: true,
+    },
     type: {
       type: String,
       required: true,
@@ -24,21 +30,23 @@
   });
 
   const placeholder = props.placeholder ?? `enter your ${props.type}`;
+  const errorId = computed(() => `${props.id}-error`);
 </script>
 
 <template>
-  <label class="block">
-    <span class="block">{{ props.label }}</span>
+  <div class="form-field">
+    <label class="form-field__label" :for="id">{{ props.label }}</label>
     <input
       :type="props.type"
-      :class="['w-full p-2 text-black placeholder:normal-case']"
       :placeholder="placeholder"
       :required="props.isRequired"
-      aria-invalid
-      aria-errormessage
+      class="form-field__input"
+      :id="id"
+      :aria-invalid="props.isInvalid"
+      :aria-errormessage="errorId"
     />
-    <p v-if="props.isInvalid" class="mt-2 text-pink-600">
+    <p v-if="props.isInvalid" :id="errorId" class="form-field__error">
       {{ props.errorMsg }}
     </p>
-  </label>
+  </div>
 </template>
