@@ -39,11 +39,7 @@
     }
 
     &__input {
-      @apply block w-full rounded-lg border border-primary bg-gray-200 p-2.5 text-sm text-gray-900 transition-all  invalid:border-warning invalid:ring-warning focus:[&:not(:invalid)]:border-primary focus:[&:not(:invalid)]:ring-2 focus:[&:not(:invalid)]:ring-primary;
-
-      &--text {
-        @apply form-input;
-      }
+      @apply form-input block w-full rounded-lg border border-primary bg-gray-200 p-2.5 text-sm text-gray-900 transition-all  invalid:border-warning invalid:ring-warning focus:[&:not(:invalid)]:border-primary focus:[&:not(:invalid)]:ring-2 focus:[&:not(:invalid)]:ring-primary;
     }
 
     &__error {

@@ -40,7 +40,7 @@
       :type="props.type"
       :placeholder="placeholder"
       :required="props.isRequired"
-      class="form-field__input form-field__input--text"
+      class="form-field__input"
       :id="id"
       :aria-invalid="props.isInvalid"
       :aria-errormessage="errorId"
