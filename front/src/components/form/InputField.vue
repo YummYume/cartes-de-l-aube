@@ -34,6 +34,8 @@
       :class="['w-full p-2 text-black placeholder:normal-case']"
       :placeholder="placeholder"
       :required="props.isRequired"
+      aria-invalid
+      aria-errormessage
     />
     <p v-if="props.isInvalid" class="mt-2 text-pink-600">
       {{ props.errorMsg }}
