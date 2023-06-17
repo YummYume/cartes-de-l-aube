@@ -16,7 +16,7 @@
 
   import { useAuth } from '@/stores/auth';
 
-  import Auth from './components/Auth.vue';
+  import AuthButton from './components/AuthButton.vue';
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
@@ -86,7 +86,7 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
-            <Auth />
+            <AuthButton />
           </div>
         </div>
       </div>

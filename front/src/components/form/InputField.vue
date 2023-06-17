@@ -1,5 +1,5 @@
 <script setup>
- const props = defineProps({
+  const props = defineProps({
     type: {
       type: String,
       required: true,
@@ -15,21 +15,26 @@
     },
     isInvalid: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isRequired: {
       type: Boolean,
       default: true,
-    }
+    },
   });
 
-  const placeholder = props.placeholder ?? `enter your ${props.type}`
+  const placeholder = props.placeholder ?? `enter your ${props.type}`;
 </script>
 
 <template>
   <label class="block">
     <span class="block">{{ props.label }}</span>
-    <input :type="props.type" :class="['text-black w-full p-2 placeholder:normal-case'],{ isInvalid: 'border-pink-600' }" :placeholder="placeholder" :required="props.isRequired"/>
+    <input
+      :type="props.type"
+      :class="['w-full p-2 text-black placeholder:normal-case']"
+      :placeholder="placeholder"
+      :required="props.isRequired"
+    />
     <p v-if="props.isInvalid" class="mt-2 text-pink-600">
       {{ props.errorMsg }}
     </p>
