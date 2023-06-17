@@ -7,11 +7,11 @@
 </script>
 
 <template>
-  <div role="group" class="transition-all rounded-xl bg-accent/50 border-2 border-transparent hover:bg-transparent hover:border-accent hover:text-accent p-0.5 px-2">
-    <button
-      aria-label="Authentication"
-      @click="authModalOpened = true"
-    >Sign In</button>
+  <div
+    role="group"
+    class="rounded-xl border-2 border-transparent bg-accent/50 p-0.5 px-2 transition-all hover:border-accent hover:bg-transparent hover:text-accent"
+  >
+    <button aria-label="Authentication" @click="authModalOpened = true">Sign In</button>
   </div>
   <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" />
 </template>

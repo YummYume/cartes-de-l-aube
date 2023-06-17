@@ -16,8 +16,8 @@
 
   import { useAuth } from '@/stores/auth';
 
+  import Auth from './components/Auth.vue';
   import OrundumCount from './components/OrundumCount.vue';
-  import Auth from './components/Auth.vue'
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
 

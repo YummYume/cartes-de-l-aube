@@ -9,6 +9,7 @@
   } from '@headlessui/vue';
 
   import BackdropModal from './BackdropModal.vue';
+
   import AuthForm from '../form/AuthForm.vue';
 
   defineProps({
@@ -42,7 +43,7 @@
           <DialogDescription class="dialog__panel--description mt-2"></DialogDescription>
 
           <section class="dialog__panel--section my-6">
-            <AuthForm/>
+            <AuthForm />
           </section>
 
           <footer class="dialog__panel--actions">
