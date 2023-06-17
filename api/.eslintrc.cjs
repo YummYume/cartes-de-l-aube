@@ -17,6 +17,7 @@ module.exports = {
   },
   plugins: ['import', 'prettier'],
   rules: {
+    'no-shadow': 'off',
     'func-names': ['warn', 'as-needed'],
     'import/extensions': 'off',
     'import/order': [
@@ -39,6 +40,8 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    'no-underscore-dangle': 'off',
+    'import/no-dynamic-require': 'off',
     'import/prefer-default-export': 'off',
     'no-unused-vars': 'warn',
     'jsdoc/require-param-description': 'off',

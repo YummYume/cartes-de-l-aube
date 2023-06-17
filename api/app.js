@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 
 /**
  * @typedef {import('fastify').FastifyInstance} Fastify
+ * @typedef {import("fastify").FastifyRequest} Request
+ * @typedef {import("fastify").FastifyReply} Reply
  */
 
 const filename = fileURLToPath(import.meta.url);
@@ -21,6 +23,7 @@ export const options = {};
 export default async function app(fastify, opts) {
   await fastify.register(cors, {
     origin: new RegExp(process.env.CORS_ALLOW_ORIGIN),
+    credentials: true,
   });
 
   // Do not touch the following lines

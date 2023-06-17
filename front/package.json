@@ -18,12 +18,16 @@
     "@headlessui/vue": "^1.7.14",
     "@tabler/icons-vue": "^2.20.0",
     "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.3",
     "@vueuse/core": "^10.1.2",
     "pinia": "^2.0.36",
+    "socket.io-client": "^4.6.2",
     "tippy.js": "^6.3.7",
     "vue": "^3.3.2",
     "vue-router": "^4.2.0",
-    "vue-tippy": "v6"
+    "vue-tippy": "v6",
+    "vue3-toastify": "^0.1.11",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
