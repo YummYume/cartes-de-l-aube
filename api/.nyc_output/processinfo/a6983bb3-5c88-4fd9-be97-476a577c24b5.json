@@ -1,0 +1,1 @@
+{"parent":null,"pid":19193,"argv":["/usr/local/bin/node","/home/node/api/node_modules/.bin/tap","test/**/*.test.js"],"execArgv":[],"cwd":"/home/node/api","time":1685020077297,"ppid":19182,"coverageFilename":"/home/node/api/.nyc_output/a6983bb3-5c88-4fd9-be97-476a577c24b5.json","externalId":"","uuid":"a6983bb3-5c88-4fd9-be97-476a577c24b5","files":[]}

@@ -3,6 +3,6 @@
  * @typedef {{ username: string, password: string }} SigninPayload
  * @typedef {{ username: string, orundum: number }} User
  * @typedef {import('vue').Ref<User>} Auth
- * @typedef {typeof import('@/utils/fetchWrap').default} FetchWrap
+ * @typedef {typeof import('@/utils/api').default} api
  * @typedef {{ message: string }} Message
  */
