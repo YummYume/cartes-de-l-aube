@@ -12,43 +12,52 @@
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { storeToRefs } from 'pinia';
-  import { onBeforeMount, watch } from 'vue';
+  import { computed, onBeforeMount, ref, watch } from 'vue';
   import { RouterView } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
 
-  import AuthButton from './components/AuthButton.vue';
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
+  import AuthModal from './components/modal/AuthModal.vue';
+  import LogoutModal from './components/modal/LogoutModal.vue';
 
   const store = useAuth();
-  const { me, signin, signout } = store;
+  const { me, signin } = store;
   const { auth } = storeToRefs(store);
+
+  const authModalOpened = ref(false);
+  const logoutModalOpened = ref(false);
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
    */
-  const sidebarItems = [
+  const sidebarItems = computed(() => [
     { icon: IconHome, label: 'Home', to: '/' },
     { icon: IconPlayerPlay, label: 'Play', to: '/play', active: true },
     { icon: IconCards, label: 'Squad', to: '/squad', active: true },
     { icon: IconHistory, label: 'History', to: '/history', active: true },
     { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: true },
     { icon: IconShoppingBag, label: 'Store', to: '/store', active: true },
-    { icon: IconLogin, label: 'Login', to: '/login', active: true },
+    {
+      icon: IconLogin,
+      label: 'Login',
+      onClick: () => {
+        authModalOpened.value = true;
+      },
+      active: !auth.value,
+    },
     {
       icon: IconLogout,
       label: 'Logout',
       onClick: () => {
-        // TODO logout the user using a confirmation modal
-        // eslint-disable-next-line no-alert, no-restricted-globals
-        confirm('Are you sure you want to logout?');
+        logoutModalOpened.value = true;
       },
-      active: false,
+      active: !!auth.value,
     },
-    { icon: IconUserPlus, label: 'Register', to: '/register', active: false },
-  ];
+    { icon: IconUserPlus, label: 'Register', to: '/register', active: !auth.value },
+  ]);
 
   useHead({
     title: "Cartes de l'aube",
@@ -75,9 +84,6 @@
   const login = async () => {
     await signin({ username: 'bobby', password: 'Qwertyuiop1' });
   };
-  const logout = async () => {
-    await signout();
-  };
 </script>
 
 <template>
@@ -103,7 +109,7 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
-            <AuthButton />
+            <button @click="login()">login</button>
           </div>
         </div>
       </div>
@@ -117,6 +123,8 @@
       </div>
 
       <SideBar :items="sidebarItems" />
+      <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" />
+      <LogoutModal :isOpen="logoutModalOpened" @close="logoutModalOpened = false" />
     </div>
   </div>
 </template>
