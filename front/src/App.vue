@@ -28,6 +28,7 @@
   const { auth } = storeToRefs(store);
 
   const authModalOpened = ref(false);
+  const isLogin = ref(true);
   const logoutModalOpened = ref(false);
 
   /**
@@ -35,16 +36,17 @@
    */
   const sidebarItems = computed(() => [
     { icon: IconHome, label: 'Home', to: '/' },
-    { icon: IconPlayerPlay, label: 'Play', to: '/play', active: true },
-    { icon: IconCards, label: 'Squad', to: '/squad', active: true },
-    { icon: IconHistory, label: 'History', to: '/history', active: true },
-    { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: true },
-    { icon: IconShoppingBag, label: 'Store', to: '/store', active: true },
+    { icon: IconPlayerPlay, label: 'Play', to: '/play', active: !!auth.value },
+    { icon: IconCards, label: 'Squad', to: '/squad', active: !!auth.value },
+    { icon: IconHistory, label: 'History', to: '/history', active: !!auth.value },
+    { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: !!auth.value },
+    { icon: IconShoppingBag, label: 'Store', to: '/store', active: !!auth.value },
     {
       icon: IconLogin,
       label: 'Login',
       onClick: () => {
         authModalOpened.value = true;
+        isLogin.value = true;
       },
       active: !auth.value,
     },
@@ -56,7 +58,15 @@
       },
       active: !!auth.value,
     },
-    { icon: IconUserPlus, label: 'Register', to: '/register', active: !auth.value },
+    {
+      icon: IconUserPlus,
+      label: 'Register',
+      onClick: () => {
+        authModalOpened.value = true;
+        isLogin.value = false;
+      },
+      active: !auth.value,
+    },
   ]);
 
   useHead({
@@ -123,7 +133,7 @@
       </div>
 
       <SideBar :items="sidebarItems" />
-      <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" />
+      <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" :isLogin="isLogin" />
       <LogoutModal :isOpen="logoutModalOpened" @close="logoutModalOpened = false" />
     </div>
   </div>

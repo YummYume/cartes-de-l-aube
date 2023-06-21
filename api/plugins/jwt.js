@@ -62,9 +62,29 @@ export default fp(async (fastify) => {
               await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
               await RefreshToken.deleteOne({ tk: oldToken });
 
-              request.userId = id;
+              // Add current user in request to be accessible in the next controller
 
-              reply.setCookie(env.cookie.name, tk, env.cookie.config);
+              /**
+               * @type {{userRepository: import('typeorm').Repository<User>}}}
+               */
+              const { userRepository } = fastify.typeorm;
+
+              try {
+                const user = await userRepository.findOne({
+                  select: {
+                    password: false,
+                  },
+                  where: {
+                    id,
+                  },
+                });
+
+                request.user = user;
+
+                reply.setCookie(env.cookie.name, tk, env.cookie.config);
+              } catch (err) {
+                reply.code(404).send({ message: 'User not found' });
+              }
             } catch (err) {
               reply.code(401).send({ message: 'Session expired, you need to sign in' });
             }
