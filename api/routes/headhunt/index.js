@@ -1,4 +1,4 @@
-import { getRandomRarities } from '../../lib/rarity.js';
+import { getRandomRarities, getRefundForDuplicate } from '../../lib/rarity.js';
 import { Operator } from '../../mongoose/models/Operator.js';
 
 /**
@@ -24,7 +24,7 @@ export default async (fastify) => {
         return [...prev, { stars: current.stars, count: 1 }];
       }, []);
       /**
-       * @type {import('../../mongoose/models/Operator').Operator[]} operators
+       * @type {import('../../mongoose/models/Operator').OperatorModel[]} operators
        */
       let operators = [];
 
@@ -38,6 +38,15 @@ export default async (fastify) => {
       }
 
       // TODO take orundum from user depending on count and save operators to db
+      operators = operators.map((operator) => {
+        const operatorOwned = Math.random() > 0.5;
+
+        return {
+          operator,
+          new: !operatorOwned,
+          orundum: getRefundForDuplicate(operator.rarity),
+        };
+      });
 
       return {
         operators: operators.sort(() => Math.random() - 0.5),

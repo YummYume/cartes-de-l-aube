@@ -20,11 +20,14 @@ const schema = new Schema({
     type: String,
   },
   statistics: {
-    base: {
-      hp: Number,
-      atk: Number,
-      def: Number,
-    },
+    hp: Number,
+    atk: Number,
+    def: Number,
+    cost: Number,
+  },
+  class: {
+    type: String,
+    required: true,
   },
   art: [
     {
@@ -35,3 +38,7 @@ const schema = new Schema({
 });
 
 export const Operator = model('Operator', schema);
+
+/**
+ * @typedef {typeof Operator.schema.obj} OperatorModel
+ */

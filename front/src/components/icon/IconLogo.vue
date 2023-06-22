@@ -8,6 +8,7 @@
     viewBox="0 0 351 351"
     enable-background="new 0 0 351 351"
     xml:space="preserve"
+    v-bind="$attrs"
   >
     <path
       fill="none"

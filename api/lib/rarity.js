@@ -2,6 +2,8 @@
  * @typedef {{type: string, stars: number, rarity: number}} Rarity
  */
 
+export const DEFAULT_PULL_COST = 600;
+
 /**
  * @type {Rarity[]}
  */
@@ -10,21 +12,25 @@ const rarities = [
     type: 'common',
     stars: 3,
     rarity: 0.6,
+    refund: 0.25,
   },
   {
     type: 'rare',
     stars: 4,
-    rarity: 0.34,
+    rarity: 0.3,
+    refund: 0.5,
   },
   {
     type: 'elite',
     stars: 5,
-    rarity: 0.05,
+    rarity: 0.08,
+    refund: 0.75,
   },
   {
     type: 'top',
     stars: 6,
-    rarity: 0.01,
+    rarity: 0.02,
+    refund: 1,
   },
 ];
 
@@ -42,11 +48,12 @@ export const getRarities = () => rarities.sort((a, b) => a.rarity - b.rarity);
 export const getRandomRarities = (count = 1) => {
   const rarities = getRarities();
   const total = rarities.reduce((a, b) => a + b.rarity, 0);
-  const random = (Math.random() * total).toFixed(2);
 
   return Array(count)
     .fill(rarities.at(-1))
     .map(() => {
+      const random = (Math.random() * total).toFixed(2);
+
       for (let i = 0; i < rarities.length; i += 1) {
         const rarity = rarities[i];
 
@@ -57,4 +64,20 @@ export const getRandomRarities = (count = 1) => {
 
       return rarities.at(-1);
     });
+};
+
+/**
+ * Get the refund for a duplicate
+ * @param {number} rarity
+ * @param {number} amount
+ * @returns {number}
+ */
+export const getRefundForDuplicate = (rarity, amount = DEFAULT_PULL_COST) => {
+  const rarityObject = rarities.find((r) => r.stars === rarity);
+
+  if (!rarityObject) {
+    return 0;
+  }
+
+  return rarityObject.refund * amount;
 };

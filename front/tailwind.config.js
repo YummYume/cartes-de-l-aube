@@ -20,5 +20,9 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [require('@tailwindcss/container-queries'), require('@tailwindcss/forms')],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+    require('@tailwindcss/forms'),
+    require('@headlessui/tailwindcss'),
+  ],
 };

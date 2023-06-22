@@ -49,5 +49,6 @@ module.exports = {
     'prettier/prettier': 'warn',
     'no-restricted-syntax': 'off',
     'no-await-in-loop': 'off',
+    'jsdoc/no-undefined-types': 'off',
   },
 };

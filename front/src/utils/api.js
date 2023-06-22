@@ -3,11 +3,10 @@
  * @returns {Promise<{[key: string]: string}|null>}
  */
 async function responseHandler(response) {
-  const text = await response.text();
   /**
    * @type {{[key: string]: string}|null}
    */
-  const data = text ? JSON.parse(text) : null;
+  const data = await response.json();
 
   if (!response.ok) {
     if ([401, 403].includes(response.status)) {
@@ -23,17 +22,18 @@ async function responseHandler(response) {
 }
 
 /**
- * @param {("POST"|"GET"|"PUT"|"PATCH")} method
+ * @param {('POST'|'GET'|'PUT'|'PATCH'|'DELETE')} method
+ * @returns {(url: string, body: {[key: string]: string}|null, options: {credentials: string}, signal: AbortSignal|null) => Promise<{[key: string]: string}|null>}
  */
 function request(method) {
   /**
    * @param {string} url
-   * @param {{}} body
-   * @param {{credentials: string}} options
+   * @param {{}|null} body
+   * @param {RequestInit} options
    * @returns {Promise<{[key: string]: string}|null>}
    */
-  return async (url, body, options = { credentials: 'include' }) => {
-    options = { ...options, method };
+  return async (url, body = null, options = {}) => {
+    options = { ...options, method, credentials: 'include' };
 
     if (!options.headers) {
       options.headers = new Headers({
