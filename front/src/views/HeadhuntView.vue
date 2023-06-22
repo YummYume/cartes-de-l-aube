@@ -1,5 +1,5 @@
 <script setup>
-  import { ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
   import { useTippy } from 'vue-tippy';
   import { toast } from 'vue3-toastify';
@@ -11,6 +11,7 @@
 
   const orundum = ref(10000);
   const pulls = ref(1);
+  const maxPullCount = computed(() => Math.floor(orundum.value / 600));
   const submitting = ref(false);
   const headhuntModalOpened = ref(false);
   const onePullButton = ref(null);
@@ -23,10 +24,12 @@
 
   useTippy(onePullButton, {
     content: 'Pull 1 operator for 600 orundum',
+    theme: 'secondary',
   });
 
   useTippy(tenPullButton, {
     content: 'Pull 10 operators for 6000 orundum',
+    theme: 'accent',
   });
 
   /**
@@ -82,7 +85,15 @@
           Headhunting can be done in batches of 1 or 10. Each pull costs 600 orundum. A 10 pull will
           not guarantee a higher chance of getting a high rarity operator.
         </p>
-        <div class="flex flex-row items-center justify-center gap-6">
+        <p>
+          You currently have <strong>{{ orundum }}</strong> orundum, which is enough for a maximum
+          of <strong>{{ maxPullCount }}</strong> {{ maxPullCount > 1 ? 'pulls' : 'pull' }}.
+        </p>
+        <p>
+          Hungry for more operators? You can head to the
+          <RouterLink class="link text-accent" to="/store">store</RouterLink> to buy more orundum.
+        </p>
+        <div class="mt-3 flex flex-row items-center justify-center gap-6">
           <button
             :disabled="submitting || orundum < 600"
             :aria-busy="submitting"

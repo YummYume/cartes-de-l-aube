@@ -68,7 +68,7 @@
       return props.description;
     }
 
-    return `${props.operator.name} has ${props.operator.statistics.hp} health points, ${props.operator.statistics.atk} attack, ${props.operator.statistics.def} defense and costs ${props.operator.statistics.cost} points to deploy.`;
+    return `${props.operator.name} is a ${props.operator.rarity} stars operator with ${props.operator.statistics.hp} health points, ${props.operator.statistics.atk} attack, ${props.operator.statistics.def} defense and costs ${props.operator.statistics.cost} points to deploy.`;
   });
 </script>
 

@@ -31,6 +31,18 @@
   const handleClose = () => {
     emit('close');
   };
+
+  /**
+   * @param {OperatorPull} operatorPull
+   * @returns {string}
+   */
+  const getOperatorDescription = (operatorPull) => {
+    if (operatorPull.new) {
+      return `${operatorPull.operator.name} is a new ${operatorPull.operator.rarity} star operator which has ${operatorPull.operator.statistics.hp} health points, ${operatorPull.operator.statistics.atk} attack, ${operatorPull.operator.statistics.def} defense and costs ${operatorPull.operator.statistics.cost} points to deploy.`;
+    }
+
+    return `Because you already have ${operatorPull.operator.name}, you received ${operatorPull.orundum} orundum as compensation.`;
+  };
 </script>
 
 <template>
@@ -68,7 +80,10 @@
                   :key="`${operatorPull.operator.name}-${key}`"
                   class="flex flex-col items-center justify-center gap-4"
                 >
-                  <OperatorCard :operator="operatorPull.operator" />
+                  <OperatorCard
+                    :operator="operatorPull.operator"
+                    :description="getOperatorDescription(operatorPull)"
+                  />
                   <span
                     v-if="operatorPull.new"
                     class="animate-bounce text-3xl text-tertiary drop-shadow"

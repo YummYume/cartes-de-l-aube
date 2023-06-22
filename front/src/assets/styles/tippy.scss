@@ -1,0 +1,25 @@
+.tippy-box {
+  &[data-theme~='success'] {
+    @apply bg-success text-white;
+
+    .tippy-svg-arrow {
+      @apply fill-success;
+    }
+  }
+
+  &[data-theme~='accent'] {
+    @apply bg-accent text-white;
+
+    .tippy-svg-arrow {
+      @apply fill-accent;
+    }
+  }
+
+  &[data-theme~='secondary'] {
+    @apply bg-secondary text-white;
+
+    .tippy-svg-arrow {
+      @apply fill-secondary;
+    }
+  }
+}

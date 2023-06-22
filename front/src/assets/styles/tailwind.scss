@@ -1,11 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'variables.scss';
+
+@import 'variables';
 
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 px-2 py-4 leading-4 shadow-inner transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:text-opacity-50 disabled:opacity-50;
+  }
+
+  .link {
+    @apply font-medium transition-all duration-300 ease-in-out visited:text-opacity-80 hover:text-opacity-80;
   }
 
   .text {
