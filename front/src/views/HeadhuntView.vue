@@ -25,11 +25,13 @@
   useTippy(onePullButton, {
     content: 'Pull 1 operator for 600 orundum',
     theme: 'secondary',
+    arrow: false,
   });
 
   useTippy(tenPullButton, {
     content: 'Pull 10 operators for 6000 orundum',
     theme: 'accent',
+    arrow: false,
   });
 
   /**

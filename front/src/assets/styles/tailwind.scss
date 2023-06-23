@@ -87,6 +87,26 @@
     }
   }
 
+  .match-history {
+    @apply grid w-full grid-cols-3 rounded-xl border-2 border-secondary bg-slate-50 p-4 text-primary;
+
+    &__player {
+      @apply flex flex-col gap-2;
+
+      &--last {
+        @apply items-end;
+      }
+    }
+
+    &__result {
+      @apply flex flex-col items-center justify-center gap-2;
+    }
+
+    &__result-text {
+      @apply text-2xl font-bold;
+    }
+  }
+
   // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/
   .operator-card {
     perspective: 2500px;

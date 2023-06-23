@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { toast } from 'vue3-toastify';
+
+import { getMatchHistories } from '@/api/history';
 
 import HomeView from '../views/HomeView.vue';
 
@@ -26,7 +29,30 @@ const router = createRouter({
     {
       path: '/history',
       name: 'history',
+      props: true,
       component: () => import('../views/HistoryView.vue'),
+      beforeEnter: async (to, from, next) => {
+        /**
+         * @type {{ matches: MatchHistory[] }|null}
+         */
+        let matchHistories = null;
+
+        try {
+          matchHistories = await getMatchHistories();
+        } catch (error) {
+          toast.error('Sorry, something went wrong while fetching your match histories.');
+        }
+
+        if (matchHistories) {
+          to.params.matchHistories = matchHistories.matches;
+
+          next();
+
+          return;
+        }
+
+        next(false);
+      },
     },
     {
       path: '/headhunt',

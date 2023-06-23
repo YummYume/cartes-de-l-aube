@@ -23,8 +23,8 @@ app.use(VueTippy, {
   defaultProps: { placement: 'bottom', arrow: roundArrow },
 });
 app.use(Vue3Toasity, {
-  autoClose: 1500,
-  position: toast.POSITION.BOTTOM_RIGHT,
+  autoClose: 5000,
+  position: toast.POSITION.BOTTOM_LEFT,
   pauseOnHover: false,
 });
 app.use(head);
