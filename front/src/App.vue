@@ -10,6 +10,7 @@
     IconLogin,
     IconLogout,
   } from '@tabler/icons-vue';
+  import { useHead } from '@unhead/vue';
   import { storeToRefs } from 'pinia';
   import { onBeforeMount, watch } from 'vue';
   import { RouterView } from 'vue-router';
@@ -48,6 +49,22 @@
     },
     { icon: IconUserPlus, label: 'Register', to: '/register', active: false },
   ];
+
+  useHead({
+    title: "Cartes de l'aube",
+    meta: [
+      { name: 'description', content: 'Arknights based card game.' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
+    ],
+    // Prefetch operator background images
+    link: [
+      ...['common', 'rare', 'elite', 'senior'].map((rarity) => ({
+        rel: 'prefetch',
+        as: 'image',
+        href: `/operator-bg/${rarity}.jpg`,
+      })),
+    ],
+  });
 
   watch(auth, () => console.log('auth state'));
 

@@ -53,6 +53,8 @@ module.exports = {
     'jsdoc/require-jsdoc': 'warn',
     'jsdoc/require-param-description': 'off',
     'jsdoc/require-returns-description': 'off',
+    'jsdoc/no-undefined-types': 'off',
+    'no-restricted-syntax': 'off',
   },
   settings: {
     'import/resolver': {

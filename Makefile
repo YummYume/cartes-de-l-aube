@@ -65,6 +65,9 @@ logs-front:
 list-routes:
 	$(EXECAPI) yarn list:routes
 
+sync-operators:
+	$(EXECAPI) yarn sync:operators
+
 # Yarn
 upgrade-api:
 	$(EXECAPI) yarn upgrade-interactive

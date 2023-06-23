@@ -14,39 +14,45 @@
       type: String,
       required: true,
     },
-    placeholder: String,
-    errorMsg: {
-      type: String,
-      required: true,
+    isRequired: {
+      type: Boolean,
+      default: true,
     },
     isInvalid: {
       type: Boolean,
       default: false,
     },
-    isRequired: {
-      type: Boolean,
-      default: true,
-    },
+    errorMsg: String,
+    hideLabel: Boolean,
+    describedBy: String,
+    modelValue: [String, Number],
   });
+  defineEmits(['update:modelValue']);
 
-  const placeholder = props.placeholder ?? `enter your ${props.type}`;
   const errorId = computed(() => `${props.id}-error`);
+  const labelClass = computed(() => ({
+    'form-field__label': true,
+    'sr-only': props.hideLabel,
+  }));
 </script>
 
 <template>
   <div class="form-field">
-    <label class="form-field__label" :for="id">{{ props.label }}</label>
+    <label :class="labelClass" :for="id">{{ label }}</label>
     <input
-      :type="props.type"
-      :placeholder="placeholder"
-      :required="props.isRequired"
       class="form-field__input"
       :id="id"
-      :aria-invalid="props.isInvalid"
+      :type="type"
+      :required="isRequired"
+      :aria-invalid="isInvalid"
       :aria-errormessage="errorId"
+      :aria-describedby="describedBy"
+      :value="modelValue"
+      v-bind="$attrs"
+      @input="$emit('update:modelValue', $event.target.value)"
     />
-    <p v-if="props.isInvalid" :id="errorId" class="form-field__error">
-      {{ props.errorMsg }}
+    <p v-if="isInvalid && errorMsg" :id="errorId" class="form-field__error">
+      {{ errorMsg }}
     </p>
   </div>
 </template>

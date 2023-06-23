@@ -2,9 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'variables';
+
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 px-2 py-4 leading-3 shadow-inner transition-all duration-300 ease-in-out;
+    @apply inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 px-2 py-4 leading-4 shadow-inner transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:text-opacity-50 disabled:opacity-50;
+  }
+
+  .link {
+    @apply font-medium transition-all duration-300 ease-in-out visited:text-opacity-80 hover:text-opacity-80;
+  }
+
+  .text {
+    &--common {
+      color: $rarity-common;
+    }
+
+    &--rare {
+      color: $rarity-rare;
+    }
+
+    &--elite {
+      color: $rarity-elite;
+    }
+
+    &--senior {
+      color: $rarity-senior;
+    }
   }
 
   .dialog {
@@ -31,6 +55,22 @@
     }
   }
 
+  .disclosure {
+    @apply flex flex-col;
+
+    &__button {
+      @apply flex w-full items-center rounded-lg px-4 py-3 text-left text-lg font-medium transition-all duration-300 ease-in-out hover:bg-secondary/50  focus:outline-none focus-visible:bg-secondary/50 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75;
+    }
+
+    &__button-text {
+      @apply flex-grow;
+    }
+
+    &__content {
+      @apply flex flex-col gap-2 p-4 px-6 text-lg;
+    }
+  }
+
   .form-field {
     @apply flex flex-col gap-2;
 
@@ -44,6 +84,179 @@
 
     &__error {
       @apply text-sm text-warning;
+    }
+  }
+
+  // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/
+  .operator-card {
+    perspective: 2500px;
+    @apply relative flex h-[22rem] w-72 max-w-[90vw] select-none items-end justify-center;
+
+    &__wrapper {
+      transition: transform 0.5s ease-in-out, box-shadow 0.25s ease-in-out;
+      @apply absolute -z-[1] h-full w-full rounded-xl border-8 border-black p-1;
+
+      &--highlight-common {
+        box-shadow: 0 0 1.25rem 0.25rem $rarity-common;
+      }
+
+      &--highlight-rare {
+        box-shadow: 0 0 1.25rem 0.25rem $rarity-rare;
+      }
+
+      &--highlight-elite {
+        box-shadow: 0 0 1.25rem 0.25rem $rarity-elite;
+      }
+
+      &--highlight-senior {
+        box-shadow: 0 0 1.25rem 0.25rem $rarity-senior;
+      }
+
+      &::before,
+      &::after {
+        @apply absolute left-0 h-20 w-full opacity-0 transition-all duration-500 ease-in-out content-[''];
+      }
+
+      &::before {
+        @apply top-0 h-full bg-gradient-to-t from-transparent via-[rgba(12,13,19,0.5)] to-[rgba(12,13,19)];
+      }
+
+      &::after {
+        @apply bottom-0 bg-gradient-to-b from-transparent via-[rgba(12,13,19,0.5)] to-[rgba(12,13,19)] opacity-100;
+      }
+    }
+
+    &__class-icon {
+      @apply absolute left-2 top-2 rounded-full bg-slate-800 bg-opacity-40 p-1 transition-all duration-500 ease-in-out;
+    }
+
+    &__cover-image {
+      @apply h-full w-full object-cover;
+    }
+
+    &__background-image {
+      @apply absolute inset-0 -z-[2] h-full w-full object-cover;
+    }
+
+    &__info {
+      @apply flex w-full flex-row items-end px-5 pb-4 transition-all duration-500 ease-in-out;
+    }
+
+    &__title {
+      @apply flex-grow text-2xl font-bold text-slate-100 drop-shadow-xl;
+    }
+
+    &__stats {
+      @apply flex flex-col items-end justify-center gap-0.5 rounded-xl p-1 text-slate-50 transition-all duration-300;
+    }
+
+    &__stat {
+      @apply flex flex-row items-center justify-center gap-2;
+
+      &--cost {
+        @apply opacity-0 transition-all duration-500 ease-in-out;
+      }
+    }
+
+    &__character {
+      @apply absolute -z-[1] w-full opacity-0 transition-all duration-500 ease-in-out;
+    }
+
+    &--active {
+      .operator-card {
+        &__wrapper {
+          transform: perspective(900px) translateY(-5%) rotateX(25deg) translateZ(0);
+          box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
+          -webkit-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
+          -moz-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
+
+          &--highlight-common {
+            box-shadow: 0 0 2.25rem 0.6rem #48abe0;
+          }
+
+          &--highlight-rare {
+            box-shadow: 0 0 2.25rem 0.6rem #9c8add;
+          }
+
+          &--highlight-elite {
+            box-shadow: 0 0 2.25rem 0.6rem #cfb88c;
+          }
+
+          &--highlight-senior {
+            box-shadow: 0 0 2.25rem 0.6rem #ca841f;
+          }
+
+          &::before,
+          &::after {
+            @apply opacity-100;
+          }
+
+          &::after {
+            @apply h-[7.5rem];
+          }
+        }
+
+        &__class-icon {
+          @apply bg-slate-800 bg-opacity-0 opacity-50;
+        }
+
+        &__info {
+          transform: translate3d(0%, -2rem, 12.5rem);
+        }
+
+        &__character {
+          transform: translate3d(0%, -30%, 6.25rem);
+          @apply opacity-100;
+        }
+
+        &__stats {
+          @apply bg-slate-800/40;
+        }
+
+        &__stat--cost {
+          @apply opacity-100;
+        }
+      }
+    }
+
+    &:hover & {
+      &__wrapper {
+        &--highlight-common {
+          box-shadow: 0 0 2.25rem 0.6rem #48abe0;
+        }
+
+        &--highlight-rare {
+          box-shadow: 0 0 2.25rem 0.6rem #9c8add;
+        }
+
+        &--highlight-elite {
+          box-shadow: 0 0 2.25rem 0.6rem #cfb88c;
+        }
+
+        &--highlight-senior {
+          box-shadow: 0 0 2.25rem 0.6rem #ca841f;
+        }
+      }
+    }
+
+    &:focus-visible & {
+      &__wrapper {
+        &--highlight-common {
+          box-shadow: 0 0 2.25rem 0.6rem #48abe0;
+        }
+
+        &--highlight-rare {
+          box-shadow: 0 0 2.25rem 0.6rem #9c8add;
+        }
+
+        &--highlight-elite {
+          box-shadow: 0 0 2.25rem 0.6rem #cfb88c;
+        }
+
+        &--highlight-senior {
+          box-shadow: 0 0 2.25rem 0.6rem #ca841f;
+        }
+      }
     }
   }
 }

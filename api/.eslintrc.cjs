@@ -47,5 +47,8 @@ module.exports = {
     'jsdoc/require-param-description': 'off',
     'jsdoc/require-returns-description': 'off',
     'prettier/prettier': 'warn',
+    'no-restricted-syntax': 'off',
+    'no-await-in-loop': 'off',
+    'jsdoc/no-undefined-types': 'off',
   },
 };
