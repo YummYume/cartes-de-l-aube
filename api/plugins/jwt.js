@@ -3,6 +3,7 @@ import fp from 'fastify-plugin';
 
 import { env } from '../config/config.js';
 import { RefreshToken } from '../mongoose/models/RefreshToken.js';
+import { User } from '../typeorm/models/User.js';
 
 const JWT_ERRORS_CODE = {
   NoAuthorizationInCookieError: 'FST_JWT_NO_AUTHORIZATION_IN_COOKIE',
@@ -23,7 +24,6 @@ export default fp(async (fastify) => {
     secret: env.secretKey,
     cookie: {
       cookieName: env.cookie.name,
-      signed: env.cookie.config.signed,
     },
   });
 
@@ -35,8 +35,18 @@ export default fp(async (fastify) => {
   fastify.decorate(
     'tokenVerify',
     async (/** @type {Request} */ request, /** @type {Reply} */ reply) => {
+      /**
+       * @typedef {typeof import('typeorm').Repository<User>} Repository
+       * @typedef {typeof import('../typeorm/repositories/UserRepository.js').default} CustomRepository
+       * @typedef {Repository & CustomRepository} UserRepository
+       * @type {{ userRepository: UserRepository }}
+       */
+      const { userRepository } = fastify.typeorm;
+
       try {
-        await request.jwtVerify({ onlyCookie: true });
+        const { id } = await request.jwtVerify({ onlyCookie: true });
+        const { password, ...user } = await userRepository.getUser(id);
+        request._user = user;
       } catch (err) {
         // Check if the current token is expired
         if (err.code === JWT_ERRORS_CODE.AuthorizationTokenExpiredError) {
@@ -56,34 +66,27 @@ export default fp(async (fastify) => {
               // Create a new token and refresh token and delete the old one
               await fastify.jwt.verify(oldRefreshToken.refreshTk);
 
-              const tk = await reply.jwtSign({ id }, { expiresIn: '15min' });
-              const newRefreshTk = await reply.jwtSign({ id }, { expiresIn: '7d' });
+              const tk = await reply.jwtSign({ id }, { expiresIn: env.tokenExpireIn });
+              const newRefreshTk = await reply.jwtSign(
+                { id },
+                { expiresIn: env.refreshTokenExpireIn }
+              );
 
               await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
               await RefreshToken.deleteOne({ tk: oldToken });
 
-              // Add current user in request to be accessible in the next controller
-
-              /**
-               * @type {{userRepository: import('typeorm').Repository<User>}}}
-               */
-              const { userRepository } = fastify.typeorm;
-
+              // Add current user in request to be accessible in next controller
               try {
-                const user = await userRepository.findOne({
-                  select: {
-                    password: false,
-                  },
-                  where: {
-                    id,
-                  },
-                });
+                const { password, ...user } = await userRepository.getUser(id);
 
-                request.user = user;
-
-                reply.setCookie(env.cookie.name, tk, env.cookie.config);
+                if (user) {
+                  request._user = user;
+                  reply.setCookie(env.cookie.name, tk, env.cookie.config);
+                } else {
+                  reply.code(404).send({ message: 'User not found' });
+                }
               } catch (err) {
-                reply.code(404).send({ message: 'User not found' });
+                reply.send(err);
               }
             } catch (err) {
               reply.code(401).send({ message: 'Session expired, you need to sign in' });

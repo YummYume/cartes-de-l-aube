@@ -1,12 +1,12 @@
 <script setup>
   import { IconInfoCircle } from '@tabler/icons-vue';
-  import { computed, ref } from 'vue';
+  import { useField } from 'vee-validate';
+  import { computed, ref, toRef } from 'vue';
   import { useTippy } from 'vue-tippy';
 
   const infoTag = ref(null);
 
   const props = defineProps({
-    modelValue: [String, Number],
     id: {
       type: String,
       required: true,
@@ -19,14 +19,7 @@
       type: String,
       required: true,
     },
-    isRequired: {
-      type: Boolean,
-      default: true,
-    },
-    isInvalid: {
-      type: Boolean,
-      default: false,
-    },
+    placeholder: String,
     isRequired: {
       type: Boolean,
       default: true,
@@ -34,7 +27,7 @@
     infoTagMsg: String,
   });
 
-  defineEmits(['update:modelValue']);
+  const name = toRef(props, 'id');
 
   useTippy(infoTag, {
     content: props.infoTagMsg,
@@ -42,6 +35,16 @@
   });
   defineEmits(['update:modelValue']);
 
+  const {
+    value: inputValue,
+    errorMessage,
+    handleBlur,
+    handleChange,
+  } = useField(name, undefined, {
+    initialValue: '',
+  });
+
+  const placeholder = props.placeholder ?? `enter your ${props.type}`;
   const errorId = computed(() => `${props.id}-error`);
   const labelClass = computed(() => ({
     'form-field__label': true,
@@ -63,24 +66,22 @@
     </label>
     <label :class="labelClass" :for="id">{{ label }}</label>
     <input
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :value="inputValue"
       :type="props.type"
       :placeholder="placeholder"
       :required="props.isRequired"
       class="form-field__input"
+      :name="id"
       :id="id"
       :type="type"
       :required="isRequired"
       :aria-invalid="isInvalid"
       :aria-errormessage="errorId"
-      :aria-describedby="describedBy"
-      :value="modelValue"
-      v-bind="$attrs"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="handleChange"
+      @blur="handleBlur"
     />
-    <p v-if="isInvalid && errorMsg" :id="errorId" class="form-field__error">
-      {{ errorMsg }}
+    <p v-show="!!errorMessage" :id="errorId" class="form-field__error">
+      {{ errorMessage }}
     </p>
   </div>
 </template>

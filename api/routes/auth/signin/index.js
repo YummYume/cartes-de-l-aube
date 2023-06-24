@@ -39,8 +39,8 @@ export default async (fastify) => {
     }
 
     // Create Cookie HTTP Jwt & Refresh Jwt Token
-    const tk = await reply.jwtSign({ id }, { expiresIn: '15m' });
-    const refreshTk = await reply.jwtSign({ id }, { expiresIn: '7d' });
+    const tk = await reply.jwtSign({ id }, { expiresIn: env.tokenExpireIn });
+    const refreshTk = await reply.jwtSign({ id }, { expiresIn: env.refreshTokenExpireIn });
 
     await RefreshToken.create({ refreshTk, tk, user: id });
 

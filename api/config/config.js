@@ -32,18 +32,19 @@ export const typeorm = {
 };
 
 export const env = {
-  secretKey: process.env.SECRET || 'need-to-add-a-secret-key',
+  secretKey: process.env.SECRET || 'eshbfuiesuibsb2uh4vhj23h4jvb2h4',
+  tokenExpireIn: '10s',
+  refreshTokenExpireIn: '7d',
   saltFactor: process.env.salt || 14,
   cookie: {
     name: 'token',
-    secretKey: process.env.SECRET || 'need-to-add-a-cookie-key',
+    secretKey: process.env.SECRET || '8rf8b8erg34uhg23489gh28g89h2gh328',
     config: {
       domain: process.env.DOMAIN_API || 'api.carte.local',
       path: '/',
       secure: false,
       httpOnly: true,
       sameSite: false,
-      signed: true,
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   },

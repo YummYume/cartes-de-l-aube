@@ -1,20 +1,14 @@
 <script setup>
-  import { reactive } from 'vue';
+  import { toTypedSchema } from '@vee-validate/zod';
+  import { Form } from 'vee-validate';
+
+  import { useAuth } from '@/stores/auth';
 
   import InputField from './InputField.vue';
-  import { loginValidation, registerValidation } from './authValidation';
+  import { registerValidation, loginValidation } from './authValidation';
 
-  const form = reactive({
-    username: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const errors = reactive({
-    username: [],
-    password: [],
-    confirmPassword: [],
-  });
+  const store = useAuth();
+  const { signin, signup } = store;
 
   const props = defineProps({
     isLogin: {
@@ -23,63 +17,63 @@
     },
   });
 
-  const onSubmit = () => {
-    /**
-     * type {{ error:  import('zod').ZodError }}
-     */
-    const { error } = props.isLogin ? loginValidation(form) : registerValidation(form);
-    Object.entries(error.format()).forEach(([key, value]) => {
-      if (errors[key]) {
-        // eslint-disable-next-line no-underscore-dangle
-        errors[key] = [...value._errors];
+  const emit = defineEmits(['onAsyncSubmit']);
+
+  const onSubmit = async (values) => {
+    emit('onAsyncSubmit', 'progress');
+    try {
+      if (props.isLogin) {
+        await signin(values);
+      } else {
+        await signup(values);
       }
-    });
+      emit('onAsyncSubmit', 'done');
+    } catch (error) {
+      emit('onAsyncSubmit', 'fail');
+    }
   };
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit($event)">
+  <Form
+    @submit="onSubmit"
+    :validation-schema="toTypedSchema(isLogin ? loginValidation : registerValidation)"
+    v-slot="{ isSubmitting }"
+  >
     <InputField
-      v-model="form.username"
       id="username"
       class="mb-5"
       label="Username"
       type="text"
       placeholder="Enter your username"
-      :errorMsg="errors.username"
       infoTagMsg="Your username must contain 3 to 15 characters."
-      :isInvalid="errors.username.length > 0"
     />
     <InputField
-      v-model="form.password"
       id="password"
       class="mb-5"
       label="Password"
       type="password"
       placeholder="Enter your password"
-      :errorMsg="errors.password"
       infoTagMsg="Your password must contain 8 to 40 characters, 1 lowercase, 1 uppercase, 1 digit"
-      :isInvalid="errors.password.length > 0"
     />
     <InputField
       v-if="!isLogin"
-      v-model="form.confirmPassword"
       id="confirmPassword"
       class="mb-5"
       label="Confirm password"
       type="password"
       placeholder="Confirm your password"
-      :errorMsg="errors.confirmPassword"
-      :isInvalid="errors.confirmPassword.length > 0"
     />
     <div class="flex justify-end">
       <button
+        v-if="!isSubmitting"
         class="btn mr-2 border-success text-success hover:bg-success hover:text-inherit focus:bg-success focus:text-inherit"
         type="submit"
       >
         {{ isLogin ? 'Log in' : 'Register' }}
       </button>
-      <slot></slot>
+      <span v-else class="btn mr-2 border-secondary text-secondary">loading...</span>
+      <slot v-if="!isSubmitting"></slot>
     </div>
-  </form>
+  </Form>
 </template>
