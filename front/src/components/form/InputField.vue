@@ -33,7 +33,6 @@
     content: props.infoTagMsg,
     placement: 'right',
   });
-  defineEmits(['update:modelValue']);
 
   const {
     value: inputValue,
@@ -54,7 +53,7 @@
 
 <template>
   <div class="form-field">
-    <label class="form-field__label" :for="id">
+    <label class="form-field__label" :for="props.id">
       {{ props.label }}
       <span v-if="props.isRequired" class="ml-1 text-accent">*</span>
       <IconInfoCircle
@@ -64,18 +63,15 @@
         aria-label="Information"
       />
     </label>
-    <label :class="labelClass" :for="id">{{ label }}</label>
     <input
       :value="inputValue"
       :type="props.type"
       :placeholder="placeholder"
       :required="props.isRequired"
       class="form-field__input"
-      :name="id"
-      :id="id"
-      :type="type"
-      :required="isRequired"
-      :aria-invalid="isInvalid"
+      :name="props.id"
+      :id="props.id"
+      :aria-invalid="!!errorMessage"
       :aria-errormessage="errorId"
       @input="handleChange"
       @blur="handleBlur"

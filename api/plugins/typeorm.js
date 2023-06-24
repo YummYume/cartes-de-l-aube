@@ -7,7 +7,7 @@ import path from 'path';
 import { typeorm } from '../config/config.js';
 
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
   const dataSource = new DataSource(typeorm);

@@ -5,7 +5,7 @@ import { env } from '../config/config.js';
 import { RefreshToken } from '../mongoose/models/RefreshToken.js';
 import { User } from '../typeorm/models/User.js';
 
-const JWT_ERRORS_CODE = {
+export const JWT_ERRORS_CODE = {
   NoAuthorizationInCookieError: 'FST_JWT_NO_AUTHORIZATION_IN_COOKIE',
   AuthorizationTokenExpiredError: 'FST_JWT_AUTHORIZATION_TOKEN_EXPIRED',
   AuthorizationTokenUntrustedError: 'FST_JWT_AUTHORIZATION_TOKEN_UNTRUSTED',
@@ -17,7 +17,7 @@ const JWT_ERRORS_CODE = {
 };
 
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
   fastify.register(fastifyJwt, {
@@ -27,18 +27,11 @@ export default fp(async (fastify) => {
     },
   });
 
-  /**
-   * @typedef {import("../app").Request} Request
-   * @typedef {import("../app").Reply} Reply
-   */
   // Middleware to check current token and use refresh token
   fastify.decorate(
     'tokenVerify',
-    async (/** @type {Request} */ request, /** @type {Reply} */ reply) => {
+    async (/** @type {RequestFastify} */ request, /** @type {ReplyFastify} */ reply) => {
       /**
-       * @typedef {typeof import('typeorm').Repository<User>} Repository
-       * @typedef {typeof import('../typeorm/repositories/UserRepository.js').default} CustomRepository
-       * @typedef {Repository & CustomRepository} UserRepository
        * @type {{ userRepository: UserRepository }}
        */
       const { userRepository } = fastify.typeorm;

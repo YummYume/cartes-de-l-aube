@@ -1,10 +1,13 @@
 /**
- * @param {import("../../../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.get('/', {
     onRequest: fastify.auth([fastify.tokenVerify]),
-    handler: async (request, reply) => {
+    handler: async (
+      /** @type {CustomRequest} request */ request,
+      /** @type {ReplyFastify} reply */ reply
+    ) => {
       return reply.code(200).send(request._user);
     },
   });

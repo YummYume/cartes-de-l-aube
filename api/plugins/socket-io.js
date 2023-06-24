@@ -2,7 +2,7 @@ import fp from 'fastify-plugin';
 import fastifyIO from 'fastify-socket.io';
 
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
   fastify.register(fastifyIO, {

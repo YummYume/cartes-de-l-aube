@@ -6,13 +6,13 @@ import { User } from '../../../typeorm/models/User.js';
 import { userSignupValidation } from '../../../typeorm/schema/UserSchema.js';
 
 /**
- * @param {import("../../../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.post('/', async (request, reply) => {
     const { body } = request;
     /**
-     * @type {{userRepository: import('typeorm').Repository<User>}}}
+     * @type {{userRepository: UserRepository}}}
      */
     const { userRepository } = fastify.typeorm;
 
@@ -29,7 +29,7 @@ export default async (fastify) => {
     newUser.username = body.username;
     newUser.password = await bcrypt.hash(body.password, salt);
     newUser.image = 'image';
-    newUser.originium = 100;
+    newUser.orundum = 12000;
 
     try {
       const { password, ...user } = await userRepository.save(newUser);
@@ -45,6 +45,7 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
     } catch (err) {
+      console.log(err);
       const message =
         err.code === 'ER_DUP_ENTRY'
           ? 'Username already taken, please choose another one.'

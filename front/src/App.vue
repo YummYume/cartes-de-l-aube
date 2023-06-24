@@ -12,7 +12,7 @@
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { storeToRefs } from 'pinia';
-  import { computed, onMounted, ref, watch } from 'vue';
+  import { computed, onBeforeMount, ref, watch } from 'vue';
   import { RouterView } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
@@ -87,7 +87,7 @@
 
   watch(auth, () => console.log('auth state'));
 
-  onMounted(async () => {
+  onBeforeMount(async () => {
     await me();
   });
 

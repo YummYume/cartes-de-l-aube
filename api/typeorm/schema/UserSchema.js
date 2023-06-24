@@ -74,10 +74,10 @@ export const userSignupValidation = (user) =>
           message: 'Your password must contain at least one uppercase letter.',
         })
         .regex(/(?=.*\d)/, { message: 'Your password must contain at least one digit.' }),
-      passwordConfirm: z.string().nonempty({ message: 'Please confirm your password.' }),
+      confirmPassword: z.string().nonempty({ message: 'Please confirm your password.' }),
     })
-    .refine((data) => data.password === data.passwordConfirm, {
+    .refine((data) => data.password === data.confirmPassword, {
       message: "Passwords don't match",
-      path: ['passwordConfirm'],
+      path: ['confirmPassword'],
     })
     .safeParse(user);
