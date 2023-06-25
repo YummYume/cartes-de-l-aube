@@ -12,7 +12,7 @@
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { storeToRefs } from 'pinia';
-  import { computed, onBeforeMount, ref, watch } from 'vue';
+  import { computed, onBeforeMount, ref } from 'vue';
   import { RouterView } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
@@ -85,8 +85,6 @@
     ],
   });
 
-  watch(auth, () => console.log('auth state'));
-
   onBeforeMount(async () => {
     await me();
   });
@@ -114,7 +112,7 @@
           </RouterLink>
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
-            <OrundumCount :count="500" />
+            <OrundumCount v-if="auth" :count="500" />
           </div>
         </div>
       </div>
