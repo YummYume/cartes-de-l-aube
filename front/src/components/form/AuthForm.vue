@@ -28,6 +28,7 @@
       } else {
         await signup(values);
       }
+
       emit('onAsyncSubmit', 'done');
     } catch (error) {
       emit('onAsyncSubmit', 'fail');
@@ -39,37 +40,47 @@
   <Form
     @submit="onSubmit"
     :validation-schema="toTypedSchema(isLogin ? loginValidation : registerValidation)"
-    v-slot="{ isSubmitting }"
+    v-slot="{ isSubmitting, meta }"
   >
     <InputField
       id="username"
+      name="username"
       class="mb-5"
       label="Username"
       type="text"
       placeholder="Enter your username"
-      infoTagMsg="Your username must contain 3 to 15 characters."
+      :infoTagMsg="isLogin ? null : 'Your username must contain 3 to 15 characters.'"
+      :is-required="true"
     />
     <InputField
       id="password"
+      name="password"
       class="mb-5"
       label="Password"
       type="password"
       placeholder="Enter your password"
-      infoTagMsg="Your password must contain 8 to 40 characters, including at least 1 lowercase letter, 1 uppercase letter and 1 digit"
+      :infoTagMsg="
+        isLogin
+          ? null
+          : 'Your password must contain 8 to 40 characters, including at least 1 lowercase letter, 1 uppercase letter and 1 digit.'
+      "
+      :is-required="true"
     />
     <InputField
       v-if="!isLogin"
       id="confirmPassword"
+      name="confirmPassword"
       class="mb-5"
       label="Confirm password"
       type="password"
       placeholder="Confirm your password"
+      :is-required="true"
     />
     <div class="flex justify-end">
       <button
-        class="btn mr-2 border-success text-success hover:bg-success hover:text-inherit focus:bg-success focus:text-inherit"
+        class="btn mr-2 border-success text-success hover:[&:not(:disabled)]:bg-success hover:[&:not(:disabled)]:text-inherit focus:[&:not(:disabled)]:bg-success focus:[&:not(:disabled)]:text-inherit"
         type="submit"
-        :disable="!isSubmitting"
+        :disabled="isSubmitting || !meta.valid"
       >
         {{ !isSubmitting ? (isLogin ? 'Log in' : 'Register') : '' }}
         <IconSpinner v-if="isSubmitting" />
