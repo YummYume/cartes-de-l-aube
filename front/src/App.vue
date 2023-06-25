@@ -12,8 +12,8 @@
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { storeToRefs } from 'pinia';
-  import { computed, onBeforeMount, ref } from 'vue';
-  import { RouterView } from 'vue-router';
+  import { computed, onBeforeMount, ref, watch } from 'vue';
+  import { RouterView, useRoute } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
 
@@ -22,10 +22,13 @@
   import IconLogo from './components/icon/IconLogo.vue';
   import AuthModal from './components/modal/AuthModal.vue';
   import LogoutModal from './components/modal/LogoutModal.vue';
+  import router from './router';
 
   const store = useAuth();
   const { me } = store;
   const { auth } = storeToRefs(store);
+
+  const route = useRoute();
 
   const authModalOpened = ref(false);
   const isLogin = ref(true);
@@ -83,6 +86,10 @@
         href: `/operator-bg/${rarity}.jpg`,
       })),
     ],
+  });
+
+  watch(auth, () => {
+    if (route.meta.requiresAuth && !auth.value) router.push({ name: 'home' });
   });
 
   onBeforeMount(async () => {
