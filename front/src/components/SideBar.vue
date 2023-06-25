@@ -188,12 +188,7 @@
     <nav class="flex grow flex-col items-center justify-center">
       <ol class="flex flex-row flex-wrap justify-center gap-4 md:flex-col">
         <li v-for="item in activeSidebarItems" :key="item.label">
-          <RouterLink
-            :to="item.to"
-            :class="itemClass"
-            exact-active-class="text-accent"
-            v-if="item.to"
-          >
+          <RouterLink :to="item.to" :class="itemClass" active-class="text-accent" v-if="item.to">
             <component v-bind:is="item.icon" class="h-6 w-6" />
             <Transition @enter="onLinkEnter" @leave="onLinkLeave" :css="false">
               <span v-show="isExpanded" class="w-0">{{ item.label }}</span>

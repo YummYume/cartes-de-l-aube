@@ -1,5 +1,4 @@
 import AutoLoad from '@fastify/autoload';
-import cors from '@fastify/cors';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,11 +20,6 @@ export const options = {};
  * @param {{}} opts Options passed on startup
  */
 export default async function app(fastify, opts) {
-  await fastify.register(cors, {
-    origin: new RegExp(process.env.CORS_ALLOW_ORIGIN),
-    credentials: true,
-  });
-
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins

@@ -25,6 +25,16 @@ export default new EntitySchema({
     orundum: {
       type: 'int',
     },
+    deck: {
+      type: 'simple-array',
+    },
+  },
+  relations: {
+    matchHistoryPlayers: {
+      target: 'MatchHistoryPlayer',
+      type: 'one-to-many',
+      mappedBy: 'user',
+    },
   },
 });
 

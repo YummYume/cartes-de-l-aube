@@ -9,8 +9,8 @@
   },
   "scripts": {
     "test": "tap \"test/**/*.test.js\"",
-    "start": "fastify start -l fatal app.js",
-    "dev": "fastify start -l info -a 0.0.0.0 -d -I 9320 -w -P app.js",
+    "start": "fastify start -l error app.js",
+    "dev": "fastify start -l debug -a 0.0.0.0 -d -I 9320 -w -P app.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --list-different .",
