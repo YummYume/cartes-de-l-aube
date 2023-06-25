@@ -6,13 +6,13 @@ import { User } from '../../../typeorm/models/User.js';
 import { userSignupValidation } from '../../../typeorm/schema/UserSchema.js';
 
 /**
- * @param {import("../../../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.post('/', async (request, reply) => {
     const { body } = request;
     /**
-     * @type {{userRepository: import('typeorm').Repository<User>}}}
+     * @type {{userRepository: UserRepository}}}
      */
     const { userRepository } = fastify.typeorm;
 
@@ -29,14 +29,18 @@ export default async (fastify) => {
     newUser.username = body.username;
     newUser.password = await bcrypt.hash(body.password, salt);
     newUser.image = 'image';
-    newUser.originium = 100;
+    newUser.orundum = 12000;
+    newUser.deck = [];
 
     try {
       const { password, ...user } = await userRepository.save(newUser);
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token
-      const tk = await reply.jwtSign({ id: user.id }, { expiresIn: '15m' });
-      const refreshTk = await reply.jwtSign({ id: user.id }, { expiresIn: '7d' });
+      const tk = await reply.jwtSign({ id: user.id }, { expiresIn: env.tokenExpireIn });
+      const refreshTk = await reply.jwtSign(
+        { id: user.id },
+        { expiresIn: env.refreshTokenExpireIn }
+      );
 
       await RefreshToken.create({ refreshTk, tk, user: user.id });
 

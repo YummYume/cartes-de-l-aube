@@ -1,5 +1,5 @@
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.get('/', async () => {

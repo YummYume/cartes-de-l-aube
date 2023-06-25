@@ -1,5 +1,11 @@
 <script setup>
-  import { computed } from 'vue';
+  import { IconInfoCircle } from '@tabler/icons-vue';
+  import { useField } from 'vee-validate';
+  import { computed, ref, toRef } from 'vue';
+  import { useTippy } from 'vue-tippy';
+
+  const infoTag = ref(null);
+  const infoTrigger = ref(null);
 
   const props = defineProps({
     id: {
@@ -14,21 +20,32 @@
       type: String,
       required: true,
     },
+    placeholder: String,
     isRequired: {
       type: Boolean,
       default: true,
     },
-    isInvalid: {
-      type: Boolean,
-      default: false,
-    },
-    errorMsg: String,
-    hideLabel: Boolean,
-    describedBy: String,
-    modelValue: [String, Number],
+    infoTagMsg: String,
   });
-  defineEmits(['update:modelValue']);
 
+  const name = toRef(props, 'id');
+
+  useTippy(infoTag, {
+    content: props.infoTagMsg,
+    placement: 'right',
+    triggerTarget: infoTrigger,
+  });
+
+  const {
+    value: inputValue,
+    errorMessage,
+    handleBlur,
+    handleChange,
+  } = useField(name, undefined, {
+    initialValue: '',
+  });
+
+  const placeholder = props.placeholder ?? `enter your ${props.type}`;
   const errorId = computed(() => `${props.id}-error`);
   const labelClass = computed(() => ({
     'form-field__label': true,
@@ -38,21 +55,32 @@
 
 <template>
   <div class="form-field">
-    <label :class="labelClass" :for="id">{{ label }}</label>
+    <label class="form-field__label" :for="props.id">
+      {{ props.label }}
+      <span v-if="props.isRequired" class="ml-1 text-accent">*</span>
+      <IconInfoCircle
+        v-if="props.infoTagMsg"
+        class="ml-1 h-4 w-4"
+        ref="infoTag"
+        aria-label="Information about this field"
+      />
+    </label>
     <input
+      :value="inputValue"
+      :type="props.type"
+      :placeholder="placeholder"
+      :required="props.isRequired"
       class="form-field__input"
-      :id="id"
-      :type="type"
-      :required="isRequired"
-      :aria-invalid="isInvalid"
+      ref="infoTrigger"
+      :name="props.id"
+      :id="props.id"
+      :aria-invalid="!!errorMessage"
       :aria-errormessage="errorId"
-      :aria-describedby="describedBy"
-      :value="modelValue"
-      v-bind="$attrs"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="handleChange"
+      @blur="handleBlur"
     />
-    <p v-if="isInvalid && errorMsg" :id="errorId" class="form-field__error">
-      {{ errorMsg }}
+    <p v-show="!!errorMessage" :id="errorId" class="form-field__error">
+      {{ errorMessage }}
     </p>
   </div>
 </template>

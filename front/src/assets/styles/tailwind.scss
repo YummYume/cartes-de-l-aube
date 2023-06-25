@@ -75,7 +75,7 @@
     @apply flex flex-col gap-2;
 
     &__label {
-      @apply text-sm font-bold;
+      @apply flex items-center text-sm font-bold;
     }
 
     &__input {
@@ -83,7 +83,7 @@
     }
 
     &__error {
-      @apply text-sm text-warning;
+      @apply whitespace-pre-line text-sm text-warning;
     }
   }
 

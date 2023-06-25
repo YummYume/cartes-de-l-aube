@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 
 import { getMe, postSignin, postSignup, postSignout } from '@/api/auth';
-import { asyncToast } from '@/utils/toast';
 
 export const useAuth = defineStore('auth', () => {
   /** @type {Auth} */
@@ -19,27 +18,21 @@ export const useAuth = defineStore('auth', () => {
 
   /** @param {SignupPayload} payload */
   async function signup(payload) {
-    asyncToast(
-      async () => {
-        auth.value = await postSignup(payload);
-      },
-      { successMsg: 'Successful Registration ', pendingMsg: 'Pending Registration...' }
-    );
+    try {
+      auth.value = await postSignup(payload);
+    } catch (err) {
+      toast.error(err);
+      throw new Error(err);
+    }
   }
 
   /** @param {SigninPayload} payload */
   async function signin(payload) {
-    // asyncToast(
-    //   async () => {
-    //     auth.value = await postSignin(payload);
-    //   },
-    //   { successMsg: 'Successful Authenfication ', pendingMsg: 'Pending Authenfication...' }
-    // );
     try {
       auth.value = await postSignin(payload);
-      console.log('Success');
     } catch (err) {
-      console.log(err);
+      toast.error(err);
+      throw new Error(err);
     }
   }
 
@@ -50,7 +43,7 @@ export const useAuth = defineStore('auth', () => {
     try {
       auth.value = await getMe();
     } catch (err) {
-      console.log(err);
+      throw new Error(err);
     }
   }
 

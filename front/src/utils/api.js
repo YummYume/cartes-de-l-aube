@@ -9,10 +9,6 @@ async function responseHandler(response) {
   const data = await response.json();
 
   if (!response.ok) {
-    if ([401, 403].includes(response.status)) {
-      console.log('no access');
-    }
-
     const error = data?.message || response.statusText;
 
     return Promise.reject(error);

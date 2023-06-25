@@ -4,7 +4,7 @@ import fp from 'fastify-plugin';
 import { env } from '../config/config.js';
 import { RefreshToken } from '../mongoose/models/RefreshToken.js';
 
-const JWT_ERRORS_CODE = {
+export const JWT_ERRORS_CODE = {
   NoAuthorizationInCookieError: 'FST_JWT_NO_AUTHORIZATION_IN_COOKIE',
   AuthorizationTokenExpiredError: 'FST_JWT_AUTHORIZATION_TOKEN_EXPIRED',
   AuthorizationTokenUntrustedError: 'FST_JWT_AUTHORIZATION_TOKEN_UNTRUSTED',
@@ -16,27 +16,29 @@ const JWT_ERRORS_CODE = {
 };
 
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
   fastify.register(fastifyJwt, {
     secret: env.secretKey,
     cookie: {
       cookieName: env.cookie.name,
-      signed: env.cookie.config.signed,
     },
   });
 
-  /**
-   * @typedef {import("../app").Request} Request
-   * @typedef {import("../app").Reply} Reply
-   */
   // Middleware to check current token and use refresh token
   fastify.decorate(
     'tokenVerify',
-    async (/** @type {Request} */ request, /** @type {Reply} */ reply) => {
+    async (/** @type {RequestFastify} */ request, /** @type {ReplyFastify} */ reply) => {
+      /**
+       * @type {{ userRepository: UserRepository }}
+       */
+      const { userRepository } = fastify.typeorm;
+
       try {
-        await request.jwtVerify({ onlyCookie: true });
+        const { id } = await request.jwtVerify({ onlyCookie: true });
+        const { password, ...user } = await userRepository.getUser(id);
+        request.user = user;
       } catch (err) {
         // Check if the current token is expired
         if (err.code === JWT_ERRORS_CODE.AuthorizationTokenExpiredError) {
@@ -56,15 +58,28 @@ export default fp(async (fastify) => {
               // Create a new token and refresh token and delete the old one
               await fastify.jwt.verify(oldRefreshToken.refreshTk);
 
-              const tk = await reply.jwtSign({ id }, { expiresIn: '15min' });
-              const newRefreshTk = await reply.jwtSign({ id }, { expiresIn: '7d' });
+              const tk = await reply.jwtSign({ id }, { expiresIn: env.tokenExpireIn });
+              const newRefreshTk = await reply.jwtSign(
+                { id },
+                { expiresIn: env.refreshTokenExpireIn }
+              );
 
               await RefreshToken.create({ refreshTk: newRefreshTk, tk, user: id });
               await RefreshToken.deleteOne({ tk: oldToken });
 
-              request.userId = id;
+              // Add current user in request to be accessible in next controller
+              try {
+                const { password, ...user } = await userRepository.getUser(id);
 
-              reply.setCookie(env.cookie.name, tk, env.cookie.config);
+                if (user) {
+                  request.user = user;
+                  reply.setCookie(env.cookie.name, tk, env.cookie.config);
+                } else {
+                  reply.code(404).send({ message: 'User not found' });
+                }
+              } catch (err) {
+                reply.send(err);
+              }
             } catch (err) {
               reply.code(401).send({ message: 'Session expired, you need to sign in' });
             }

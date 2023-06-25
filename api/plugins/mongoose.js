@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { mongodb } from '../config/config.js';
 
 /**
- * @param {import("../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
   try {

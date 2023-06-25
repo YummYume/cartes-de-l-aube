@@ -3,12 +3,6 @@ import AutoLoad from '@fastify/autoload';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-/**
- * @typedef {import('fastify').FastifyInstance} Fastify
- * @typedef {import("fastify").FastifyRequest} Request
- * @typedef {import("fastify").FastifyReply} Reply
- */
-
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 

@@ -7,6 +7,7 @@
     TransitionRoot,
     TransitionChild,
   } from '@headlessui/vue';
+  import { ref } from 'vue';
 
   import BackdropModal from './BackdropModal.vue';
 
@@ -17,11 +18,20 @@
       type: Boolean,
       required: true,
     },
+    isLogin: {
+      type: Boolean,
+      required: true,
+    },
   });
+
+  const stateForm = ref('done');
+
   const emit = defineEmits(['close']);
 
   const handleClose = () => {
-    emit('close');
+    if (stateForm.value === 'done' || stateForm.value === 'fail') {
+      emit('close');
+    }
   };
 </script>
 
@@ -38,22 +48,37 @@
         leave-to="opacity-0 scale-95"
         as="template"
       >
-        <DialogPanel class="dialog__panel max-w-[80vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]">
-          <DialogTitle class="dialog__panel--title">Sign In</DialogTitle>
+        <DialogPanel
+          class="dialog__panel w-[31.25rem] max-w-[80vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]"
+        >
+          <DialogTitle class="dialog__panel--title">
+            {{ isLogin ? 'Login' : 'Register' }}
+          </DialogTitle>
           <DialogDescription class="dialog__panel--description mt-2"></DialogDescription>
 
           <section class="dialog__panel--section my-6">
-            <AuthForm />
+            <AuthForm
+              :isLogin="isLogin"
+              @on-async-submit="
+                (value) => {
+                  stateForm = value;
+                  if (value === 'done') {
+                    emit('close');
+                  }
+                }
+              "
+            >
+              <button
+                class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
+                type="button"
+                @click="handleClose"
+              >
+                Close
+              </button>
+            </AuthForm>
           </section>
 
-          <footer class="dialog__panel--actions">
-            <button
-              class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
-              @click="handleClose"
-            >
-              Close
-            </button>
-          </footer>
+          <footer class="dialog__panel--actions"></footer>
         </DialogPanel>
       </TransitionChild>
     </Dialog>

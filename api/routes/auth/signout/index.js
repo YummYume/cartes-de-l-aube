@@ -2,12 +2,11 @@ import { env } from '../../../config/config.js';
 import { RefreshToken } from '../../../mongoose/models/RefreshToken.js';
 
 /**
- * @param {import("../../../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.post('/', async (request, reply) => {
     try {
-      await request.jwtVerify({ onlyCookie: true });
       const oldToken = request.cookies[env.cookie.name];
 
       if (oldToken) {
