@@ -2,6 +2,7 @@
   import { toTypedSchema } from '@vee-validate/zod';
   import { Form } from 'vee-validate';
 
+  import IconSpinner from '@/components/icon/IconSpinner.vue';
   import { useAuth } from '@/stores/auth';
 
   import InputField from './InputField.vue';
@@ -54,7 +55,7 @@
       label="Password"
       type="password"
       placeholder="Enter your password"
-      infoTagMsg="Your password must contain 8 to 40 characters, 1 lowercase, 1 uppercase, 1 digit"
+      infoTagMsg="Your password must contain 8 to 40 characters, including at least 1 lowercase letter, 1 uppercase letter and 1 digit"
     />
     <InputField
       v-if="!isLogin"
@@ -66,13 +67,13 @@
     />
     <div class="flex justify-end">
       <button
-        v-if="!isSubmitting"
         class="btn mr-2 border-success text-success hover:bg-success hover:text-inherit focus:bg-success focus:text-inherit"
         type="submit"
+        :disable="!isSubmitting"
       >
-        {{ isLogin ? 'Log in' : 'Register' }}
+        {{ !isSubmitting ? (isLogin ? 'Log in' : 'Register') : '' }}
+        <IconSpinner v-if="isSubmitting" />
       </button>
-      <span v-else class="btn mr-2 border-secondary text-secondary">loading...</span>
       <slot v-if="!isSubmitting"></slot>
     </div>
   </Form>

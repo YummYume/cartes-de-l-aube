@@ -1,5 +1,3 @@
-import { User } from '../models/User.js';
-
 export default {
   /**
    * @this { import('typeorm').Repository<User> }

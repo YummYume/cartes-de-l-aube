@@ -24,7 +24,7 @@
   import LogoutModal from './components/modal/LogoutModal.vue';
 
   const store = useAuth();
-  const { me, signin } = store;
+  const { me } = store;
   const { auth } = storeToRefs(store);
 
   const authModalOpened = ref(false);
@@ -90,10 +90,6 @@
   onBeforeMount(async () => {
     await me();
   });
-
-  const login = async () => {
-    await signin({ username: 'bobby', password: 'Qwertyuiop1' });
-  };
 </script>
 
 <template>
@@ -119,7 +115,6 @@
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
             <OrundumCount :count="500" />
-            <button @click="login()">login</button>
           </div>
         </div>
       </div>

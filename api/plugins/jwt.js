@@ -3,7 +3,6 @@ import fp from 'fastify-plugin';
 
 import { env } from '../config/config.js';
 import { RefreshToken } from '../mongoose/models/RefreshToken.js';
-import { User } from '../typeorm/models/User.js';
 
 export const JWT_ERRORS_CODE = {
   NoAuthorizationInCookieError: 'FST_JWT_NO_AUTHORIZATION_IN_COOKIE',
@@ -39,7 +38,7 @@ export default fp(async (fastify) => {
       try {
         const { id } = await request.jwtVerify({ onlyCookie: true });
         const { password, ...user } = await userRepository.getUser(id);
-        request._user = user;
+        request.user = user;
       } catch (err) {
         // Check if the current token is expired
         if (err.code === JWT_ERRORS_CODE.AuthorizationTokenExpiredError) {
@@ -73,7 +72,7 @@ export default fp(async (fastify) => {
                 const { password, ...user } = await userRepository.getUser(id);
 
                 if (user) {
-                  request._user = user;
+                  request.user = user;
                   reply.setCookie(env.cookie.name, tk, env.cookie.config);
                 } else {
                   reply.code(404).send({ message: 'User not found' });

@@ -32,8 +32,7 @@ export default fp(async (fastify) => {
       ...entities.reduce(
         (acc, { options: curr }) => ({
           ...acc,
-          [`${curr.name[0].toLowerCase() + curr.name.slice(1)}Repository`]:
-            dataSource
+          [`${curr.name[0].toLowerCase() + curr.name.slice(1)}Repository`]: dataSource
             .getRepository(curr.target)
             .extend(repositories[`${curr.name}Repository`] ?? {}),
         }),

@@ -30,6 +30,7 @@ export default async (fastify) => {
     newUser.password = await bcrypt.hash(body.password, salt);
     newUser.image = 'image';
     newUser.orundum = 12000;
+    newUser.deck = [];
 
     try {
       const { password, ...user } = await userRepository.save(newUser);
@@ -45,7 +46,6 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
     } catch (err) {
-      console.log(err);
       const message =
         err.code === 'ER_DUP_ENTRY'
           ? 'Username already taken, please choose another one.'

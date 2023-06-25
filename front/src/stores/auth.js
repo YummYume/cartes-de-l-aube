@@ -40,7 +40,11 @@ export const useAuth = defineStore('auth', () => {
    *
    */
   async function me() {
-    auth.value = await getMe();
+    try {
+      auth.value = await getMe();
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   return { auth, me, signin, signup, signout };

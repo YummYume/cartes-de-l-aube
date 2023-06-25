@@ -8,7 +8,7 @@ export default async (fastify) => {
       /** @type {CustomRequest} request */ request,
       /** @type {ReplyFastify} reply */ reply
     ) => {
-      return reply.code(200).send(request._user);
+      return reply.code(200).send(request.user);
     },
   });
 };

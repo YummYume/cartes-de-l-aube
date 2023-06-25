@@ -5,6 +5,7 @@
   import { useTippy } from 'vue-tippy';
 
   const infoTag = ref(null);
+  const infoTrigger = ref(null);
 
   const props = defineProps({
     id: {
@@ -32,6 +33,7 @@
   useTippy(infoTag, {
     content: props.infoTagMsg,
     placement: 'right',
+    triggerTarget: infoTrigger,
   });
 
   const {
@@ -60,7 +62,7 @@
         v-if="props.infoTagMsg"
         class="ml-1 h-4 w-4"
         ref="infoTag"
-        aria-label="Information"
+        aria-label="Information about this field"
       />
     </label>
     <input
@@ -69,6 +71,7 @@
       :placeholder="placeholder"
       :required="props.isRequired"
       class="form-field__input"
+      ref="infoTrigger"
       :name="props.id"
       :id="props.id"
       :aria-invalid="!!errorMessage"

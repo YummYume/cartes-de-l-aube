@@ -14,8 +14,6 @@ export const options = {};
  * @param {{}} opts Options passed on startup
  */
 export default async function app(fastify, opts) {
-  fastify.decorateRequest('_user', null);
-
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins
