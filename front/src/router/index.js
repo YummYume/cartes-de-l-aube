@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { toast } from 'vue3-toastify';
 
 import { getMatchHistories } from '@/api/history';
+import { useAuth } from '@/stores/auth';
 
 import HomeView from '../views/HomeView.vue';
 
@@ -16,6 +17,7 @@ const router = createRouter({
     {
       path: '/play',
       name: 'play',
+      meta: { requiresAuth: true },
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
@@ -24,12 +26,14 @@ const router = createRouter({
     {
       path: '/squad',
       name: 'squad',
+      meta: { requiresAuth: true },
       component: () => import('../views/SquadView.vue'),
     },
     {
       path: '/history',
       name: 'history',
       props: true,
+      meta: { requiresAuth: true },
       component: () => import('../views/HistoryView.vue'),
       beforeEnter: async (to, from, next) => {
         /**
@@ -57,14 +61,23 @@ const router = createRouter({
     {
       path: '/headhunt',
       name: 'headhunt',
+      meta: { requiresAuth: true },
       component: () => import('../views/HeadhuntView.vue'),
     },
     {
       path: '/store',
       name: 'store',
+      meta: { requiresAuth: true },
       component: () => import('../views/StoreView.vue'),
     },
   ],
+});
+
+router.beforeEach((to, from, next) => {
+  const store = useAuth();
+
+  if (to.meta.requiresAuth && !store.auth) next({ name: 'home' });
+  else next();
 });
 
 export default router;
