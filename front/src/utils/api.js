@@ -9,9 +9,7 @@ async function responseHandler(response) {
   const data = await response.json();
 
   if (!response.ok) {
-    const error = data?.message || response.statusText;
-
-    return Promise.reject(error);
+    return Promise.reject(data?.message || response.statusText);
   }
 
   return data;

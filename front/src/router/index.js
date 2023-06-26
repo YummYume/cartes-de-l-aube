@@ -73,11 +73,12 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const store = useAuth();
+export const guard = () =>
+  router.beforeEach((to, from, next) => {
+    const store = useAuth();
 
-  if (to.meta.requiresAuth && !store.auth) next({ name: 'home' });
-  else next();
-});
+    if (to.meta.requiresAuth && !store.auth) next({ name: 'home' });
+    else next();
+  });
 
 export default router;

@@ -22,7 +22,7 @@
   import IconLogo from './components/icon/IconLogo.vue';
   import AuthModal from './components/modal/AuthModal.vue';
   import LogoutModal from './components/modal/LogoutModal.vue';
-  import router from './router';
+  import router, { guard } from './router';
 
   const store = useAuth();
   const { me } = store;
@@ -94,6 +94,7 @@
 
   onBeforeMount(async () => {
     await me();
+    guard();
   });
 </script>
 
