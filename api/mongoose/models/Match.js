@@ -15,7 +15,14 @@ const schema = new Schema({
   secondPlayer: playerSchema,
 });
 
-export const Match = model('Match', schema);
+const modelExport = () => {
+  try {
+    return model('Match', schema);
+  } catch (err) {
+    return model('Match');
+  }
+};
+export const Match = modelExport();
 
 /**
  * @typedef {typeof Match.schema.obj} MatchModel

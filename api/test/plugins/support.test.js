@@ -1,16 +1,27 @@
 import Fastify from 'fastify';
-import { test } from 'tap';
+import { afterEach, beforeEach, expect, test } from 'vitest';
 
 import Support from '../../plugins/support.js';
 
-test('support works standalone', async (t) => {
-  const fastify = Fastify();
+/**
+ * @type {Fastify}
+ */
+let app;
 
-  fastify.register(Support);
+beforeEach(() => {
+  app = Fastify();
+});
 
-  await fastify.ready();
+afterEach(async () => {
+  await app.close();
+});
 
-  t.equal(fastify.someSupport(), 'hugs');
+test('support works standalone', async () => {
+  app.register(Support);
+
+  await app.ready();
+
+  expect(app.someSupport()).toStrictEqual('hugs');
 });
 
 // You can also use plugin with opts in fastify v2

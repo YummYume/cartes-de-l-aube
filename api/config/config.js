@@ -9,13 +9,18 @@ export const mongodb = {
   password: process.env.MONGODB_PASSWORD,
   host: process.env.MONGODB_HOST,
   port: process.env.MONGODB_PORT || 27017,
+  database: { test: 'test', development: 'db', production: 'db-prod' }[process.env.ENV],
 };
 
 export const typeorm = {
   type: 'mysql',
   username: process.env.MARIADB_USERNAME,
   password: process.env.MARIADB_PASSWORD,
-  database: process.env.MARIADB_DATABASE,
+  database: {
+    test: 'test',
+    development: process.env.MARIADB_DATABASE,
+    production: process.env.MARIADB_DATABASE,
+  }[process.env.ENV],
   port: process.env.MARIADB_PORT,
   host: process.env.MARIADB_HOST,
 
@@ -28,7 +33,9 @@ export const typeorm = {
         return module.default;
       })
   ),
-  synchronize: true,
+  synchronize: false,
+  migrations: [path.resolve('typeorm/migrations/*.js')],
+  migrationsRun: true,
 };
 
 export const env = {

@@ -16,7 +16,9 @@ const AppPath = path.join(dirname, '..', 'app.js');
  * @returns {{}}
  */
 function config() {
-  return {};
+  return {
+    test: true,
+  };
 }
 
 // automatically build and tear down our instance

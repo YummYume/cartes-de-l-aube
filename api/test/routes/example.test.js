@@ -1,12 +1,26 @@
-import { test } from 'tap';
+import { afterEach, beforeEach, expect, test } from 'vitest';
 
-import { build } from '../helper.js';
+import { build, teardown } from '../appBuild.js';
 
-test('example is loaded', async (t) => {
-  const app = await build(t);
+/**
+ * @type {Fastify}
+ */
+let app;
+
+beforeEach(async () => {
+  app = await build();
+});
+
+afterEach(async () => {
+  await teardown(app);
+});
+
+test('example is loaded', async () => {
+  await app.ready();
+
   const res = await app.inject({
     url: '/example',
   });
 
-  t.same(JSON.parse(res.payload), { message: 'Hi example!' });
+  expect(JSON.parse(res.body)).toStrictEqual({ message: 'Hi example!' });
 });

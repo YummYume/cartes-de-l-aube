@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tap \"test/**/*.test.js\"",
+    "test": "ENV='test' vitest run",
     "start": "fastify start -l error app.js",
     "dev": "fastify start -l debug -a 0.0.0.0 -d -I 9320 -w -P app.js",
     "lint": "eslint .",
@@ -44,6 +44,7 @@
     "reflect-metadata": "^0.1.13",
     "socket.io": "^4.6.2",
     "typeorm": "^0.3.16",
+    "typeorm-extension": "^2.8.1",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -55,7 +56,8 @@
     "eslint-plugin-jsdoc": "^44.2.5",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.8",
-    "tap": "^16.1.0"
+    "tap": "^16.1.0",
+    "vitest": "^0.33.0"
   },
   "tap": {
     "node-arg": [
