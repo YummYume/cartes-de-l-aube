@@ -18,6 +18,7 @@ export default new EntitySchema({
     },
     password: {
       type: 'varchar',
+      select: false,
     },
     image: {
       type: 'varchar',
@@ -26,6 +27,9 @@ export default new EntitySchema({
       type: 'int',
     },
     deck: {
+      type: 'simple-array',
+    },
+    operators: {
       type: 'simple-array',
     },
   },

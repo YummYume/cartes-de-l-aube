@@ -73,7 +73,7 @@
 
   const placeholder = props.placeholder ?? `Enter your ${props.type}`;
   const errorId = computed(() => `${props.id}-error`);
-  const isInvalid = computed(() => !meta.valid && !!errorMessage && meta.touched);
+  const isInvalid = computed(() => !meta.valid && !!errorMessage.value && meta.touched);
   const labelClass = computed(() => ({
     'form-field__label': true,
     'sr-only': props.hideLabel,
@@ -95,6 +95,7 @@
         class="ml-1 h-4 w-4"
         ref="infoTag"
         aria-label="Information about this field"
+        tabindex="-1"
         @mouseenter="tooltip.show"
         @mouseleave="tooltip.hide"
       />

@@ -41,6 +41,13 @@ const rarities = [
 export const getRarities = () => rarities.sort((a, b) => a.rarity - b.rarity);
 
 /**
+ * Get the orundum cost for one or more pulls
+ * @param {number} count
+ * @returns {number}
+ */
+export const getCostForPulls = (count = 1) => count * DEFAULT_PULL_COST;
+
+/**
  * Get one or more random rarities
  * @param {number} count
  * @returns {Rarity[]}

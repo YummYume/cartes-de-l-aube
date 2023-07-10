@@ -1,0 +1,61 @@
+{
+    "folders": [
+        {
+            "name": "Front",
+            "path": "front"
+        },
+        {
+            "name": "API",
+            "path": "api"
+        },
+        {
+            "name": "Root",
+            "path": "./",
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true,
+            "api": true,
+            "front": true
+        },
+        "[dockercompose]": {
+            "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+        },
+        "[dockerfile]": {
+            "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+        },
+        "[html]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+            "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        },
+        "[json]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[jsonc]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[markdown]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode",
+            "editor.wordWrap": "off",
+            "editor.wordWrapColumn": 300
+        },
+        "[sass]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[scss]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[vue]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "recommendations": ["Vue.volar", "Vue.vscode-typescript-vue-plugin"]
+    }
+}

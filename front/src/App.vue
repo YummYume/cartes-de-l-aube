@@ -120,7 +120,7 @@
           </RouterLink>
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
-            <OrundumCount v-if="auth" :count="500" />
+            <OrundumCount v-if="auth" :count="auth.orundum" />
           </div>
         </div>
       </div>

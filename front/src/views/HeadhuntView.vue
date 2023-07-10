@@ -8,10 +8,11 @@
   import HeadhuntDisclosure from '@/components/disclosure/HeadhuntDisclosure.vue';
   import IconSpinner from '@/components/icon/IconSpinner.vue';
   import HeadhuntModal from '@/components/modal/HeadhuntModal.vue';
+  import { useAuth } from '@/stores/auth';
 
-  const orundum = ref(10000);
+  const { auth, $patch } = useAuth();
   const pulls = ref(1);
-  const maxPullCount = computed(() => Math.floor(orundum.value / 600));
+  const maxPullCount = computed(() => Math.floor(auth.orundum / 600));
   const submitting = ref(false);
   const headhuntModalOpened = ref(false);
   const onePullButton = ref(null);
@@ -42,7 +43,7 @@
 
     submitting.value = true;
 
-    if (orundum.value < 600 * pulls.value) {
+    if (auth.orundum < 600 * pulls.value) {
       submitting.value = false;
 
       toast.error(`Not enough orundum to pull ${pulls.value} time${pulls.value > 1 ? 's' : ''}.`);
@@ -52,9 +53,9 @@
 
     try {
       const results = await pull(pulls.value, abortController.signal);
-      // orundum.value = results.orundum;
-      operators.value = results.operators;
 
+      $patch({ orundum: results.orundum });
+      operators.value = results.operators;
       submitting.value = false;
       headhuntModalOpened.value = true;
     } catch (error) {

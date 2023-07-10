@@ -60,13 +60,13 @@
               class="btn mr-2 border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
               @click="handleClose(true)"
             >
-              log out
+              Log out
             </button>
             <button
               class="btn border-success text-success hover:bg-success hover:text-inherit focus:bg-success focus:text-inherit"
               @click="handleClose()"
             >
-              close
+              Close
             </button>
           </footer>
         </DialogPanel>
