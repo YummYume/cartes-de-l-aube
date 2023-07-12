@@ -69,10 +69,10 @@ export default async (fastify) => {
       });
 
       /**
-       * @type {{ userRepository: UserRepository }}}
+       * @type {{userRepository: UserRepository}}}
        */
-      const { userRepository } = request.typeorm;
-      const orundumTotal = request.user.orundum - (cost + refund);
+      const { userRepository } = fastify.typeorm;
+      const orundumTotal = request.user.orundum - (cost - refund);
 
       await userRepository.update(
         { id: request.user.id },

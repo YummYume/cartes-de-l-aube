@@ -30,4 +30,6 @@ app.use(Vue3Toasity, {
 app.use(head);
 app.use(id);
 
+await router.isReady();
+
 app.mount('#app');

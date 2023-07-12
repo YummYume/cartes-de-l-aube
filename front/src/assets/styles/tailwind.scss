@@ -50,7 +50,7 @@
       }
 
       &--actions {
-        @apply flex flex-col items-end;
+        @apply flex justify-end gap-2;
       }
     }
   }
@@ -113,6 +113,10 @@
     &__result-text {
       @apply text-2xl font-bold;
     }
+  }
+
+  .kbd {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-1;
   }
 
   // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/

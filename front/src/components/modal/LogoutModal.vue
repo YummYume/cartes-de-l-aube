@@ -7,12 +7,15 @@
     TransitionRoot,
     TransitionChild,
   } from '@headlessui/vue';
+  import { useRoute } from 'vue-router';
 
+  import router from '@/router';
   import { useAuth } from '@/stores/auth';
 
   import BackdropModal from './BackdropModal.vue';
 
   const { signout } = useAuth();
+  const route = useRoute();
 
   defineProps({
     isOpen: {
@@ -25,9 +28,13 @@
   /**
    * @param {boolean} isLogout
    */
-  const handleClose = (isLogout = false) => {
+  const handleClose = async (isLogout = false) => {
     if (isLogout) {
-      signout();
+      await signout();
+
+      if (route.meta.requiresAuth) {
+        router.push({ name: 'home' });
+      }
     }
 
     emit('close');
@@ -53,11 +60,9 @@
             Are you sure you want to logout?
           </DialogDescription>
 
-          <section class="dialog__panel--section my-6"></section>
-
-          <footer class="dialog__panel--actions flex flex-row justify-end">
+          <footer class="dialog__panel--actions mt-6">
             <button
-              class="btn mr-2 border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
+              class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
               @click="handleClose(true)"
             >
               Log out

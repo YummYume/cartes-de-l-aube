@@ -73,12 +73,22 @@ const router = createRouter({
   ],
 });
 
-export const guard = () =>
-  router.beforeEach((to, from, next) => {
-    const store = useAuth();
+let initialized = false;
 
-    if (to.meta.requiresAuth && !store.auth) next({ name: 'home' });
-    else next();
-  });
+router.beforeEach(async (to, from, next) => {
+  if (!initialized) {
+    await useAuth().me();
+
+    initialized = true;
+  }
+
+  const store = useAuth();
+
+  if (to.meta.requiresAuth && !store.auth) {
+    next({ name: 'home' });
+  } else {
+    next();
+  }
+});
 
 export default router;

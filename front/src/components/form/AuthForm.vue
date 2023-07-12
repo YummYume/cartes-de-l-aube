@@ -1,12 +1,13 @@
 <script setup>
   import { toTypedSchema } from '@vee-validate/zod';
   import { Form } from 'vee-validate';
+  import { toast } from 'vue3-toastify';
 
   import IconSpinner from '@/components/icon/IconSpinner.vue';
   import { useAuth } from '@/stores/auth';
+  import { registerValidation, loginValidation } from '@/utils/validation/authValidation';
 
   import InputField from './InputField.vue';
-  import { registerValidation, loginValidation } from './authValidation';
 
   const store = useAuth();
   const { signin, signup } = store;
@@ -31,6 +32,18 @@
 
       emit('onAsyncSubmit', 'done');
     } catch (error) {
+      if (props.isLogin) {
+        if (error.status === 401) {
+          toast.error('Invalid credentials.');
+        }
+      } else if (error.status === 409) {
+        toast.error('Username already exists.');
+      } else if (error.status === 422) {
+        toast.error('Invalid username or password.');
+      } else {
+        toast.error('Something went wrong.');
+      }
+
       emit('onAsyncSubmit', 'fail');
     }
   };
@@ -74,16 +87,17 @@
       placeholder="Confirm your password"
       :is-required="true"
     />
-    <div class="flex justify-end gap-2">
-      <button
-        class="btn border-success text-success hover:[&:not(:disabled)]:bg-success hover:[&:not(:disabled)]:text-inherit focus:[&:not(:disabled)]:bg-success focus:[&:not(:disabled)]:text-inherit"
-        type="submit"
-        :disabled="isSubmitting || !meta.valid"
-      >
-        {{ !isSubmitting ? (isLogin ? 'Log in' : 'Register') : '' }}
-        <IconSpinner v-if="isSubmitting" />
-      </button>
-      <slot v-if="!isSubmitting"></slot>
-    </div>
+    <slot :isSubmitting="isSubmitting" :meta="meta">
+      <div class="flex justify-end gap-2">
+        <button
+          class="btn border-success text-success hover:[&:not(:disabled)]:bg-success hover:[&:not(:disabled)]:text-inherit focus:[&:not(:disabled)]:bg-success focus:[&:not(:disabled)]:text-inherit"
+          type="submit"
+          :disabled="isSubmitting || !meta.valid"
+        >
+          {{ isLogin ? 'Log in' : 'Register' }}
+          <IconSpinner v-if="isSubmitting" />
+        </button>
+      </div>
+    </slot>
   </Form>
 </template>

@@ -26,8 +26,15 @@
       type: Boolean,
       default: false,
     },
+    modelValue: {
+      default: '',
+    },
+    initialValue: {
+      default: '',
+    },
     infoTagMsg: String,
   });
+  const emit = defineEmits(['update:modelValue']);
 
   /**
    * @type {import('vue').Ref<HTMLElement>}
@@ -68,7 +75,8 @@
     handleChange,
     meta,
   } = useField(name, undefined, {
-    initialValue: '',
+    initialValue: props.initialValue,
+    valueProp: props.modelValue,
   });
 
   const placeholder = props.placeholder ?? `Enter your ${props.type}`;
@@ -78,6 +86,14 @@
     'form-field__label': true,
     'sr-only': props.hideLabel,
   }));
+
+  /**
+   * @param {InputEvent} event
+   */
+  const onInput = (event) => {
+    handleChange(event, true);
+    emit('update:modelValue', event.target.value);
+  };
 
   // Refresh the tooltip when the error message changes
   watch(errorMessage, () => {
@@ -111,7 +127,7 @@
       :id="props.id"
       :aria-invalid="isInvalid"
       :aria-errormessage="errorId"
-      @input="handleChange"
+      @input="onInput"
       @blur="handleBlur"
     />
     <Transition

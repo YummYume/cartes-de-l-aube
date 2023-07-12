@@ -12,6 +12,7 @@
   import BackdropModal from './BackdropModal.vue';
 
   import AuthForm from '../form/AuthForm.vue';
+  import IconSpinner from '../icon/IconSpinner.vue';
 
   defineProps({
     isOpen: {
@@ -54,31 +55,44 @@
           <DialogTitle class="dialog__panel--title">
             {{ isLogin ? 'Login' : 'Register' }}
           </DialogTitle>
-          <DialogDescription class="dialog__panel--description mt-2"></DialogDescription>
+          <DialogDescription class="dialog__panel--description sr-only">
+            {{ isLogin ? 'Login to your account' : 'Register a new account' }}
+          </DialogDescription>
 
-          <section class="dialog__panel--section my-6">
+          <section class="dialog__panel--section mt-6">
             <AuthForm
               :isLogin="isLogin"
               @on-async-submit="
                 (value) => {
                   stateForm = value;
+
                   if (value === 'done') {
                     emit('close');
                   }
                 }
               "
+              v-slot="{ isSubmitting, meta }"
             >
-              <button
-                class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
-                type="button"
-                @click="handleClose"
-              >
-                Close
-              </button>
+              <footer class="dialog__panel--actions mt-6">
+                <button
+                  class="btn border-success text-success hover:[&:not(:disabled)]:bg-success hover:[&:not(:disabled)]:text-inherit focus:[&:not(:disabled)]:bg-success focus:[&:not(:disabled)]:text-inherit"
+                  type="submit"
+                  :disabled="isSubmitting || !meta.valid"
+                >
+                  {{ isLogin ? 'Log in' : 'Register' }}
+                  <IconSpinner v-if="isSubmitting" />
+                </button>
+                <button
+                  class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
+                  type="button"
+                  :disabled="isSubmitting"
+                  @click="handleClose"
+                >
+                  Close
+                </button>
+              </footer>
             </AuthForm>
           </section>
-
-          <footer class="dialog__panel--actions"></footer>
         </DialogPanel>
       </TransitionChild>
     </Dialog>

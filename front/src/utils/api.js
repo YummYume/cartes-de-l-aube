@@ -3,14 +3,14 @@
  * @returns {Promise<{[key: string]: string}|null>}
  */
 async function responseHandler(response) {
+  if (!response.ok) {
+    return Promise.reject(response);
+  }
+
   /**
    * @type {{[key: string]: string}|null}
    */
   const data = await response.json();
-
-  if (!response.ok) {
-    return Promise.reject(data?.message || response.statusText);
-  }
 
   return data;
 }

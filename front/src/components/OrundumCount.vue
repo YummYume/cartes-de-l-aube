@@ -28,7 +28,7 @@
 </script>
 
 <template>
-  <div role="group" class="flex flex-row items-center rounded-xl border-2 border-accent p-0.5 px-2">
+  <div class="flex flex-row items-center rounded-xl border-2 border-accent p-0.5 px-2">
     <IconOrundum class="h-5 w-5" aria-hidden="true" />
     <span class="ml-1 mr-2 text-lg font-bold" :aria-label="`${count} orundum`">{{
       formattedCount
