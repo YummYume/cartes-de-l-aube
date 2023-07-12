@@ -8,7 +8,7 @@
     },
     class: {
       type: String,
-      default: 'h-4 w-4 text-gray-500 fill-primary',
+      default: 'h-4 w-4 text-gray-500 fill-white',
     },
   });
 

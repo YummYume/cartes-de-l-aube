@@ -11,27 +11,27 @@
     IconLogout,
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
+  import { useMagicKeys } from '@vueuse/core';
   import { storeToRefs } from 'pinia';
-  import { computed, onBeforeMount, ref, watch } from 'vue';
-  import { RouterView, useRoute } from 'vue-router';
+  import { computed, ref, watch } from 'vue';
+  import { RouterView } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
+  import { useMoneyModal } from '@/stores/money-modal';
 
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
   import AuthModal from './components/modal/AuthModal.vue';
   import LogoutModal from './components/modal/LogoutModal.vue';
-  import router, { guard } from './router';
+  import MoneyModal from './components/modal/MoneyModal.vue';
 
   const store = useAuth();
-  const { me } = store;
+  const moneyModalStore = useMoneyModal();
   const { auth } = storeToRefs(store);
 
-  const route = useRoute();
-
-  const authModalOpened = ref(false);
   const isLogin = ref(true);
+  const authModalOpened = ref(false);
   const logoutModalOpened = ref(false);
 
   /**
@@ -88,13 +88,14 @@
     ],
   });
 
-  watch(auth, () => {
-    if (route.meta.requiresAuth && !auth.value) router.push({ name: 'home' });
-  });
+  // Cheat code
+  const keys = useMagicKeys();
+  const shiftOM = keys['Shift+O+M'];
 
-  onBeforeMount(async () => {
-    await me();
-    guard();
+  watch(shiftOM, (v) => {
+    if (v && auth.value) {
+      moneyModalStore.openMoneyModal();
+    }
   });
 </script>
 
@@ -120,7 +121,7 @@
           </RouterLink>
           <div class="flex-auto"></div>
           <div class="flex flex-none items-center space-x-4">
-            <OrundumCount v-if="auth" :count="500" />
+            <OrundumCount v-if="auth" :count="auth.orundum" />
           </div>
         </div>
       </div>
@@ -128,7 +129,7 @@
 
     <div class="flex h-full w-full flex-auto flex-col overflow-hidden md:flex-row">
       <div class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-        <div class="flex-auto">
+        <div class="relative flex-auto">
           <RouterView />
         </div>
       </div>
@@ -136,6 +137,10 @@
       <SideBar :items="sidebarItems" />
       <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" :isLogin="isLogin" />
       <LogoutModal :isOpen="logoutModalOpened" @close="logoutModalOpened = false" />
+      <MoneyModal
+        :isOpen="moneyModalStore.moneyModalOpened"
+        @close="moneyModalStore.closeMoneyModal()"
+      />
     </div>
   </div>
 </template>

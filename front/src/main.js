@@ -25,9 +25,11 @@ app.use(VueTippy, {
 app.use(Vue3Toasity, {
   autoClose: 5000,
   position: toast.POSITION.BOTTOM_LEFT,
-  pauseOnHover: false,
+  pauseOnHover: true,
 });
 app.use(head);
 app.use(id);
+
+await router.isReady();
 
 app.mount('#app');

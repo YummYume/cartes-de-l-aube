@@ -1,15 +1,22 @@
-import { getRandomRarities, getRefundForDuplicate } from '../../lib/rarity.js';
+import { getRandomRarities, getRefundForDuplicate, getCostForPulls } from '../../lib/rarity.js';
 import { Operator } from '../../mongoose/models/Operator.js';
 
 /**
- * @param {import("../../app").Fastify} fastify
+ * @param {Fastify} fastify
  */
 export default async (fastify) => {
   fastify.post('/', {
-    handler: async (request) => {
-      // TODO verify user here
-
+    onRequest: fastify.auth([fastify.tokenVerify]),
+    handler: async (/** @type {CustomRequest} request */ request) => {
       const count = Math.max(Math.min(Math.floor(request.body?.count || 1), 10), 1);
+      const cost = getCostForPulls(count);
+
+      if (request.user.orundum < cost) {
+        return fastify.httpErrors.notAcceptable(
+          `Not enough orundum for ${count} pulls. Missing ${cost - request.user.orundum} orundum.`
+        );
+      }
+
       const rarities = getRandomRarities(count);
       /**
        * @type {{stars: number, count: number}[]} sortedRarities
@@ -37,20 +44,47 @@ export default async (fastify) => {
         operators = [...operators, ...operatorsForRarity];
       }
 
-      // TODO take orundum from user depending on count and save operators to db
+      /**
+       * @type {string[]} newOperators
+       */
+      const newOperators = [];
+      let refund = 0;
+
       operators = operators.map((operator) => {
-        const operatorOwned = Math.random() > 0.5;
+        const operatorOwned = request.user.operators.includes(operator.name);
+        let operatorRefund = 0;
+
+        if (!operatorOwned) {
+          newOperators.push(operator.name);
+        } else {
+          operatorRefund = getRefundForDuplicate(operator.rarity);
+          refund += operatorRefund;
+        }
 
         return {
           operator,
           new: !operatorOwned,
-          orundum: getRefundForDuplicate(operator.rarity),
+          orundum: operatorRefund,
         };
       });
 
+      /**
+       * @type {{userRepository: UserRepository}}}
+       */
+      const { userRepository } = fastify.typeorm;
+      const orundumTotal = request.user.orundum - (cost - refund);
+
+      await userRepository.update(
+        { id: request.user.id },
+        {
+          orundum: orundumTotal,
+          operators: [...request.user.operators, ...newOperators],
+        }
+      );
+
       return {
         operators: operators.sort(() => Math.random() - 0.5),
-        orundum: 0,
+        orundum: orundumTotal,
       };
     },
   });

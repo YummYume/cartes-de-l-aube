@@ -37,7 +37,7 @@ export default fp(async (fastify) => {
 
       try {
         const { id } = await request.jwtVerify({ onlyCookie: true });
-        const { password, ...user } = await userRepository.getUser(id);
+        const user = await userRepository.getUser(id);
         request.user = user;
       } catch (err) {
         // Check if the current token is expired
@@ -56,7 +56,7 @@ export default fp(async (fastify) => {
           } else {
             try {
               // Create a new token and refresh token and delete the old one
-              await fastify.jwt.verify(oldRefreshToken.refreshTk);
+              fastify.jwt.verify(oldRefreshToken.refreshTk);
 
               const tk = await reply.jwtSign({ id }, { expiresIn: env.tokenExpireIn });
               const newRefreshTk = await reply.jwtSign(

@@ -14,6 +14,7 @@ export default new EntitySchema({
     },
     operators: {
       type: 'simple-array',
+      default: '',
     },
     status: {
       type: 'enum',

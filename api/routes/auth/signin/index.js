@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt';
 
 import { env } from '../../../config/config.js';
 import { RefreshToken } from '../../../mongoose/models/RefreshToken.js';
-import { User } from '../../../typeorm/models/User.js';
 import { userSigninValidation } from '../../../typeorm/schema/UserSchema.js';
 
 /**
@@ -12,12 +11,13 @@ export default async (fastify) => {
   fastify.post('/', async (request, reply) => {
     const { body } = request;
     /**
-     * @type {{userRepository: UserRepository}}}
+     * @type {{ userRepository: UserRepository }}}
      */
     const { userRepository } = fastify.typeorm;
 
     // Validation
     const { error } = userSigninValidation(body);
+
     if (error) {
       return reply.code(422).send({ errors: error.issues });
     }
@@ -28,13 +28,16 @@ export default async (fastify) => {
         where: {
           username: body.username,
         },
+        select: ['id', 'username', 'image', 'orundum', 'password'],
       });
 
       // Check credentials
       const isValited = await bcrypt.compare(body.password, password);
+
       if (!isValited) {
-        return reply.code(401).send({ message: 'Invalid credentials' });
+        return reply.code(401).send({ message: 'Invalid credentials', code: 401 });
       }
+
       // Create Cookie HTTP Jwt & Refresh Jwt Token
       const tk = await reply.jwtSign({ id: user.id }, { expiresIn: env.tokenExpireIn });
       const refreshTk = await reply.jwtSign(
@@ -46,7 +49,7 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(200).send(user);
     } catch (err) {
-      return reply.code(401).send({ message: 'Invalid credentials' });
+      return reply.code(401).send({ message: 'Invalid credentials', code: 401 });
     }
   });
 };

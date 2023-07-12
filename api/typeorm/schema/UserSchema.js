@@ -18,15 +18,22 @@ export default new EntitySchema({
     },
     password: {
       type: 'varchar',
+      select: false,
     },
     image: {
       type: 'varchar',
+      nullable: true,
     },
     orundum: {
       type: 'int',
     },
     deck: {
       type: 'simple-array',
+      default: '',
+    },
+    operators: {
+      type: 'simple-array',
+      default: '',
     },
   },
   relations: {

@@ -18,6 +18,7 @@ export default async (fastify) => {
 
     // Validation
     const { error } = userSignupValidation(body);
+
     if (error) {
       return reply.code(422).send({ errors: error.issues });
     }
@@ -33,7 +34,7 @@ export default async (fastify) => {
     newUser.deck = [];
 
     try {
-      const { password, ...user } = await userRepository.save(newUser);
+      const user = await userRepository.save(newUser);
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token
       const tk = await reply.jwtSign({ id: user.id }, { expiresIn: env.tokenExpireIn });
@@ -46,12 +47,13 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
     } catch (err) {
-      const message =
-        err.code === 'ER_DUP_ENTRY'
-          ? 'Username already taken, please choose another one.'
-          : 'Error when you try to signup, please try again.';
+      if (err.code === 'ER_DUP_ENTRY') {
+        return reply
+          .code(409)
+          .send({ message: 'Username already taken, please choose another one.' });
+      }
 
-      return reply.code(409).send({ message });
+      return reply.code(500).send({ message: 'Error while trying to sign you up.' });
     }
   });
 };

@@ -8,10 +8,11 @@
   import HeadhuntDisclosure from '@/components/disclosure/HeadhuntDisclosure.vue';
   import IconSpinner from '@/components/icon/IconSpinner.vue';
   import HeadhuntModal from '@/components/modal/HeadhuntModal.vue';
+  import { useAuth } from '@/stores/auth';
 
-  const orundum = ref(10000);
+  const { auth } = useAuth();
   const pulls = ref(1);
-  const maxPullCount = computed(() => Math.floor(orundum.value / 600));
+  const maxPullCount = computed(() => Math.floor(auth.orundum / 600));
   const submitting = ref(false);
   const headhuntModalOpened = ref(false);
   const onePullButton = ref(null);
@@ -23,13 +24,13 @@
   const abortController = new AbortController();
 
   useTippy(onePullButton, {
-    content: 'Pull 1 operator for 600 orundum',
+    content: `Pull 1 operator for ${Number(600).toLocaleString()} orundum`,
     theme: 'secondary',
     arrow: false,
   });
 
   useTippy(tenPullButton, {
-    content: 'Pull 10 operators for 6000 orundum',
+    content: `Pull 10 operators for ${Number(6000).toLocaleString()} orundum`,
     theme: 'accent',
     arrow: false,
   });
@@ -42,7 +43,7 @@
 
     submitting.value = true;
 
-    if (orundum.value < 600 * pulls.value) {
+    if (auth.orundum < 600 * pulls.value) {
       submitting.value = false;
 
       toast.error(`Not enough orundum to pull ${pulls.value} time${pulls.value > 1 ? 's' : ''}.`);
@@ -52,9 +53,9 @@
 
     try {
       const results = await pull(pulls.value, abortController.signal);
-      // orundum.value = results.orundum;
-      operators.value = results.operators;
 
+      auth.orundum = results.orundum;
+      operators.value = results.operators;
       submitting.value = false;
       headhuntModalOpened.value = true;
     } catch (error) {
@@ -88,8 +89,9 @@
           not guarantee a higher chance of getting a high rarity operator.
         </p>
         <p>
-          You currently have <strong>{{ orundum }}</strong> orundum, which is enough for a maximum
-          of <strong>{{ maxPullCount }}</strong> {{ maxPullCount > 1 ? 'pulls' : 'pull' }}.
+          You currently have <strong>{{ auth.orundum.toLocaleString() }}</strong> orundum, which is
+          enough for a maximum of <strong>{{ maxPullCount.toLocaleString() }}</strong>
+          {{ maxPullCount > 1 ? 'pulls' : 'pull' }}.
         </p>
         <p>
           Hungry for more operators? You can head to the
@@ -97,7 +99,7 @@
         </p>
         <div class="mt-3 flex flex-row items-center justify-center gap-6">
           <button
-            :disabled="submitting || orundum < 600"
+            :disabled="submitting || auth.orundum < 600"
             :aria-busy="submitting"
             class="btn focus:not(:disabled)]:scale-105 w-36 rounded-md border-secondary text-secondary hover:bg-secondary hover:text-white focus:bg-secondary focus:text-white hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-secondary focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-secondary/75"
             type="submit"
@@ -108,7 +110,7 @@
             <IconSpinner v-if="submitting && pulls === 1" />
           </button>
           <button
-            :disabled="submitting || orundum < 600 * 10"
+            :disabled="submitting || auth.orundum < 600 * 10"
             :aria-busy="submitting"
             class="btn focus:not(:disabled)]:scale-105 w-36 rounded-md border-accent text-accent hover:bg-accent hover:text-white focus:bg-accent focus:text-white hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-accent focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-accent/75"
             type="submit"

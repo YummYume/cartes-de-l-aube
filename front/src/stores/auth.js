@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { toast } from 'vue3-toastify';
 
 import { getMe, postSignin, postSignup, postSignout } from '@/api/auth';
 
@@ -9,7 +8,7 @@ export const useAuth = defineStore('auth', () => {
   const auth = ref(null);
 
   /**
-   *
+   * Signout the user.
    */
   async function signout() {
     await postSignout();
@@ -18,32 +17,22 @@ export const useAuth = defineStore('auth', () => {
 
   /** @param {SignupPayload} payload */
   async function signup(payload) {
-    try {
-      auth.value = await postSignup(payload);
-    } catch (err) {
-      toast.error(err);
-      throw new Error(err);
-    }
+    auth.value = await postSignup(payload);
   }
 
   /** @param {SigninPayload} payload */
   async function signin(payload) {
-    try {
-      auth.value = await postSignin(payload);
-    } catch (err) {
-      toast.error(err);
-      throw new Error(err);
-    }
+    auth.value = await postSignin(payload);
   }
 
   /**
-   *
+   * Fetch the user data.
    */
   async function me() {
     try {
       auth.value = await getMe();
     } catch (err) {
-      throw new Error(err);
+      auth.value = null;
     }
   }
 

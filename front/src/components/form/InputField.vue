@@ -26,8 +26,15 @@
       type: Boolean,
       default: false,
     },
+    modelValue: {
+      default: '',
+    },
+    initialValue: {
+      default: '',
+    },
     infoTagMsg: String,
   });
+  const emit = defineEmits(['update:modelValue']);
 
   /**
    * @type {import('vue').Ref<HTMLElement>}
@@ -68,16 +75,25 @@
     handleChange,
     meta,
   } = useField(name, undefined, {
-    initialValue: '',
+    initialValue: props.initialValue,
+    valueProp: props.modelValue,
   });
 
   const placeholder = props.placeholder ?? `Enter your ${props.type}`;
   const errorId = computed(() => `${props.id}-error`);
-  const isInvalid = computed(() => !meta.valid && !!errorMessage && meta.touched);
+  const isInvalid = computed(() => !meta.valid && !!errorMessage.value && meta.touched);
   const labelClass = computed(() => ({
     'form-field__label': true,
     'sr-only': props.hideLabel,
   }));
+
+  /**
+   * @param {InputEvent} event
+   */
+  const onInput = (event) => {
+    handleChange(event, true);
+    emit('update:modelValue', event.target.value);
+  };
 
   // Refresh the tooltip when the error message changes
   watch(errorMessage, () => {
@@ -95,6 +111,7 @@
         class="ml-1 h-4 w-4"
         ref="infoTag"
         aria-label="Information about this field"
+        tabindex="-1"
         @mouseenter="tooltip.show"
         @mouseleave="tooltip.hide"
       />
@@ -110,7 +127,7 @@
       :id="props.id"
       :aria-invalid="isInvalid"
       :aria-errormessage="errorId"
-      @input="handleChange"
+      @input="onInput"
       @blur="handleBlur"
     />
     <Transition
