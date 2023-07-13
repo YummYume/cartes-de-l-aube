@@ -37,7 +37,15 @@ const schema = new Schema({
   ],
 });
 
-export const Operator = model('Operator', schema);
+const modelExport = () => {
+  try {
+    return model('Operator', schema);
+  } catch (err) {
+    return model('Operator');
+  }
+};
+
+export const Operator = modelExport();
 
 /**
  * @typedef {typeof Operator.schema.obj} OperatorModel

@@ -4,18 +4,18 @@ import { DataSource } from 'typeorm';
 import { readdir } from 'fs/promises';
 import path from 'path';
 
-import { typeorm } from '../config/config.js';
+import dataSource, { createDatabase } from '../typeorm/data-source.js';
 
 /**
  * @param {Fastify} fastify
  */
 export default fp(async (fastify) => {
-  const dataSource = new DataSource(typeorm);
   const repositoriesPath = path.resolve('typeorm/repositories');
 
   try {
-    await dataSource.initialize();
+    await createDatabase(fastify);
 
+    await dataSource.initialize();
     fastify.log.info('MariaDB: Connected');
 
     // Add dataSource instance and add repositories from entities
@@ -48,7 +48,7 @@ export default fp(async (fastify) => {
         }
       }
     });
-  } catch (e) {
-    fastify.log.error('MariaDB: Error', e.message);
+  } catch (err) {
+    fastify.log.error('MariaDB: Error', toString(err));
   }
 });

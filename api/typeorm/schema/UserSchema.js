@@ -30,10 +30,12 @@ export default new EntitySchema({
     deck: {
       type: 'simple-array',
       default: '',
+      select: false,
     },
     operators: {
       type: 'simple-array',
       default: '',
+      select: false,
     },
   },
   relations: {

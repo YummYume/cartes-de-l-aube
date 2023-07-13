@@ -15,16 +15,21 @@ export default fp(async (fastify) => {
       fastify.log.info('MongoDB: Disconnected');
     });
 
-    await mongoose.connect(`${mongodb.type}://${mongodb.host}:${mongodb.port}/db`, {
-      authSource: 'admin',
-      user: mongodb.username,
-      pass: mongodb.password,
-    });
+    await mongoose.connect(
+      `${mongodb.type}://${mongodb.host}:${mongodb.port}/${mongodb.database}`,
+      {
+        authSource: 'admin',
+        user: mongodb.username,
+        pass: mongodb.password,
+      }
+    );
+
+    fastify.decorate('mongoose', mongoose.connection);
 
     fastify.addHook('onClose', async () => {
       await mongoose.disconnect();
     });
-  } catch (e) {
-    fastify.log.error('MongoDB: Error', e.message);
+  } catch (err) {
+    fastify.log.error('MongoDB: Error', err);
   }
 });

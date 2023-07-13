@@ -1,12 +1,26 @@
-import { test } from 'tap';
+import { afterEach, beforeEach, expect, test } from 'vitest';
 
-import { build } from '../helper.js';
+import { build, teardown } from '../appBuild.js';
 
-test('default root route', async (t) => {
-  const app = await build(t);
+/**
+ * @type {Fastify}
+ */
+let app;
+
+beforeEach(async () => {
+  app = await build();
+});
+
+afterEach(async () => {
+  await teardown(app);
+});
+
+test('default root route', async () => {
+  await app.ready();
+
   const res = await app.inject({
     url: '/',
   });
 
-  t.same(JSON.parse(res.payload), { root: true });
+  expect(JSON.parse(res.body)).toStrictEqual({ root: true });
 });

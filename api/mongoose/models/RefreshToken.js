@@ -34,4 +34,12 @@ const schema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export const RefreshToken = model('RefreshToken', schema);
+const modelExport = () => {
+  try {
+    return model('RefreshToken', schema);
+  } catch (err) {
+    return model('RefreshToken');
+  }
+};
+
+export const RefreshToken = modelExport();
