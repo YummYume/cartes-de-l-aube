@@ -119,6 +119,26 @@
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-1;
   }
 
+  .pagination {
+    @apply flex items-center justify-center;
+
+    &__item {
+      @apply inline-flex items-center justify-center gap-2 rounded-sm border-secondary px-2 py-0.5 transition-all;
+
+      &--active {
+        @apply border-b-2;
+      }
+
+      &:disabled {
+        @apply cursor-not-allowed opacity-50;
+      }
+
+      &:not(:disabled):hover {
+        @apply border-b-2 bg-secondary/50;
+      }
+    }
+  }
+
   // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/
   .operator-card {
     perspective: 2500px;

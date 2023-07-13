@@ -1,12 +1,13 @@
 import { IconCards, IconClick, IconHome, IconPlayerPlay } from '@tabler/icons-vue';
 import { mount } from '@vue/test-utils';
+import { createPinia } from 'pinia';
 import { describe, expect, it } from 'vitest';
 
 import SideBar from '@/components/SideBar.vue';
 import router from '@/router';
 
 describe('SideBar', () => {
-  const plugins = [router];
+  const plugins = [router, createPinia()];
   const items = [
     { label: 'Home', to: '/', icon: IconHome },
     { label: 'Play', to: '/play', icon: IconPlayerPlay },

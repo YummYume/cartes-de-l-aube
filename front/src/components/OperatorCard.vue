@@ -36,6 +36,8 @@
     },
   });
 
+  const emit = defineEmits(['select']);
+
   const operatorPictures = computed(() => ({
     E1: getOperatorPicture(props.operator, ['E1', 'base']),
     E2: getOperatorPicture(props.operator, ['E2', 'E1', 'base']),
@@ -70,6 +72,10 @@
 
     return `${props.operator.name} is a ${props.operator.rarity} stars operator with ${props.operator.statistics.hp} health points, ${props.operator.statistics.atk} attack, ${props.operator.statistics.def} defense and costs ${props.operator.statistics.cost} points to deploy.`;
   });
+  const handleSelect = () => {
+    cardIsActive.value = !cardIsActive.value;
+    emit('select', props.operator);
+  };
 </script>
 
 <template>
@@ -77,10 +83,11 @@
     :class="operatorCardClass"
     :aria-labelledby="operatorNameRef?.id"
     :aria-describedby="operatorDescriptionRef?.id"
-    @keydown.enter="() => (cardIsActive = !cardIsActive)"
-    @keydown.space.prevent="() => (cardIsActive = !cardIsActive)"
-    @click="() => (cardIsActive = !cardIsActive)"
+    @keydown.enter="() => handleSelect()"
+    @keydown.space.prevent="() => handleSelect()"
+    @click="() => handleSelect()"
     tabindex="0"
+    role="button"
   >
     <div aria-hidden="true" :class="wrapperClass">
       <div v-if="operatorPictures.class" class="operator-card__class-icon">
