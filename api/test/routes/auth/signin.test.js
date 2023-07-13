@@ -39,7 +39,7 @@ afterAll(async () => {
 test(`[${url}]: wrong credentials`, async () => {
   const res = await api.post(url, { username: 'test', password: 'bob' });
 
-  expect(JSON.parse(res.body)).toStrictEqual({ message: 'Invalid credentials' });
+  expect(JSON.parse(res.body)).toStrictEqual({ code: 401, message: 'Invalid credentials' });
 });
 
 test(`[${url}]: good credentials`, async () => {
@@ -50,6 +50,5 @@ test(`[${url}]: good credentials`, async () => {
     image: 'image',
     username: 'test',
     orundum: 12000,
-    deck: [],
   });
 });

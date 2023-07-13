@@ -82,7 +82,6 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
     environment:
-      # MARIADB_DATABASE: "${MARIADB_DATABASE:?err}"
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]

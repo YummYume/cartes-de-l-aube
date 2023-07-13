@@ -49,7 +49,6 @@ export default fp(async (fastify) => {
       }
     });
   } catch (err) {
-    console.log(err);
     fastify.log.error('MariaDB: Error', toString(err));
   }
 });
