@@ -31,11 +31,20 @@
   const squadSelectModalOpen = ref(false);
   const playerSquad = ref(props.squad);
   const operators = ref(props.availableOperators);
+  /**
+   * @type {import('vue').Ref<Operator|null>}
+   */
   const toReplace = ref(null);
   const showDetails = ref(false);
   const loading = ref(false);
   const abortController = new AbortController();
+  /**
+   * @type {number|null}
+   */
   let toastId = null;
+  /**
+   * @type {number|null}
+   */
   let timeoutId = null;
 
   /**

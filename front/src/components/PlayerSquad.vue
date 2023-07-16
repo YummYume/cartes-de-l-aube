@@ -4,10 +4,16 @@
   import OperatorCard from './OperatorCard.vue';
 
   const props = defineProps({
+    /**
+     * @type {import('vue').PropType<User>}
+     */
     player: {
       type: Object,
       required: true,
     },
+    /**
+     * @type {import('vue').PropType<Operator[]>}
+     */
     squad: {
       type: Array,
       required: true,
