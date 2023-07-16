@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { toast } from 'vue3-toastify';
 
 import { getMatchHistories } from '@/api/history';
+import { getPlayerSquad } from '@/api/squad';
 import { useAuth } from '@/stores/auth';
 
 import HomeView from '../views/HomeView.vue';
@@ -26,8 +27,32 @@ const router = createRouter({
     {
       path: '/squad',
       name: 'squad',
+      props: true,
       meta: { requiresAuth: true },
       component: () => import('../views/SquadView.vue'),
+      beforeEnter: async (to, from, next) => {
+        /**
+         * @type {Awaited<ReturnType<getPlayerSquad>>|null}
+         */
+        let res = null;
+
+        try {
+          res = await getPlayerSquad();
+        } catch (error) {
+          toast.error('Sorry, something went wrong while fetching your squad.');
+        }
+
+        if (res !== null) {
+          to.params.squad = res.squad;
+          to.params.availableOperators = res.availableOperators;
+
+          next();
+
+          return;
+        }
+
+        next(false);
+      },
     },
     {
       path: '/history',
@@ -47,7 +72,7 @@ const router = createRouter({
           toast.error('Sorry, something went wrong while fetching your match histories.');
         }
 
-        if (matchHistories) {
+        if (matchHistories !== null) {
           to.params.matchHistories = matchHistories.matches;
 
           next();

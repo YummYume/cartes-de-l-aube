@@ -51,7 +51,8 @@ export default async (fastify) => {
       let refund = 0;
 
       operators = operators.map((operator) => {
-        const operatorOwned = request.user.operators.includes(operator.name);
+        const operatorOwned =
+          request.user.operators.includes(operator.name) || newOperators.includes(operator.name);
         let operatorRefund = 0;
 
         if (!operatorOwned) {
@@ -69,7 +70,7 @@ export default async (fastify) => {
       });
 
       /**
-       * @type {{userRepository: UserRepository}}}
+       * @type {{userRepository: UserRepository}}
        */
       const { userRepository } = fastify.typeorm;
       const orundumTotal = request.user.orundum - (cost - refund);

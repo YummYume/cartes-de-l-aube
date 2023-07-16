@@ -13,7 +13,7 @@
 
   import { useAuth } from '@/stores/auth';
   import api from '@/utils/api';
-  import { moneyValidation } from '@/utils/validation/moneyValidation';
+  import { moneyValidation } from '@/utils/validation/money-validation';
 
   import BackdropModal from './BackdropModal.vue';
 

@@ -5,7 +5,7 @@
 
   import IconSpinner from '@/components/icon/IconSpinner.vue';
   import { useAuth } from '@/stores/auth';
-  import { registerValidation, loginValidation } from '@/utils/validation/authValidation';
+  import { registerValidation, loginValidation } from '@/utils/validation/auth-validation';
 
   import InputField from './InputField.vue';
 

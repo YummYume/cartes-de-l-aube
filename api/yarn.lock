@@ -643,9 +643,9 @@
     http-errors "2.0.0"
     mime "^3.0.0"
 
-"@fastify/sensible@^5.0.0":
+"@fastify/sensible@^5.2.0":
   version "5.2.0"
-  resolved "https://registry.npmjs.org/@fastify/sensible/-/sensible-5.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/@fastify/sensible/-/sensible-5.2.0.tgz#fb346596597c2a2ebed6e747ac4beb6707843bae"
   integrity sha512-fy5vqJJAMVQctUT+kYfGdaGYeW9d8JaWEqtdWN6UmzQQ3VX0qMXE7Qc/MmfE+Cj3v0g5kbeR+obd3HZr3IMf+w==
   dependencies:
     fast-deep-equal "^3.1.1"

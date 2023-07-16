@@ -67,6 +67,25 @@
     </Disclosure>
     <Disclosure>
       <DisclosureButton class="disclosure__button">
+        <span class="disclosure__button-text">How can I view my operator's stats?</span>
+        <IconChevronDown class="h-4 w-4 transition-all duration-300 ui-open:rotate-180" />
+      </DisclosureButton>
+
+      <transition
+        enter-active-class="transition duration-100 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-75 ease-out"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
+      >
+        <DisclosurePanel class="disclosure__content">
+          <p>You can click on your operator's card to toggle stat display on and off.</p>
+        </DisclosurePanel>
+      </transition>
+    </Disclosure>
+    <Disclosure>
+      <DisclosureButton class="disclosure__button">
         <span class="disclosure__button-text">Are there any discounts?</span>
         <IconChevronDown class="h-4 w-4 transition-all duration-300 ui-open:rotate-180" />
       </DisclosureButton>

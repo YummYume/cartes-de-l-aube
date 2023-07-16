@@ -21,6 +21,8 @@ const getUniqueId = (prefix = null, suffix = null, options = { prefix: '', suffi
   return uniqueId;
 };
 
+export const uniqueIdSymbol = Symbol('uniqueId');
+
 export default {
   /**
    * @param {import('vue').App<HTMLElement>} app
@@ -36,6 +38,8 @@ export default {
       },
     });
 
-    app.provide('uniqueId', (prefix = null, suffix = null) => getUniqueId(prefix, suffix, options));
+    app.provide(uniqueIdSymbol, (prefix = null, suffix = null) =>
+      getUniqueId(prefix, suffix, options)
+    );
   },
 };

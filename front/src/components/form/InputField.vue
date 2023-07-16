@@ -103,9 +103,9 @@
 
 <template>
   <div class="form-field">
-    <label :class="labelClass" :for="props.id">
-      {{ props.label }}
-      <span v-if="props.isRequired" class="ml-1 text-accent">*</span>
+    <label :class="labelClass" :for="id">
+      {{ label }}
+      <span v-if="isRequired" class="ml-1 text-accent">*</span>
       <IconInfoCircle
         v-if="hasLabelTooltip"
         class="ml-1 h-4 w-4"
@@ -118,13 +118,13 @@
     </label>
     <input
       :value="inputValue"
-      :type="props.type"
+      :type="type"
       :placeholder="placeholder"
-      :required="props.isRequired"
+      :required="isRequired"
       class="form-field__input"
       ref="infoField"
-      :name="props.id"
-      :id="props.id"
+      :name="id"
+      :id="id"
       :aria-invalid="isInvalid"
       :aria-errormessage="errorId"
       @input="onInput"
