@@ -12,6 +12,10 @@
       type: Array,
       required: true,
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
   });
 
   defineEmits(['open']);
@@ -28,8 +32,8 @@
       <OperatorCard
         v-if="operator"
         :operator="operator"
+        :active="active"
         @select="$emit('open', operator)"
-        :active="false"
       />
       <button
         type="button"
@@ -43,7 +47,7 @@
   </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
   .operator-empty-card {
     box-shadow: 0 0 0.6rem 0.05rem #fff;
 

@@ -17,6 +17,7 @@ start:
 start-nocache:
 	$(COMPOSE) build --force-rm --no-cache
 	$(COMPOSE) up -d --remove-orphans --force-recreate
+
 start-ci:
 	$(COMPOSECI) build --force-rm --no-cache
 	$(COMPOSECI) up -d api front mongodb mariadb --remove-orphans --force-recreate
@@ -115,5 +116,6 @@ test-unit-watch-front:
 test-unit-api:
 	$(EXECAPI) yarn test
 
+# Migration
 gen-migration:
 	$(EXECAPI) yarn typeorm migration:generate -o -p -d ./typeorm/data-source.js ./typeorm/migrations/$(n)

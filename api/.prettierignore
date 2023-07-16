@@ -2,3 +2,4 @@ vite.config.js
 vitest.config.js
 coverage
 node_modules
+typeorm/migrations/*

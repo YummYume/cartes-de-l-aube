@@ -3,3 +3,4 @@ vitest.config.js
 coverage
 node_modules
 .vscode/*
+typeorm/migrations/*

@@ -35,6 +35,10 @@
       required: false,
       validator: (value) => typeof value === 'object' || value === null,
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
   });
 
   const emit = defineEmits(['close', 'select', 'remove']);
@@ -123,7 +127,7 @@
                 >
                   <OperatorCard
                     :operator="operator"
-                    :active="false"
+                    :active="active"
                     :description="`Click to select ${operator.name}${
                       toReplace ? ` and replace ${toReplace.name}.` : '.'
                     } ${operator.name} is a ${operator.rarity} stars operator with ${
