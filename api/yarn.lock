@@ -691,6 +691,14 @@
     rfdc "^1.3.0"
     yaml "^2.2.2"
 
+"@fastify/websocket@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/@fastify/websocket/-/websocket-8.2.0.tgz#2f5785a88e8188bff9cc17821d5d3d09458a6714"
+  integrity sha512-B4tlHFBKCX7tenEG9aUcQEpksW2e0+dgRTaH/05+cro1Xsq1+kSj+9IB9Gep7a0KbHZGrat+zBsOas6lRs5dFQ==
+  dependencies:
+    fastify-plugin "^4.0.0"
+    ws "^8.0.0"
+
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.npmjs.org/@humanwhocodes/config-array/-/config-array-0.11.8.tgz"
@@ -2277,13 +2285,6 @@ fastify-plugin@^4.0.0, fastify-plugin@^4.2.1:
   version "4.5.0"
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-4.5.0.tgz"
   integrity sha512-79ak0JxddO0utAXAQ5ccKhvs6vX2MGyHHMMsmZkBANrq3hXc1CHzvNPHOcvTsVMEPl5I+NT+RO4YKMGehOfSIg==
-
-fastify-socket.io@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/fastify-socket.io/-/fastify-socket.io-4.0.0.tgz"
-  integrity sha512-j5mgvHZpQ0Iiz9HyKwGdLOQGjFKH/6KOwx8esxCIBkIjtiQkdC8e4J1xX4JAMISLfTJOY9EHQG/1MmU/9cXaog==
-  dependencies:
-    fastify-plugin "^3.0.0"
 
 fastify@^4.0.0:
   version "4.17.0"
@@ -5213,6 +5214,11 @@ ws@^7, ws@^7.5.5:
   version "7.5.9"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.9.tgz#54fa7db29f4c7cec68b1ddd3a89de099942bb591"
   integrity sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==
+
+ws@^8.0.0:
+  version "8.13.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
+  integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
 
 ws@~8.11.0:
   version "8.11.0"

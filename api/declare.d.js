@@ -4,12 +4,18 @@
 /**
  * @typedef {import('fastify').FastifyInstance & {
  * typeorm: import('typeorm').DataSource,
- * mongoose: import('mongoose').Connection
+ * mongoose: import('mongoose').Connection,
+ * websocketServer: import('@fastify/websocket').
  * }} Fastify
  * @typedef {import('fastify').FastifyPluginOptions} FpOptions
  * @typedef {import("fastify").FastifyRequest} RequestFastify
  * @typedef {RequestFastify & { user: ?User }} CustomRequest
  * @typedef {import("fastify").FastifyReply} ReplyFastify
+ */
+
+// Websocket
+/**
+ * @typedef {import('@fastify/websocket').SocketStream} SocketStream
  */
 
 // TypeORM

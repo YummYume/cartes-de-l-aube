@@ -54,3 +54,9 @@ export class MatchHistoryPlayer {
     this.matchHistory = matchHistory;
   }
 }
+
+export const MatchStatusEnum = {
+  WINNER: 'winner',
+  LOSER: 'loser',
+  ABANDON: 'abandon',
+};
