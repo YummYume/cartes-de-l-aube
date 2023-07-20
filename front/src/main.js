@@ -7,6 +7,7 @@ import Vue3Toasity, { toast } from 'vue3-toastify';
 import App from './App.vue';
 import id from './plugins/unique-id';
 import router from './router';
+import { initStripe } from './stripe';
 
 import './assets/styles/tailwind.scss';
 import './assets/styles/global.scss';
@@ -31,5 +32,12 @@ app.use(head);
 app.use(id);
 
 await router.isReady();
+
+try {
+  await initStripe();
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.error(e);
+}
 
 app.mount('#app');

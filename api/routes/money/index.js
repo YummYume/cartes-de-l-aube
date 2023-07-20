@@ -3,12 +3,19 @@
  */
 export default async (fastify) => {
   fastify.post('/', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['count'],
+        properties: {
+          count: {
+            type: 'number',
+          },
+        },
+      },
+    },
     onRequest: fastify.auth([fastify.tokenVerify]),
     handler: async (/** @type {CustomRequest} request */ request) => {
-      if (!request.body.count) {
-        return fastify.httpErrors.notAcceptable('Missing count parameter.');
-      }
-
       const count = Math.max(Math.min(Math.floor(request.body.count), 1000000), 1);
       /**
        * @type {{userRepository: UserRepository}}}

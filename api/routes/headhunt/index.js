@@ -6,9 +6,25 @@ import { Operator } from '../../mongoose/models/Operator.js';
  */
 export default async (fastify) => {
   fastify.post('/', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['count'],
+        properties: {
+          count: {
+            type: 'number',
+          },
+        },
+      },
+    },
     onRequest: fastify.auth([fastify.tokenVerify]),
     handler: async (/** @type {CustomRequest} request */ request) => {
-      const count = Math.max(Math.min(Math.floor(request.body?.count || 1), 10), 1);
+      const { count } = request.body;
+
+      if (count !== 1 && count !== 10) {
+        return fastify.httpErrors.notAcceptable('Pameter "count" must either be 1 or 10.');
+      }
+
       const cost = getCostForPulls(count);
 
       if (request.user.orundum < cost) {

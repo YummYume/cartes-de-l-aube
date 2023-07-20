@@ -29,7 +29,6 @@
   const store = useAuth();
   const moneyModalStore = useMoneyModal();
   const { auth } = storeToRefs(store);
-
   const isLogin = ref(true);
   const authModalOpened = ref(false);
   const logoutModalOpened = ref(false);

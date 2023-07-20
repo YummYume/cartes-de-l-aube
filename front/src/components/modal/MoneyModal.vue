@@ -100,7 +100,7 @@
                 :disabled="isSubmitting || !meta.valid"
               >
                 Give me money
-                <IconSpinner v-if="isSubmitting" />
+                <IconSpinner v-show="isSubmitting" />
               </button>
               <button
                 class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"

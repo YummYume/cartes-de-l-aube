@@ -4,7 +4,6 @@
   import { useTippy } from 'vue-tippy';
 
   import IconOrundum from './icon/IconOrundum.vue';
-  import StoreModal from './modal/StoreModal.vue';
 
   const props = defineProps({
     count: {
@@ -20,10 +19,9 @@
       maximumFractionDigits: 0,
     })
   );
-  const storeModalOpened = ref(false);
 
   useTippy(plusBtn, {
-    content: 'Buy Orundum',
+    content: 'Go to the store to buy Orundum',
   });
 </script>
 
@@ -33,12 +31,12 @@
     <span class="ml-1 mr-2 text-lg font-bold" :aria-label="`${count} orundum`">{{
       formattedCount
     }}</span>
-    <IconPlus
-      class="h-5 w-5 cursor-pointer rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50"
-      aria-label="Buy"
-      ref="plusBtn"
-      @click="storeModalOpened = true"
-    />
+    <RouterLink to="/store">
+      <IconPlus
+        class="h-5 w-5 cursor-pointer rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50"
+        ref="plusBtn"
+        aria-label="Buy Orundum"
+      />
+    </RouterLink>
   </div>
-  <StoreModal :isOpen="storeModalOpened" @close="storeModalOpened = false" />
 </template>

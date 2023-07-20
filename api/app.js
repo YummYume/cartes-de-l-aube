@@ -1,4 +1,6 @@
 import AutoLoad from '@fastify/autoload';
+import { config } from 'dotenv';
+import fs from 'graceful-fs';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,6 +16,10 @@ export const options = {};
  * @param {{}} opts Options passed on startup
  */
 export default async function app(fastify, opts) {
+  if (fs.existsSync(path.join(dirname, '.env.local'))) {
+    config({ path: path.join(dirname, '.env.local'), override: true });
+  }
+
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins

@@ -20,6 +20,7 @@ export default async (fastify) => {
     schema: {
       body: {
         type: 'object',
+        required: ['squad'],
         properties: {
           squad: {
             type: 'array',

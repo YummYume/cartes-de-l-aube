@@ -95,7 +95,7 @@
           :disabled="isSubmitting || !meta.valid"
         >
           {{ isLogin ? 'Log in' : 'Register' }}
-          <IconSpinner v-if="isSubmitting" />
+          <IconSpinner v-show="isSubmitting" />
         </button>
       </div>
     </slot>

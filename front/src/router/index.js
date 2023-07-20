@@ -3,6 +3,7 @@ import { toast } from 'vue3-toastify';
 
 import { getMatchHistories } from '@/api/history';
 import { getPlayerSquad } from '@/api/squad';
+import { getStoreItems } from '@/api/store';
 import { useAuth } from '@/stores/auth';
 
 import HomeView from '../views/HomeView.vue';
@@ -92,8 +93,31 @@ const router = createRouter({
     {
       path: '/store',
       name: 'store',
+      props: true,
       meta: { requiresAuth: true },
       component: () => import('../views/StoreView.vue'),
+      beforeEnter: async (to, from, next) => {
+        /**
+         * @type {Awaited<ReturnType<getStoreItems>>|null}
+         */
+        let res = null;
+
+        try {
+          res = await getStoreItems();
+        } catch (error) {
+          toast.error('Oops, the store is currently unavailable. Please try again later.');
+        }
+
+        if (res !== null) {
+          to.params.items = res.items;
+
+          next();
+
+          return;
+        }
+
+        next(false);
+      },
     },
   ],
 });

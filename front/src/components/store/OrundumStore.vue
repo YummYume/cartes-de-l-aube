@@ -1,20 +1,15 @@
 <script setup>
   import OrundumItem from './OrundumItem.vue';
 
-  /**
-   * @type {{ price: number, amount: number }} items
-   */
-  const items = [
-    { price: 0.01, amount: 60 },
-    { price: 0.05, amount: 350 },
-    { price: 0.1, amount: 800 },
-    { price: 0.2, amount: 1700 },
-    { price: 0.5, amount: 4500 },
-    { price: 1, amount: 10000 },
-    { price: 2.5, amount: 25000 },
-    { price: 5, amount: 55000 },
-    { price: 10, amount: 120000 },
-  ];
+  defineProps({
+    /**
+     * @type {import('vue').PropType<StoreItem[]>}
+     */
+    items: {
+      type: Array,
+      required: true,
+    },
+  });
 </script>
 
 <template>
@@ -25,6 +20,8 @@
         :key="key"
         :price="item.price"
         :amount="item.amount"
+        :savedPercentage="item.savedPercentage"
+        @click="$emit('buy', item)"
       />
     </div>
   </div>
