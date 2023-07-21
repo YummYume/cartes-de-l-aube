@@ -25,6 +25,7 @@ services:
       MONGODB_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?err}"
       MONGODB_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?err}"
       MONGODB_HOST: "mongodb"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
     container_name: vue-game-api
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
@@ -41,6 +42,8 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    environment:
+      VITE_STRIPE_PUBLIC_KEY: "${STRIPE_PUBLIC_KEY}"
     stdin_open: true
     tty: true
     restart: unless-stopped
