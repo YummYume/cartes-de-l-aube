@@ -8,27 +8,51 @@ export const MatchStatusEnum = {
   CANCELLED: 'cancelled',
 };
 
-const playerSchema = {
-  id: { type: Number, required: true },
-  username: { type: String, required: true },
-  picture: { type: String, required: false },
-  deck: { type: Array, default: [], required: true },
-  hand: { type: Array, default: [], required: true },
-};
+const playerSchema = new Schema(
+  {
+    id: { type: Number, required: true },
+    username: { type: String, required: true },
+    picture: { type: String, required: false },
+    energies: { type: Number, default: 2, min: 0, max: 10, required: true },
+    deck: { type: Array, default: [], required: true },
+    hand: { type: Array, default: [], required: true },
+  },
+  { _id: false }
+);
 
-const battlefieldSchema = {
-  firstPlayer: { type: Array, required: true },
-  secondPlayer: { type: Array, required: true },
+const operatorSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    statistics: {
+      hp: { type: Number, required: true },
+      atk: { type: Number, required: true },
+      def: { type: Number, required: true },
+      cost: { type: Number, required: true },
+    },
+  },
+  { _id: false }
+);
+
+const cardFieldSchema = {
+  type: Map,
+  of: new Schema(
+    {
+      operator: operatorSchema,
+      position: { type: Number, min: 0, max: 3, required: true },
+    },
+    { _id: false }
+  ),
+  default: [],
 };
 
 /**
  * @class Match
  */
 const schema = new Schema({
-  startedAt: { type: Date, required: true },
+  startedAt: { type: Date, default: new Date(), required: true },
   timer: { type: Number, default: 20 * 60 * 60, required: true },
   status: {
-    type: [String],
+    type: String,
     enum: Object.values(MatchStatusEnum),
     default: MatchStatusEnum.WAITING,
     required: true,
@@ -37,8 +61,13 @@ const schema = new Schema({
     type: Map,
     of: playerSchema,
   },
-  numberTurn: { type: Number, required: true },
-  nextTurn: { type: Number, required: true },
+  battlefield: {
+    type: Map,
+    of: cardFieldSchema,
+    default: [],
+  },
+  totalTurn: { type: Number, default: 0, required: true },
+  playerTurn: { type: String, required: true },
 });
 
 const modelExport = () => {

@@ -19,7 +19,7 @@ export default async (fastify) => {
     const { error } = userSigninValidation(body);
 
     if (error) {
-      return reply.code(422).send({ errors: error.issues });
+      return reply.unprocessableEntity({ errors: error.issues });
     }
 
     try {
@@ -35,7 +35,7 @@ export default async (fastify) => {
       const isValited = await bcrypt.compare(body.password, password);
 
       if (!isValited) {
-        return reply.code(401).send({ message: 'Invalid credentials', code: 401 });
+        return reply.unauthorized({ message: 'Invalid credentials', code: 401 });
       }
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token
@@ -49,7 +49,7 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(200).send(user);
     } catch (err) {
-      return reply.code(401).send({ message: 'Invalid credentials', code: 401 });
+      return reply.unauthorized({ message: 'Invalid credentials', code: 401 });
     }
   });
 };

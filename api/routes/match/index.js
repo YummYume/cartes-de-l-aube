@@ -1,45 +1,135 @@
-import { Match, MatchStatusEnum } from '../../mongoose/models/Match.js';
+import { keysRemover } from '../../lib/utils.js';
+import { Match } from '../../mongoose/models/Match.js';
+
+let waitingRooms = [];
+const matchs = {};
+
+// Send data to all players in a match
+const broadcast = (matchId, data) => {
+  const match = matchs[matchId];
+
+  Object.keys(match.players).forEach((key) => {
+    const opponentKey = Object.keys(match.players).find((k) => k !== key);
+    match.players[key].ws.send(
+      JSON.stringify({
+        ...data,
+        user: match.players[key].user,
+        opponent: {
+          username: match.players[opponentKey].user.username,
+          image: match.players[opponentKey].user.image,
+          hand: match.players[opponentKey].user.hand.length,
+        },
+      })
+    );
+  });
+};
+
+const sendToPlayers = (match, data) => {
+  Object.keys(match.players).forEach((key) => {
+    match.players[key].ws.send(JSON.stringify(data));
+  });
+};
+
+const timerTurn = (matchId) => {
+  const match = matchs[matchId];
+
+  matchs[matchId].timerTurn = {
+    ...matchs[matchId].timerTurn,
+    interval: setInterval(() => {
+      matchs[matchId].timerTurn.time -= 1;
+      sendToPlayers(match, {
+        type: 'timer',
+        timer: matchs[matchId].timerTurn.time,
+      });
+      if (matchs[matchId].timerTurn.time === 0) {
+        matchs[matchId].timerTurn.time = 31;
+        sendToPlayers(match, {
+          type: 'timer',
+          timer: 'done',
+        });
+        clearInterval(matchs[matchId].timerTurn.interval);
+        timerTurn(matchId);
+      }
+    }, 1000),
+  };
+};
+
+const timerSurrender = (matchId) => {
+  const match = matchs[matchId];
+
+  matchs[matchId].timerSurrender = {
+    time: 1.5 * 60,
+    interval: setInterval(() => {
+      matchs[matchId].timerSurrender.time -= 1;
+      sendToPlayers(match, {
+        type: 'timer-surrender',
+        timer: matchs[matchId].timerSurrender.time,
+      });
+      if (matchs[matchId].timerSurrender.time === 0) {
+        matchs[matchId].timerSurrender.time = 1.5 * 60;
+        sendToPlayers(match, {
+          type: 'timer-surrender',
+          timer: 'done',
+        });
+        clearInterval(matchs[matchId].timerSurrender.interval);
+      }
+    }, 1000),
+  };
+};
+
+// Create a match
+const createMatch = async (wsUser, wsOpponent) => {
+  try {
+    // create match in mongodb
+    /**
+     * @type {typeof Match}
+     */
+    const match = await Match.create({
+      playerTurn: wsUser.user.id,
+      players: {
+        [wsUser.user.id]: wsUser.user,
+        [wsOpponent.user.id]: wsOpponent.user,
+      },
+    });
+
+    // save match in memory server
+    matchs[match._id] = {
+      ...match.toObject(),
+      timerTurn: { time: 31 },
+      players: {
+        [wsUser.user.id]: {
+          user: { ...wsUser.user, ...match.players.get(`${wsUser.user.id}`).toObject() },
+          ws: wsUser.ws,
+        },
+        [wsOpponent.user.id]: {
+          user: { ...wsOpponent.user, ...match.players.get(`${wsOpponent.user.id}`).toObject() },
+          ws: wsOpponent.ws,
+        },
+      },
+    };
+
+    broadcast(match._id, {
+      type: 'running',
+      matchInfo: {
+        playerTurn: match.playerTurn,
+        totalTurn: match.totalTurn,
+        battlefield: match.battlefield,
+      },
+    });
+
+    timerTurn(match._id);
+
+    return match._id;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};
+
 /**
  * @param {Fastify} fastify
  */
 export default async (fastify) => {
-  let waitingRooms = [];
-  const matchs = {};
-
-  const createMatch = async (wsUser, wsOpponent) => {
-    try {
-      // create match in mongodb
-      const match = await Match.create({
-        startedAt: new Date(),
-        status: MatchStatusEnum.WAITING,
-        numberTurn: 0,
-        nextTurn: wsUser.user.id,
-        $set: {
-          [`players.${wsUser.user.id}`]: wsUser.user,
-          [`players.${wsOpponent.user.id}`]: wsOpponent.user,
-        },
-      });
-
-      // add match to matchs in memory of the server
-      matchs[match._id] = Object.assign(match, {
-        players: {
-          [wsUser.user.id]: wsUser,
-          [wsOpponent.user.id]: wsOpponent,
-        },
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const broadcast = (matchId, data) => {
-    const match = matchs[matchId];
-
-    Object.keys(match).forEach((key) => {
-      match[key].ws.send(JSON.stringify(data));
-    });
-  };
-
   /**
    * @param {SocketStream} conn
    * @param {CustomRequest} req
@@ -52,14 +142,13 @@ export default async (fastify) => {
     },
     async (conn, req) => {
       const ws = conn.socket;
-      const { orundum, ...user } = req;
-      const wsUser = { user, ws };
+      const user = keysRemover(req.user, ['orundum', 'password', 'operators']);
 
-      // ==================================== //
+      // =============[On connection]================ //
 
       // check if user is already in a match
       const matchFound = await Match.findOne({
-        [`players.${wsUser.user.id}`]: {
+        [`players.${user.id}`]: {
           $exists: true,
         },
       }).exec();
@@ -67,117 +156,70 @@ export default async (fastify) => {
       // assign the user to the found match
       if (matchFound) {
         if (matchs[matchFound._id]) {
+          ws.match = matchFound._id;
           matchs[matchFound._id].players = Object.assign(matchs[matchFound._id].players, {
-            [wsUser.user.id]: wsUser,
-          });
-
-          const { [wsUser.user.id]: me, ...opponent } = matchs[matchFound._id].players;
-
-          broadcast(matchFound._id, {
-            type: 'join',
-            matchInfo: {
-              battlefield: matchFound.battlefield,
-              me: me.user,
-              opponent: {
-                username: opponent.user.username,
-                picture: opponent.user.picture,
-                hand: opponent.user.hand.length,
-              },
+            [user.id]: {
+              user: matchFound.players.get(`${user.id}`).toObject(),
+              ws,
             },
           });
         }
+
+        broadcast(matchFound._id, {
+          type: 'running',
+          matchInfo: {
+            numberTurn: matchFound.numberTurn,
+            battlefield: matchFound.battlefield,
+          },
+        });
       } else if (waitingRooms.length > 0) {
         const wsOpponent = waitingRooms.pop();
-        await createMatch(wsUser, wsOpponent);
+        ws.match = await createMatch({ user, ws }, wsOpponent);
       } else {
-        waitingRooms.push(wsUser);
+        waitingRooms.push({ user, ws, match: null });
+        ws.send('Waiting for an opponent...');
       }
 
-      // ==================================== //
+      // =============[On action message]================ //
+
+      conn.socket.on('message', (data) => {
+        const { type, params } = JSON.parse(data);
+
+        switch (type) {
+          case 'action':
+            break;
+          default:
+        }
+      });
+
+      // =============[On close]================ //
 
       conn.socket.on('close', () => {
-        waitingRooms = waitingRooms.filter((name) => name !== user.username);
+        if (ws.match) {
+          if (matchs[ws.match]) {
+            clearInterval(matchs[ws.match].timerTurn.interval);
+
+            if (matchs[ws.match].players < 2) {
+              delete matchs[ws.match];
+              Match.deleteOne({ _id: ws.match });
+            } else {
+              delete matchs[ws.match].players[user.id];
+              const [opponentKey] = Object.keys(matchs[ws.match].players);
+
+              matchs[ws.match].players[opponentKey].ws.send(
+                JSON.stringify({
+                  type: 'opponent-disconnected',
+                  info: 'Your opponent has disconnected, wait for his reconnection or his surrender!',
+                })
+              );
+              timerSurrender(ws.match);
+            }
+          }
+        } else {
+          waitingRooms = waitingRooms.filter((player) => player.user.id !== user.id);
+          conn.socket.send(waitingRooms.length, ' Players waiting!');
+        }
       });
     }
   );
 };
-
-// /**
-//  * @param {Fastify} fastify
-//  */
-// export default async (fastify) => {
-//   const maxPlayers = 2;
-//   let waitingRooms = [];
-//   let matchs = {};
-
-//   /**
-//    * @param {SocketStream} conn
-//    * @param {RequestFastify} req
-//    */
-//   fastify.get('/', { websocket: true }, (conn, req) => {
-//     const ws = conn.socket;
-
-//     if (waitingRooms.includes(req.query.name)) {
-//       ws.send('You are already in a waiting room!');
-//     } else {
-//       ws.send(`Welcome ${req.query.name} in the waiting room!`);
-//       waitingRooms.push(req.query.name);
-//       ws.send(`${waitingRooms.length} Players waiting!`);
-//     }
-
-//     const create = () => {
-//       const matchId = genKey();
-//       ws.match = matchId;
-//       matchs[matchId] = [ws];
-//     };
-
-//     const join = (params) => {
-//       const { matchId } = params;
-
-//       if (!Object.keys(matchs).includes(matchId)) {
-//         ws.send(`Match ${matchId} does not exist!`);
-//         return;
-//       }
-
-//       if (matchs[matchId].length >= maxPlayers) {
-//         ws.send(`Match ${matchId} is full!`);
-//         return;
-//       }
-
-//       ws.match = matchId;
-//       matchs[matchId].push(ws);
-//     };
-
-//     const leave = () => {
-//       const { match } = ws;
-//       matchs[match] = matchs[match].filter((so) => so !== ws);
-//       ws.match = undefined;
-
-//       if (matchs[match].length === 0) {
-//         matchs = matchs.filter((key) => key !== match);
-//       }
-//     };
-
-//     conn.socket.on('close', () => {
-//       waitingRooms = waitingRooms.filter((name) => name !== req.query.name);
-//     });
-
-//     conn.socket.on('message', (data) => {
-//       const { type, params } = JSON.parse(data);
-
-//       switch (type) {
-//         case 'create':
-//           create(params);
-//           break;
-//         case 'join':
-//           join(params);
-//           break;
-//         case 'leave':
-//           leave();
-//           break;
-//         default:
-//           break;
-//       }
-//     });
-//   });
-// };

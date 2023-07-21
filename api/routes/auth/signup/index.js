@@ -20,7 +20,7 @@ export default async (fastify) => {
     const { error } = userSignupValidation(body);
 
     if (error) {
-      return reply.code(422).send({ errors: error.issues });
+      return reply.unprocessableEntity({ errors: error.issues });
     }
 
     // Create User
@@ -54,12 +54,10 @@ export default async (fastify) => {
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') {
-        return reply
-          .code(409)
-          .send({ message: 'Username already taken, please choose another one.' });
+        return reply.conflict({ message: 'Username already taken, please choose another one.' });
       }
 
-      return reply.code(500).send({ message: 'Error while trying to sign you up.' });
+      return reply.internalServerError({ message: 'Error while trying to sign you up.' });
     }
   });
 };

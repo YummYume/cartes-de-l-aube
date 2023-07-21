@@ -11,3 +11,17 @@ export function genKey(length = 5) {
   }
   return result;
 }
+
+/**
+ *
+ * @param {object} obj
+ * @param {string[]} keys
+ * @returns {object}
+ */
+export function keysRemover(obj, keys) {
+  const newObj = { ...obj };
+  keys.forEach((key) => {
+    delete newObj[key];
+  });
+  return newObj;
+}

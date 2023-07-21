@@ -52,7 +52,7 @@ export default fp(async (fastify) => {
           const oldRefreshToken = await RefreshToken.findOne({ tk: oldToken, user: id }).exec();
 
           if (!oldRefreshToken) {
-            reply.code(401).send({ message: 'Session expired, you need to sign in' });
+            reply.unauthorized({ message: 'Session expired, you need to sign in' });
           } else {
             try {
               // Create a new token and refresh token and delete the old one
@@ -75,19 +75,19 @@ export default fp(async (fastify) => {
                   request.user = user;
                   reply.setCookie(env.cookie.name, tk, env.cookie.config);
                 } else {
-                  reply.code(404).send({ message: 'User not found' });
+                  reply.notFound({ message: 'User not found' });
                 }
               } catch (err) {
-                reply.send(err);
+                reply.internalServerError({ message: 'Error, please sign up later' });
               }
             } catch (err) {
-              reply.code(401).send({ message: 'Session expired, you need to sign in' });
+              reply.unauthorized({ message: 'Session expired, you need to sign in' });
             }
           }
         } else if (err.code === JWT_ERRORS_CODE.NoAuthorizationInCookieError) {
-          reply.code(404).send({ message: 'No Session, please sign up' });
+          reply.notFound({ message: 'No Session, please sign up' });
         } else {
-          reply.send(err);
+          reply.internalServerError({ message: 'Error, please sign up later' });
         }
       }
     }
