@@ -15,8 +15,11 @@
 // TypeORM
 /**
  * @typedef {import('./typeorm/models/User.js').User} User
+ * @typedef {import('./typeorm/models/Payment.js').Payment} Payment
  * @typedef {import('typeorm').Repository<User>} TypeOrmUserRepository
  * @typedef {typeof import('./typeorm/repositories/UserRepository.js').default} CustomUserRepository
  * @typedef {TypeOrmUserRepository & CustomUserRepository} UserRepository
+ * @typedef {import('typeorm').Repository<Payment>} TypeOrmPaymentRepository
+ * @typedef {TypeOrmPaymentRepository} PaymentRepository
  * @typedef {import('typeorm').QueryRunner} QueryRunner
  */

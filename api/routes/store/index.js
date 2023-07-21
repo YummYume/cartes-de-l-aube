@@ -42,6 +42,7 @@ export default async (fastify) => {
         payment_method_types: ['card'],
         metadata: {
           orderTypeId: order.orderTypeId,
+          userId: request.user.id,
         },
       });
 
@@ -68,6 +69,10 @@ export default async (fastify) => {
     handler: async (/** @type {CustomRequest} request */ request) => {
       const paymentIntent = await stripe.paymentIntents.retrieve(request.body.paymentId);
 
+      if (+paymentIntent.metadata.userId !== request.user.id) {
+        return fastify.httpErrors.forbidden('Payment does not belong to the current user.');
+      }
+
       if (paymentIntent.status !== 'succeeded') {
         return fastify.httpErrors.notAcceptable('Payment did not succeed.');
       }
@@ -84,9 +89,16 @@ export default async (fastify) => {
       }
 
       /**
-       * @type {{ userRepository: UserRepository }}
+       * @type {{ userRepository: UserRepository, paymentRepository: PaymentRepository }}
        */
-      const { userRepository } = fastify.typeorm;
+      const { userRepository, paymentRepository } = fastify.typeorm;
+
+      await paymentRepository.save({
+        stripePaymentId: paymentIntent.id,
+        price: order.price,
+        amount: order.amount,
+        user: request.user.id,
+      });
 
       request.user = await userRepository.save({
         ...request.user,
@@ -113,7 +125,15 @@ export default async (fastify) => {
     },
     onRequest: fastify.auth([fastify.tokenVerify]),
     handler: async (/** @type {CustomRequest} request */ request) => {
-      await stripe.paymentIntents.cancel(request.body.paymentId);
+      const paymentIntent = await stripe.paymentIntents.retrieve(request.body.paymentId);
+
+      if (+paymentIntent.metadata.userId !== request.user.id) {
+        return fastify.httpErrors.forbidden('Payment does not belong to the current user.');
+      }
+
+      await stripe.paymentIntents.cancel(request.body.paymentId, {
+        cancellation_reason: 'abandoned',
+      });
 
       return {
         success: true,

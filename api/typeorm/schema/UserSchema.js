@@ -42,6 +42,11 @@ export default new EntitySchema({
       type: 'one-to-many',
       mappedBy: 'user',
     },
+    payments: {
+      target: 'Payment',
+      type: 'one-to-many',
+      mappedBy: 'user',
+    },
   },
 });
 
