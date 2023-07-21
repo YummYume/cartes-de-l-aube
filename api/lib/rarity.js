@@ -3,6 +3,7 @@
  */
 
 export const DEFAULT_PULL_COST = 600;
+export const DEFAULT_PULL_PRICE = 0.5;
 
 /**
  * @type {Rarity[]}
@@ -46,6 +47,25 @@ export const getRarities = () => rarities.sort((a, b) => a.rarity - b.rarity);
  * @returns {number}
  */
 export const getCostForPulls = (count = 1) => count * DEFAULT_PULL_COST;
+
+/**
+ * Get the amount of pulls for a given amount of orundum based on the default pull cost
+ * @param {number} amount
+ * @returns {number}
+ */
+export const getPullsForAmount = (amount = 0) => Math.floor(amount / DEFAULT_PULL_COST);
+
+/**
+ * Get the percentage of money saved for a pack's price and the amount of pulls it gives
+ * @param {number} price
+ * @param {number} amount
+ * @returns {number}
+ */
+export const getPercentagePriceSavedForAmount = (price, amount) => {
+  const initialPrice = (amount / DEFAULT_PULL_COST) * DEFAULT_PULL_PRICE;
+
+  return Math.ceil(((price - initialPrice) / initialPrice) * 100) * -1;
+};
 
 /**
  * Get one or more random rarities

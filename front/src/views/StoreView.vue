@@ -1,8 +1,58 @@
 <script setup>
+  import { ref } from 'vue';
+
+  import { cancelStorePayment } from '@/api/store';
+  import StoreDisclosure from '@/components/disclosure/StoreDisclosure.vue';
+  import OrundumCheckoutModal from '@/components/modal/OrundumCheckoutModal.vue';
   import OrundumStore from '@/components/store/OrundumStore.vue';
+  import { useAuth } from '@/stores/auth';
   import { useMoneyModal } from '@/stores/money-modal';
 
+  defineProps({
+    /**
+     * @type {import('vue').PropType<StoreItem[]>}
+     */
+    items: {
+      type: Array,
+      required: true,
+    },
+  });
+
+  const { auth } = useAuth();
   const moneyModalStore = useMoneyModal();
+  const orundumCheckoutModalOpen = ref(false);
+  /**
+   * @type {import('vue').Ref<StoreItem|null>}
+   */
+  const currentStoreItem = ref(null);
+
+  /**
+   * @param {StoreItem} storeItem
+   */
+  const handleOpen = (storeItem) => {
+    currentStoreItem.value = storeItem;
+    orundumCheckoutModalOpen.value = true;
+  };
+
+  /**
+   * @param {string|null} paymentId
+   */
+  const handleClose = (paymentId) => {
+    orundumCheckoutModalOpen.value = false;
+
+    if (paymentId) {
+      try {
+        cancelStorePayment(paymentId);
+      } catch (err) {
+        // We don't care if an error occurs here. The payment will never be processed anyway.
+      }
+    }
+  };
+
+  const handleComplete = (orundum) => {
+    auth.orundum = orundum;
+    orundumCheckoutModalOpen.value = false;
+  };
 </script>
 
 <template>
@@ -12,7 +62,11 @@
       <h2 class="mb-6 text-2xl">
         Buy Orundum here using real money. Come on, you know you want to.
       </h2>
-      <OrundumStore />
+      <OrundumStore :items="items" @buy="(item) => handleOpen(item)" />
+    </section>
+    <section class="w-[62rem] max-w-full">
+      <h2 class="mb-6 text-2xl">Store FAQ</h2>
+      <StoreDisclosure />
     </section>
   </main>
   <button
@@ -24,4 +78,10 @@
     <kbd class="kbd bg-secondary">Shift</kbd> + <kbd class="kbd bg-secondary">o</kbd> +
     <kbd class="kbd bg-secondary">m</kbd>
   </button>
+  <OrundumCheckoutModal
+    :isOpen="orundumCheckoutModalOpen"
+    :storeItem="currentStoreItem"
+    @close="handleClose"
+    @complete="handleComplete"
+  />
 </template>

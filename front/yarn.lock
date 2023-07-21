@@ -283,6 +283,11 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz#96116f2a912e0c02817345b3c10751069920d553"
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
+"@stripe/stripe-js@^1.54.1":
+  version "1.54.1"
+  resolved "https://registry.yarnpkg.com/@stripe/stripe-js/-/stripe-js-1.54.1.tgz#e298b80c2963d9e622ea355db6c35df48e08cd89"
+  integrity sha512-smEXPu1GKMcAj9g2luT16+oXfg2jAwyc68t2Dm5wdtYl3p8PqQaZEiI8tQmboaQAjgF8pIGma6byz1T1vgmpbA==
+
 "@tabler/icons-vue@^2.20.0":
   version "2.22.0"
   resolved "https://registry.yarnpkg.com/@tabler/icons-vue/-/icons-vue-2.22.0.tgz#d46c209ac78b8e52143713e8738602b832dca0f0"
@@ -344,15 +349,6 @@
   resolved "https://registry.yarnpkg.com/@types/web-bluetooth/-/web-bluetooth-0.0.17.tgz#5c9f3c617f64a9735d7b72a7cc671e166d900c40"
   integrity sha512-4p9vcSmxAayx72yn70joFoL44c9MO/0+iVEBIQXe3v2h2SiAsEIo/G5v6ObFWvNKRFjbrVadNf9LqEEZeQPzdA==
 
-"@vee-validate/zod@^4.9.6":
-  version "4.9.6"
-  resolved "https://registry.yarnpkg.com/@vee-validate/zod/-/zod-4.9.6.tgz#3c8e371c40a5a5fbd58dd0e3446a0dbdaa4ae91a"
-  integrity sha512-YFpJDtsFDdM47HQSGKRQvA5nxEYZW1RjTWe1MPSpgo8uEWBOtxEwgiiPWoxnQtwc2c8qYpYMIwUbm2mUAHhpaw==
-  dependencies:
-    type-fest "^3.10.0"
-    vee-validate "^4.9.6"
-    zod "^3.21.4"
-
 "@unhead/dom@1.1.27":
   version "1.1.27"
   resolved "https://registry.yarnpkg.com/@unhead/dom/-/dom-1.1.27.tgz#bee76bb92f8957146d7f70d5f6ccc0ad4f33bf23"
@@ -385,6 +381,15 @@
     "@unhead/shared" "1.1.27"
     hookable "^5.5.3"
     unhead "1.1.27"
+
+"@vee-validate/zod@^4.9.6":
+  version "4.9.6"
+  resolved "https://registry.yarnpkg.com/@vee-validate/zod/-/zod-4.9.6.tgz#3c8e371c40a5a5fbd58dd0e3446a0dbdaa4ae91a"
+  integrity sha512-YFpJDtsFDdM47HQSGKRQvA5nxEYZW1RjTWe1MPSpgo8uEWBOtxEwgiiPWoxnQtwc2c8qYpYMIwUbm2mUAHhpaw==
+  dependencies:
+    type-fest "^3.10.0"
+    vee-validate "^4.9.6"
+    zod "^3.21.4"
 
 "@vitejs/plugin-vue@^4.2.3":
   version "4.2.3"

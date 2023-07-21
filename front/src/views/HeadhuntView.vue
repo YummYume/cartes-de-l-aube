@@ -107,7 +107,7 @@
             @click="pulls = 1"
           >
             <span>Pull 1</span>
-            <IconSpinner v-if="submitting && pulls === 1" />
+            <IconSpinner v-show="submitting && pulls === 1" />
           </button>
           <button
             :disabled="submitting || auth.orundum < 600 * 10"
@@ -118,7 +118,7 @@
             @click="pulls = 10"
           >
             <span>Pull 10</span>
-            <IconSpinner v-if="submitting && pulls === 10" />
+            <IconSpinner v-show="submitting && pulls === 10" />
           </button>
         </div>
       </form>
@@ -127,10 +127,10 @@
       <h2 class="mb-6 text-2xl">Headhunt FAQ</h2>
       <HeadhuntDisclosure />
     </section>
-    <HeadhuntModal
-      :isOpen="headhuntModalOpened"
-      :operators="operators"
-      @close="headhuntModalOpened = false"
-    />
   </main>
+  <HeadhuntModal
+    :isOpen="headhuntModalOpened"
+    :operators="operators"
+    @close="headhuntModalOpened = false"
+  />
 </template>

@@ -14,4 +14,6 @@
  * @typedef {{ startedAt: Date, endedAt: Date, players: MatchHistoryPlayer[] }} MatchHistory
  * Deck types
  * @typedef {Operator[]} Deck
+ * Store types
+ * @typedef {{ orderTypeId: number, price: number, amount: number, pulls: number, savedPercentage: number }} StoreItem
  */
