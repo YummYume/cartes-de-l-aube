@@ -11,10 +11,9 @@ jobs:
 
       - name: Start the containers
         run: make start-ci
-        with:
-          secrets: |
-            "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}"
-            "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}"
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.VITE_STRIPE_PUBLIC_KEY }}
 
       - name: Run Vitest
         run: make test-unit-front
@@ -27,10 +26,9 @@ jobs:
 
       - name: Start the containers
         run: make start-ci
-        with:
-          secrets: |
-            "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}"
-            "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}"
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.VITE_STRIPE_PUBLIC_KEY }}
 
       - name: Run Fastify test
         run: make test-unit-api
