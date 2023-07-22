@@ -67,7 +67,7 @@ const schema = new Schema({
     default: [],
   },
   totalTurn: { type: Number, default: 0, required: true },
-  playerTurn: { type: String, required: true },
+  playerTurn: { type: Number, required: true },
 });
 
 const modelExport = () => {
