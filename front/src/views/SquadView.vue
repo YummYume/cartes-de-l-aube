@@ -1,5 +1,6 @@
 <script setup>
   import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue';
+  import { useHead } from '@unhead/vue';
   import { useMagicKeys } from '@vueuse/core';
   import { onBeforeUnmount, ref, watch } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
@@ -163,6 +164,16 @@
     }
   });
 
+  useHead({
+    title: 'Squad',
+    meta: [
+      {
+        name: 'description',
+        content: 'Manage your squad here. Define your best squad to use during your next matches.',
+      },
+    ],
+  });
+
   onBeforeRouteLeave(() => {
     abortController.abort();
   });
@@ -173,52 +184,50 @@
 </script>
 
 <template>
-  <main class="container m-auto flex h-full flex-col items-center gap-10 p-5">
-    <h1 class="w-full text-center text-4xl">My squad</h1>
-    <section>
-      <div class="m-auto mb-6 flex w-[62rem] max-w-full flex-col">
-        <h2 class="text-2xl">
-          Define your best squad here, from the operators you pulled. This squad will be used during
-          your next matches.
-        </h2>
-        <SwitchGroup class="mt-6 self-end">
-          <div class="flex items-center">
-            <SwitchLabel class="mr-4">
-              Toggle operator details (<kbd class="kbd bg-secondary">Shift</kbd> +
-              <kbd class="kbd bg-secondary">T</kbd>)
-            </SwitchLabel>
-            <SwitchDescription class="sr-only">
-              Toggle detailed information about your operators.
-            </SwitchDescription>
-            <Switch
-              v-model="showDetails"
-              :class="showDetails ? 'bg-secondary' : 'bg-gray-200'"
-              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              aria-keyshortcuts="Shift+T"
-            >
-              <span
-                :class="showDetails ? 'translate-x-6' : 'translate-x-1'"
-                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-              />
-            </Switch>
-          </div>
-        </SwitchGroup>
-      </div>
-      <div
-        class="my-6 mt-10 flex w-full flex-wrap items-center justify-center gap-14 overflow-x-clip"
-        :aria-busy="loading"
-      >
-        <PlayerSquad :player="auth" :squad="playerSquad" :active="showDetails" @open="handleOpen" />
-      </div>
-    </section>
-    <SquadSelectModal
-      :isOpen="squadSelectModalOpen"
-      :operators="operators"
-      :toReplace="toReplace"
-      :active="showDetails"
-      @close="handleClose"
-      @select="handleSelect"
-      @remove="handleRemove"
-    />
-  </main>
+  <h1 class="w-full text-center text-4xl">My squad</h1>
+  <section class="w-full">
+    <div class="m-auto mb-6 flex w-[62rem] max-w-full flex-col">
+      <h2 class="text-2xl">
+        Define your best squad here, from the operators you pulled. This squad will be used during
+        your next matches.
+      </h2>
+      <SwitchGroup class="mt-6 self-end">
+        <div class="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-0">
+          <SwitchLabel class="mr-4">
+            Toggle operator details (<kbd class="kbd bg-secondary">Shift</kbd> +
+            <kbd class="kbd bg-secondary">T</kbd>)
+          </SwitchLabel>
+          <SwitchDescription class="sr-only">
+            Toggle detailed information about your operators.
+          </SwitchDescription>
+          <Switch
+            v-model="showDetails"
+            :class="showDetails ? 'bg-secondary' : 'bg-gray-200'"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            aria-keyshortcuts="Shift+T"
+          >
+            <span
+              :class="showDetails ? 'translate-x-6' : 'translate-x-1'"
+              class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+            />
+          </Switch>
+        </div>
+      </SwitchGroup>
+    </div>
+    <div
+      class="my-6 mt-10 flex w-full flex-wrap justify-center gap-14 overflow-x-clip"
+      :aria-busy="loading"
+    >
+      <PlayerSquad :player="auth" :squad="playerSquad" :active="showDetails" @open="handleOpen" />
+    </div>
+  </section>
+  <SquadSelectModal
+    :isOpen="squadSelectModalOpen"
+    :operators="operators"
+    :toReplace="toReplace"
+    :active="showDetails"
+    @close="handleClose"
+    @select="handleSelect"
+    @remove="handleRemove"
+  />
 </template>

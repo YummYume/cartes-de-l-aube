@@ -1,6 +1,7 @@
 import { createHead } from '@unhead/vue';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
+import { createRouterScroller } from 'vue-router-better-scroller';
 import VueTippy, { roundArrow } from 'vue-tippy';
 import Vue3Toasity, { toast } from 'vue3-toastify';
 
@@ -20,6 +21,14 @@ const head = createHead();
 
 app.use(createPinia());
 app.use(router);
+app.use(
+  createRouterScroller({
+    selectors: {
+      '#main-content': true,
+    },
+    behavior: 'smooth',
+  })
+);
 app.use(VueTippy, {
   defaultProps: { placement: 'bottom', arrow: roundArrow },
 });
@@ -37,7 +46,7 @@ try {
   await initStripe();
 } catch (e) {
   // eslint-disable-next-line no-console
-  console.error(e);
+  console.error('Failed to initialize Stripe, payment will not work.');
 }
 
 app.mount('#app');
