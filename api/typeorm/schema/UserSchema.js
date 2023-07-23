@@ -27,6 +27,10 @@ export default new EntitySchema({
     orundum: {
       type: 'int',
     },
+    rankingPoints: {
+      type: 'int',
+      default: 0,
+    },
     deck: {
       type: 'simple-array',
       default: '',

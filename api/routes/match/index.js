@@ -1,5 +1,8 @@
 import { keysRemover } from '../../lib/utils.js';
 import { Match } from '../../mongoose/models/Match.js';
+import { MatchHistory } from '../../typeorm/models/MatchHistory.js';
+import { MatchHistoryPlayer } from '../../typeorm/models/MatchHistoryPlayer.js';
+import { User } from '../../typeorm/models/User.js';
 
 let waitingRooms = [];
 let usersMatch = {};
@@ -174,6 +177,69 @@ const createMatch = async (wsUser, wsOpponent) => {
 };
 
 /**
+ * @param {MatchHistoryPlayerRepository} matchHistoryPlayerRepository
+ * @param {{ player: { deck: string[], rankingPoints: number, user: User }, status: 'winner'|'loser'|'abandon' }} params
+ * @returns {Promise<MatchHistoryPlayer>}
+ */
+const createMatchHistoryPlayer = async (matchHistoryPlayerRepository, { player, status }) => {
+  const rankingPoints = {
+    winner: player.rankingPoints + 20,
+    loser: player.rankingPoints - 20,
+    abandon: player.rankingPoints,
+  }[status];
+
+  const matchHistoryPlayer = new MatchHistoryPlayer();
+  matchHistoryPlayer.deck = player.deck;
+  matchHistoryPlayer.status = status;
+  matchHistoryPlayer.rankingPoints = rankingPoints;
+  matchHistoryPlayer.user = player.user;
+
+  return matchHistoryPlayerRepository.save(matchHistoryPlayer);
+};
+
+/**
+ * @param {Fastify} fastify
+ * @param {{ matchId: string, winnerId: number, loserId: number, isDraw: boolean }} params
+ * @returns {Promise<void>}
+ */
+const saveMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw }) => {
+  const match = await Match.findById(matchId).exec();
+
+  const winner = match.players.get(winnerId);
+  const loser = match.players.get(loserId);
+
+  /**
+   * @type {{ matchHistoryPlayerRepository: MatchHistoryPlayerRepository, matchHistoryRepository: MatchHistoryRepository }}
+   */
+  const { matchHistoryPlayerRepository, matchHistoryRepository } = fastify.typeorm;
+
+  const winnerMph = await createMatchHistoryPlayer(matchHistoryPlayerRepository, {
+    player: {
+      deck: winner.deck,
+      rankingPoints: winner.rankingPoints,
+      user: new User(winnerId),
+    },
+    status: isDraw ? 'abandon' : 'winner',
+  });
+
+  const loserMph = await createMatchHistoryPlayer(matchHistoryPlayerRepository, {
+    player: {
+      deck: loser.deck,
+      rankingPoints: loser.rankingPoints,
+      user: new User(loserId),
+    },
+    status: isDraw ? 'abandon' : 'loser',
+  });
+
+  const matchHistory = new MatchHistory();
+  // matchHistory.startedAt = match.startedAt;
+  matchHistory.players = [winnerMph, loserMph];
+
+  await matchHistoryRepository.save(matchHistory);
+  await Match.deleteOne({ _id: matchId }).exec();
+};
+
+/**
  * @param {Fastify} fastify
  */
 export default async (fastify) => {
@@ -200,7 +266,7 @@ export default async (fastify) => {
         },
       }).exec();
 
-      // Assign the user to the found match
+      // Assign the user to the found match in memory server
       if (matchFound) {
         if (matchs[matchFound._id]) {
           matchs[matchFound._id].players = Object.assign(matchs[matchFound._id].players, {
@@ -211,6 +277,7 @@ export default async (fastify) => {
           });
         }
 
+        // Clear surrender timer
         if (matchs[matchFound._id].timerSurrender.interval) {
           matchs[matchFound._id].timerSurrender.clear();
         }
@@ -223,6 +290,7 @@ export default async (fastify) => {
           },
         });
 
+        // Start turn timer at previous time
         timerMaker(
           { matchId: matchFound._id, type: 'timerTurn', timeReset: 0.5 * 60 + 1, autoReset: true },
           ({ type }) => {
@@ -283,14 +351,18 @@ export default async (fastify) => {
                 action.opponentLeft('Your opponent has left, wait for his comeback')
               );
 
-              timerMaker(
-                { matchId, type: 'timerSurrender', time: 1.5 * 60 + 1, timeReset: 1.5 * 60 + 1 },
-                () => {
-                  matchs[matchId].players[opponentKey].ws.send(
-                    action.victory('Your opponent has surrendered!')
-                  );
-                }
-              );
+              // 1.5 * 60 + 1
+              timerMaker({ matchId, type: 'timerSurrender', time: 2, timeReset: 2 }, async () => {
+                await saveMatchHistory(fastify, {
+                  matchId,
+                  winnerId: opponentKey,
+                  loserId: `${user.id}`,
+                });
+                matchs[matchId].players[opponentKey].ws.send(
+                  action.victory('Your opponent has left, you win!')
+                );
+                delete matchs[matchId];
+              });
             }
           }
         } else {

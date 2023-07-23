@@ -14,11 +14,11 @@ export default new EntitySchema({
     },
     startedAt: {
       type: 'timestamp',
-      nullable: false,
+      default: () => 'CURRENT_TIMESTAMP',
     },
     endedAt: {
       type: 'timestamp',
-      nullable: false,
+      default: () => 'CURRENT_TIMESTAMP',
     },
   },
   relations: {
