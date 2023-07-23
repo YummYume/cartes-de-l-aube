@@ -1,4 +1,6 @@
 <script setup>
+  import { useHead } from '@unhead/vue';
+
   defineProps({
     /**
      * @type {import('vue').PropType<MatchHistory[]>}
@@ -8,10 +10,18 @@
       required: true,
     },
   });
+
+  useHead({
+    title: 'History',
+    meta: [
+      {
+        name: 'description',
+        content: 'Your game history available here. Are you more of a winner or a loser?',
+      },
+    ],
+  });
 </script>
 
 <template>
-  <main class="container m-auto flex h-full flex-col items-center gap-10 p-5">
-    <h1>History</h1>
-  </main>
+  <h1 class="w-full text-center text-4xl">Your game history</h1>
 </template>

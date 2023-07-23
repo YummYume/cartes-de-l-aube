@@ -35,7 +35,7 @@
 
 <template>
   <div
-    class="relative m-auto flex h-48 w-40 flex-col items-center justify-center space-y-2 rounded-xl border-2 border-accent shadow-md transition-all hover:scale-105 focus-visible:scale-105"
+    class="relative m-auto flex h-48 w-40 flex-col items-center justify-center space-y-2 rounded-xl border-2 border-accent bg-primary/25 shadow-md transition-all hover:scale-105 focus-visible:scale-105"
     :aria-label="`Buy ${formattedAmount} orundum for ${formattedPrice}${
       savedPercentage ? `, including ${savedPercentage}% bonus orundum` : ''
     }.`"

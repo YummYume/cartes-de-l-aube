@@ -11,10 +11,10 @@
     IconLogout,
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
-  import { useMagicKeys } from '@vueuse/core';
+  import { useImage, useMagicKeys } from '@vueuse/core';
   import { storeToRefs } from 'pinia';
   import { computed, ref, watch } from 'vue';
-  import { RouterView } from 'vue-router';
+  import { RouterView, useRouter } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
   import { useMoneyModal } from '@/stores/money-modal';
@@ -27,11 +27,13 @@
   import MoneyModal from './components/modal/MoneyModal.vue';
 
   const store = useAuth();
+  const router = useRouter();
   const moneyModalStore = useMoneyModal();
   const { auth } = storeToRefs(store);
   const isLogin = ref(true);
   const authModalOpened = ref(false);
   const logoutModalOpened = ref(false);
+  const { isReady: backgroundImageReady } = useImage({ src: '/common/bg.jpg' });
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
@@ -127,9 +129,38 @@
     </header>
 
     <div class="flex h-full w-full flex-auto flex-col overflow-hidden md:flex-row">
-      <div class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+      <div
+        class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-accent scrollbar-corner-transparent"
+        id="main-content"
+      >
         <div class="relative flex-auto">
-          <RouterView />
+          <div class="absolute flex h-full w-full justify-center overflow-hidden">
+            <img
+              src="/common/bg.jpg"
+              alt="Background image representing Lungmen city"
+              aria-hidden="true"
+              width="1920"
+              height="1080"
+              class="h-[1080px] max-w-none select-none blur-sm"
+              v-if="backgroundImageReady"
+            />
+            <div v-else class="h-full w-full animate-pulse bg-[#0f1520]" aria-hidden="true" />
+          </div>
+          <main
+            class="container relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10"
+          >
+            <RouterView />
+          </main>
+          <button
+            type="button"
+            class="absolute bottom-2 left-2 z-50 opacity-0 transition-all hover:opacity-100 focus-visible:opacity-100"
+            aria-label="You found a secret! Press Shift + o + m to open it. Or just... You know, click this button."
+            @click="moneyModalStore.openMoneyModal()"
+            v-if="router.currentRoute.value.name === 'store'"
+          >
+            <kbd class="kbd bg-secondary">Shift</kbd> + <kbd class="kbd bg-secondary">o</kbd> +
+            <kbd class="kbd bg-secondary">m</kbd>
+          </button>
         </div>
       </div>
 
@@ -138,7 +169,7 @@
       <LogoutModal :isOpen="logoutModalOpened" @close="logoutModalOpened = false" />
       <MoneyModal
         :isOpen="moneyModalStore.moneyModalOpened"
-        @close="moneyModalStore.closeMoneyModal()"
+        @close="() => moneyModalStore.closeMoneyModal()"
       />
     </div>
   </div>

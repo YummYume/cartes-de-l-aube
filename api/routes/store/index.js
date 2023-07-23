@@ -37,7 +37,7 @@ export default async (fastify) => {
       }
 
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: order.price * 100,
+        amount: Math.ceil(order.price * 100, 10),
         currency: 'eur',
         payment_method_types: ['card'],
         metadata: {

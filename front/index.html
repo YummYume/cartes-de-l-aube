@@ -7,11 +7,11 @@
     <title>Cartes de l'aube</title>
     <meta name="description" content="Arknights based card game.">
   </head>
-  <body>
-    <div id="app" class="h-full overflow-hidden relative content"></div>
-      <div style="height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 2rem; text-align: center; background-color: #333540; color: #fff; margin: -8px;">
+  <body style="margin: 0;">
+    <div id="app" class="h-full overflow-hidden relative content">
+      <div style="height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 2rem; text-align: center; background-color: #333540; color: #fff;">
         <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; gap: 1rem;">
-          <span style="font-size: 1.5rem;" role="status">Loading Cartes de l'aube</span>
+          <span style="font-size: 1.5rem; font-family: sans-serif;" role="status">Loading Cartes de l'aube</span>
           <!-- https://github.com/n3r4zzurr0/svg-spinners/blob/main/svg-css/90-ring.svg?short_path=74838c2 -->
           <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
             <style>.spinner_P7sC{transform-origin:center;fill:#fff;animation:spinner_svv2 .75s infinite linear}@keyframes spinner_svv2{100%{transform:rotate(360deg)}}</style>
@@ -19,10 +19,11 @@
           </svg>
         </div>
         <noscript>
-          <h1 style="font-size: 2rem;">Sorry, Cartes de l'aube requires JavaScript to run.</h1>
-          <p style="font-size: 1.5rem;">Please check <a style="text-decoration: none; color: #FF3366;" href="https://www.enable-javascript.com/" target="_blank">this website</a> to learn why and how to enable JavaScript in your browser.</p>
+          <h1 style="font-size: 2rem; font-family: sans-serif;">Sorry, Cartes de l'aube requires JavaScript to run.</h1>
+          <p style="font-size: 1.5rem; font-family: sans-serif;">Please check <a style="text-decoration: none; color: #FF3366;" href="https://www.enable-javascript.com/" target="_blank">this website</a> to learn why and how to enable JavaScript in your browser.</p>
         </noscript>
       </div>
-      <script type="module" src="/src/main.js"></script>
+    </div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

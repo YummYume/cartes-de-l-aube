@@ -1,6 +1,7 @@
 <script setup>
   import { IconPlus } from '@tabler/icons-vue';
-  import { computed, ref } from 'vue';
+  import gsap from 'gsap';
+  import { reactive, ref, watch } from 'vue';
   import { useTippy } from 'vue-tippy';
 
   import IconOrundum from './icon/IconOrundum.vue';
@@ -13,11 +14,15 @@
   });
 
   const plusBtn = ref(null);
-  const formattedCount = computed(() =>
-    props.count.toLocaleString('en', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })
+  const tweened = reactive({
+    number: props.count,
+  });
+
+  watch(
+    () => props.count,
+    (n) => {
+      gsap.to(tweened, { duration: 0.75, number: Number(n) || 0 });
+    }
   );
 
   useTippy(plusBtn, {
@@ -29,7 +34,10 @@
   <div class="flex flex-row items-center rounded-xl border-2 border-accent p-0.5 px-2">
     <IconOrundum class="h-5 w-5" aria-hidden="true" />
     <span class="ml-1 mr-2 text-lg font-bold" :aria-label="`${count} orundum`">{{
-      formattedCount
+      tweened.number.toLocaleString('en', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
     }}</span>
     <RouterLink to="/store">
       <IconPlus
