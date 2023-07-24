@@ -28,7 +28,7 @@
   /**
    * @param {IntersectionObserverEntry[]} entries
    * @param {IntersectionObserver} observer
-   * @param {'left' | 'right' | 'top' | 'bottom' | null} [from='left']
+   * @param {'left' | 'right' | 'top' | 'bottom' | null} from
    */
   const introFrom = (entries, observer, from = 'left') => {
     entries.forEach((entry) => {
@@ -187,7 +187,7 @@
     class="mt-10 w-[62rem] max-w-full opacity-0"
     v-intersection-observer="[
       (entries, observer) => introFrom(entries, observer, 'bottom'),
-      { threshold: 0.1 },
+      { threshold: 0.25 },
     ]"
   >
     <h2 class="mb-6 text-2xl">Frequently asked questions</h2>
