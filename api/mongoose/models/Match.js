@@ -13,8 +13,7 @@ const playerSchema = new Schema(
     id: { type: Number, required: true },
     username: { type: String, required: true },
     picture: { type: String, required: false },
-    energies: { type: Number, default: 2, min: 0, max: 10, required: true },
-    rankingPoints: { type: Number, default: 0, required: true },
+    energy: { type: Number, default: 2, min: 0, max: 10, required: true },
     deck: { type: Array, default: [], required: true },
     hand: { type: Array, default: [], required: true },
   },
@@ -50,7 +49,7 @@ const cardFieldSchema = {
  * @class Match
  */
 const schema = new Schema({
-  startedAt: { type: Number, default: +new Date(), required: true },
+  startedAt: { type: Date, default: new Date(), required: true },
   timer: { type: Number, default: 20 * 60 * 60, required: true },
   status: {
     type: String,

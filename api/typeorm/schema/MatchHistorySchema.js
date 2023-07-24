@@ -26,6 +26,7 @@ export default new EntitySchema({
       target: 'MatchHistoryPlayer',
       type: 'one-to-many',
       mappedBy: 'matchHistory',
+      cascade: true,
     },
   },
 });
