@@ -1,6 +1,7 @@
 <script setup>
   import { IconHeart, IconSword, IconShield } from '@tabler/icons-vue';
-  import { UseImage } from '@vueuse/components';
+  import { vIntersectionObserver } from '@vueuse/components';
+  import { useImage } from '@vueuse/core';
   import { computed, ref } from 'vue';
 
   import {
@@ -53,9 +54,37 @@
    */
   const operatorDescriptionRef = ref(null);
   const cardIsActive = ref(false);
+  const intersected = ref(false);
+  const {
+    execute: loadE1Picture,
+    isLoading: e1PictureLoading,
+    isReady: e1PictureReady,
+  } = useImage(
+    {
+      src: operatorPictures.value.E1.link,
+    },
+    {
+      immediate: false,
+      throwError: false,
+    }
+  );
+  const {
+    execute: loadE2Picture,
+    isLoading: e2PictureLoading,
+    isReady: e2PictureReady,
+  } = useImage(
+    {
+      src: operatorPictures.value.E2.link,
+    },
+    {
+      immediate: false,
+      throwError: false,
+    }
+  );
+  const isActive = computed(() => (props.active === null ? cardIsActive.value : props.active));
   const operatorCardClass = computed(() => ({
     'operator-card': true,
-    'operator-card--active': props.active === null ? cardIsActive.value : props.active,
+    'operator-card--active': isActive.value,
     'cursor-pointer': props.active === null,
   }));
   const wrapperClass = computed(() => ({
@@ -72,9 +101,28 @@
 
     return `${props.operator.name} is a ${props.operator.rarity} stars operator with ${props.operator.statistics.hp} health points, ${props.operator.statistics.atk} attack, ${props.operator.statistics.def} defense and costs ${props.operator.statistics.cost} points to deploy.`;
   });
+
   const handleSelect = () => {
     cardIsActive.value = !cardIsActive.value;
+
     emit('select', props.operator);
+  };
+
+  /**
+   * @param {IntersectionObserverEntry[]} entries
+   * @param {IntersectionObserver} observer
+   */
+  const loadPictures = (entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        intersected.value = true;
+
+        loadE1Picture();
+        loadE2Picture();
+
+        observer.unobserve(entry.target);
+      }
+    });
   };
 </script>
 
@@ -88,6 +136,8 @@
     @click="() => handleSelect()"
     tabindex="0"
     role="button"
+    v-intersection-observer="[loadPictures, { threshold: 0.1 }]"
+    v-bind="$attrs"
   >
     <div aria-hidden="true" :class="wrapperClass">
       <div v-if="operatorPictures.class" class="operator-card__class-icon">
@@ -98,29 +148,40 @@
         :alt="`Background picture for operator ${operator.name} with rarity ${operator.rarity}`"
         class="operator-card__background-image"
       />
-      <UseImage
-        :src="operatorPictures.E1.link"
-        :alt="`${operator.name} ${operatorPictures.E1.name}`"
-        class="operator-card__cover-image"
+      <Transition
+        enter-active-class="transition-opacity duration-300"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-300"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+        mode="out-in"
       >
-        <template #loading>
-          <div class="flex h-full items-center justify-center">
-            <IconSpinner
-              class="h-12 w-12 fill-slate-200 text-gray-500"
-              :label="`Loading ${operatorPictures.E1.name} picture for operator ${operator.name}`"
-            />
-          </div>
-        </template>
-        <template #error>
-          <div class="flex h-full flex-col items-center justify-center gap-3">
-            <IconHumanResourceDepartment class="h-36 w-36 fill-white" />
-            <span>
-              Unable to load {{ operatorPictures.E1.name }} picture for operator
-              {{ operator.name }}.
-            </span>
-          </div>
-        </template>
-      </UseImage>
+        <img
+          :src="operatorPictures.E1.link"
+          :alt="`${operator.name} ${operatorPictures.E1.name}`"
+          class="operator-card__cover-image"
+          v-if="e1PictureReady"
+        />
+        <div
+          class="flex h-full items-center justify-center"
+          v-else-if="e1PictureLoading || !intersected"
+        >
+          <IconSpinner
+            class="h-12 w-12 fill-slate-200 text-gray-500"
+            :label="`Loading ${operatorPictures.E1.name} picture for operator ${operator.name}`"
+          />
+        </div>
+        <div
+          class="flex h-full flex-col items-center justify-start gap-3 text-center text-primary"
+          v-else
+        >
+          <IconHumanResourceDepartment class="h-36 w-36 fill-primary" />
+          <span>
+            Unable to load {{ operatorPictures.E1.name }} picture for operator {{ operator.name }}.
+          </span>
+        </div>
+      </Transition>
     </div>
     <div class="operator-card__info">
       <span
@@ -149,30 +210,40 @@
         </div>
       </div>
     </div>
-    <UseImage
-      :src="operatorPictures.E2.link"
-      :alt="`${operator.name} ${operatorPictures.E2.name}`"
-      class="operator-card__character"
+    <Transition
+      enter-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      :enter-to-class="isActive ? 'opacity-100' : 'opacity-0'"
+      leave-active-class="transition-opacity duration-300"
+      :leave-from-class="isActive ? 'opacity-100' : 'opacity-0'"
+      leave-to-class="opacity-0"
+      mode="out-in"
     >
-      <template #loading>
-        <div class="operator-card__character flex h-full items-center justify-center">
-          <IconSpinner
-            class="h-12 w-12 fill-slate-200 text-gray-500"
-            :label="`Loading ${operatorPictures.E2.name} picture for operator ${operator.name}`"
-          />
-        </div>
-      </template>
-      <template #error>
-        <div
-          class="operator-card__character flex h-full flex-col items-center justify-center gap-3"
-        >
-          <IconHumanResourceDepartment class="h-36 w-36 fill-white" />
-          <span>
-            Unable to load {{ operatorPictures.E2.name }} picture for operator {{ operator.name }}.
-          </span>
-        </div>
-      </template>
-    </UseImage>
+      <img
+        :src="operatorPictures.E2.link"
+        :alt="`${operator.name} ${operatorPictures.E2.name}`"
+        class="operator-card__character"
+        v-if="e2PictureReady"
+      />
+      <div
+        class="operator-card__character flex h-full items-center justify-center"
+        v-else-if="e2PictureLoading || !intersected"
+      >
+        <IconSpinner
+          class="h-12 w-12 fill-slate-200 text-gray-500"
+          :label="`Loading ${operatorPictures.E2.name} picture for operator ${operator.name}`"
+        />
+      </div>
+      <div
+        class="operator-card__character flex h-full max-h-[18.75rem] flex-col items-center justify-center gap-3 text-center"
+        v-else
+      >
+        <IconHumanResourceDepartment class="h-36 w-36 fill-white" />
+        <span>
+          Unable to load {{ operatorPictures.E2.name }} picture for operator {{ operator.name }}.
+        </span>
+      </div>
+    </Transition>
     <p
       v-unique-id="{ prefix: 'operator-description-' }"
       ref="operatorDescriptionRef"

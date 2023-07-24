@@ -1,6 +1,6 @@
 <script setup>
   import { IconLock, IconLockOpen } from '@tabler/icons-vue';
-  import { onClickOutside, useActiveElement, useElementHover } from '@vueuse/core';
+  import { onClickOutside, useActiveElement, useElementHover, useStorage } from '@vueuse/core';
   import { ref, onMounted, onBeforeUnmount, computed, watch, toRefs } from 'vue';
 
   /**
@@ -19,7 +19,7 @@
   const { items: sidebarItems } = toRefs(props);
   const activeElement = useActiveElement();
   const isHovered = ref(false);
-  const isLocked = ref(false);
+  const isLocked = useStorage('sidebar-locked', false, localStorage);
   /**
    * @type {import('vue').Ref<HTMLElement | null>} asideRoot
    */
@@ -28,6 +28,7 @@
   const isMobile = ref(false);
   const itemClass =
     'flex items-center gap-2 transition-all duration-200 ease-in-out hover:scale-110 focus-visible:scale-110 h-8';
+  const defaultLabelClass = isLocked.value ? '' : 'w-0';
 
   const isExpanded = computed(() => {
     return (isHovered.value || isLocked.value) && !isMobile.value;
@@ -191,13 +192,13 @@
           <RouterLink :to="item.to" :class="itemClass" active-class="text-accent" v-if="item.to">
             <component v-bind:is="item.icon" class="h-6 w-6" />
             <Transition @enter="onLinkEnter" @leave="onLinkLeave" :css="false">
-              <span v-show="isExpanded" class="w-0">{{ item.label }}</span>
+              <span v-show="isExpanded" :class="defaultLabelClass">{{ item.label }}</span>
             </Transition>
           </RouterLink>
           <button type="button" @click="item.onClick" v-else-if="item.onClick" :class="itemClass">
             <component v-bind:is="item.icon" class="h-6 w-6" />
             <Transition @enter="onLinkEnter" @leave="onLinkLeave" :css="false">
-              <span v-show="isExpanded" class="w-0">{{ item.label }}</span>
+              <span v-show="isExpanded" :class="defaultLabelClass">{{ item.label }}</span>
             </Transition>
           </button>
         </li>

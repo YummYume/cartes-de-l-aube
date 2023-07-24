@@ -11,7 +11,7 @@
     IconLogout,
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
-  import { useImage, useMagicKeys } from '@vueuse/core';
+  import { useImage, useMagicKeys, useStorage } from '@vueuse/core';
   import { storeToRefs } from 'pinia';
   import { computed, ref, watch } from 'vue';
   import { RouterView, useRouter } from 'vue-router';
@@ -19,6 +19,7 @@
   import { useAuth } from '@/stores/auth';
   import { useMoneyModal } from '@/stores/money-modal';
 
+  import CookieBanner from './components/CookieBanner.vue';
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
@@ -29,6 +30,7 @@
   const store = useAuth();
   const router = useRouter();
   const moneyModalStore = useMoneyModal();
+  const cookieAccepted = useStorage('cookie-accepted', false, localStorage);
   const { auth } = storeToRefs(store);
   const isLogin = ref(true);
   const authModalOpened = ref(false);
@@ -155,12 +157,14 @@
             type="button"
             class="absolute bottom-2 left-2 z-50 opacity-0 transition-all hover:opacity-100 focus-visible:opacity-100"
             aria-label="You found a secret! Press Shift + o + m to open it. Or just... You know, click this button."
+            aria-keyshortcuts="Shift+o+m"
             @click="moneyModalStore.openMoneyModal()"
             v-if="router.currentRoute.value.name === 'store'"
           >
             <kbd class="kbd bg-secondary">Shift</kbd> + <kbd class="kbd bg-secondary">o</kbd> +
             <kbd class="kbd bg-secondary">m</kbd>
           </button>
+          <CookieBanner :accepted="cookieAccepted" @accept="cookieAccepted = true" />
         </div>
       </div>
 
