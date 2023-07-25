@@ -8,6 +8,13 @@ RUN yarn install --frozen-lockfile && yarn build
 
 FROM nginxinc/nginx-unprivileged:1.25
 
+WORKDIR /usr/share/nginx
+
 COPY ./docker/prod/front/nginx.conf /etc/nginx/nginx.conf
 
-COPY --from=BUILD /home/node/front/dist /usr/share/nginx/app
+COPY --from=BUILD /home/node/front/dist ./app
+
+RUN mkdir log && \
+    touch log/error.log && \
+    touch log/access.log && \
+    chown -R 101:101 log
