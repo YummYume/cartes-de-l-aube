@@ -13,19 +13,21 @@
   import { useHead } from '@unhead/vue';
   import { useImage, useMagicKeys, useStorage } from '@vueuse/core';
   import { storeToRefs } from 'pinia';
-  import { computed, ref, watch } from 'vue';
+  import { computed, defineAsyncComponent, ref, watch } from 'vue';
   import { RouterView, useRouter } from 'vue-router';
 
   import { useAuth } from '@/stores/auth';
   import { useMoneyModal } from '@/stores/money-modal';
 
-  import CookieBanner from './components/CookieBanner.vue';
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
-  import AuthModal from './components/modal/AuthModal.vue';
-  import LogoutModal from './components/modal/LogoutModal.vue';
-  import MoneyModal from './components/modal/MoneyModal.vue';
+
+  // Async components
+  const CookieBanner = defineAsyncComponent(() => import('./components/CookieBanner.vue'));
+  const AuthModal = defineAsyncComponent(() => import('./components/modal/AuthModal.vue'));
+  const LogoutModal = defineAsyncComponent(() => import('./components/modal/LogoutModal.vue'));
+  const MoneyModal = defineAsyncComponent(() => import('./components/modal/MoneyModal.vue'));
 
   const store = useAuth();
   const router = useRouter();

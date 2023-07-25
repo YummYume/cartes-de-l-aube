@@ -1,5 +1,6 @@
 COMPOSE=docker compose
 COMPOSECI=docker compose -f compose.ci.yml
+COMPOSEPROD=docker compose -f compose.prod.yml
 EXECAPI=$(COMPOSE) exec api
 EXECFRONT=$(COMPOSE) exec front
 ifeq (up,$(firstword $(MAKECMDGOALS)))
@@ -21,6 +22,11 @@ start-nocache:
 start-ci:
 	$(COMPOSECI) build --force-rm --no-cache
 	$(COMPOSECI) up -d api front mongodb mariadb --remove-orphans --force-recreate
+
+start-prod:
+	$(COMPOSEPROD) build --force-rm --no-cache
+	$(COMPOSEPROD) up -d --remove-orphans --force-recreate
+	$(COMPOSEPROD) exec api yarn sync:operators
 
 up:
 ifndef UP_ENV_FILE

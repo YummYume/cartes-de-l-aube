@@ -1,5 +1,12 @@
 <script setup>
-  import OrundumItem from './OrundumItem.vue';
+  import { defineAsyncComponent } from 'vue';
+
+  import OrundumItemSkeleton from './OrundumItemSkeleton.vue';
+
+  const OrundumItem = defineAsyncComponent({
+    loader: () => import('./OrundumItem.vue'),
+    loadingComponent: OrundumItemSkeleton,
+  });
 
   defineProps({
     /**
