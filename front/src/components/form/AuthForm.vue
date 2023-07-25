@@ -23,6 +23,7 @@
 
   const onSubmit = async (values) => {
     emit('onAsyncSubmit', 'progress');
+
     try {
       if (props.isLogin) {
         await signin(values);
@@ -35,13 +36,19 @@
       if (props.isLogin) {
         if (error.status === 401) {
           toast.error('Invalid credentials.');
+        } else {
+          toast.error(
+            'Something went wrong while trying to log in to your account. Please try again.'
+          );
         }
       } else if (error.status === 409) {
         toast.error('Username already exists.');
       } else if (error.status === 422) {
         toast.error('Invalid username or password.');
       } else {
-        toast.error('Something went wrong.');
+        toast.error(
+          'Something went wrong while trying to register your account. Please try again.'
+        );
       }
 
       emit('onAsyncSubmit', 'fail');
