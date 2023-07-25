@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: docker/api/Dockerfile
+      dockerfile: docker/prod/api/Dockerfile
     depends_on:
       mongodb:
         condition: service_healthy
@@ -38,8 +38,6 @@ services:
     build:
       context: .
       dockerfile: docker/prod/front/Dockerfile
-    volumes:
-      - ./data/front-logs:/var/log/nginx
     depends_on:
       api:
         condition: service_healthy
