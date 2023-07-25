@@ -15,6 +15,7 @@ coverage
 compose.override
 /data
 /letsencrypt
+.env.*
 
 # Editor directories and files
 .vscode

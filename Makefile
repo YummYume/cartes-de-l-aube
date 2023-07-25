@@ -1,6 +1,6 @@
 COMPOSE=docker compose
 COMPOSECI=docker compose -f compose.ci.yml
-COMPOSEPROD=docker compose -f compose.prod.yml
+COMPOSEPROD=docker compose -f compose.prod.yml --env-file .env --env-file .env.prod
 EXECAPI=$(COMPOSE) exec api
 EXECFRONT=$(COMPOSE) exec front
 ifeq (up,$(firstword $(MAKECMDGOALS)))
