@@ -1,19 +1,4 @@
 /**
- * Generate a random key
- * @param {number} length
- * @returns {string}
- */
-export function genKey(length = 5) {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < length; i += 1) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-/**
- *
  * @param {object} obj
  * @param {string[]} keys
  * @returns {object}
@@ -24,4 +9,20 @@ export function keysRemover(obj, keys) {
     delete newObj[key];
   });
   return newObj;
+}
+
+/**
+ * @param {[]} arr
+ * @returns {[]}
+ */
+export function shuffleArray(arr) {
+  const newArr = [...arr];
+  for (let i = newArr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = newArr[i];
+    newArr[i] = newArr[j];
+    newArr[j] = temp;
+  }
+
+  return arr;
 }

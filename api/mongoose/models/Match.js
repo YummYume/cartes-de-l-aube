@@ -1,5 +1,7 @@
 import { Schema, model } from 'mongoose';
 
+import { schema as operatorSchema } from './Operator.js';
+
 export const MatchStatusEnum = {
   WAITING: 'waiting',
   RUNNING: 'running',
@@ -16,19 +18,6 @@ const playerSchema = new Schema(
     energy: { type: Number, default: 2, min: 0, max: 10, required: true },
     deck: { type: Array, default: [], required: true },
     hand: { type: Array, default: [], required: true },
-  },
-  { _id: false }
-);
-
-const operatorSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    statistics: {
-      hp: { type: Number, required: true },
-      atk: { type: Number, required: true },
-      def: { type: Number, required: true },
-      cost: { type: Number, required: true },
-    },
   },
   { _id: false }
 );

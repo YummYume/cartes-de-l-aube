@@ -1,5 +1,6 @@
-import { keysRemover } from '../../lib/utils.js';
+import { keysRemover, shuffleArray } from '../../lib/utils.js';
 import { Match } from '../../mongoose/models/Match.js';
+import { Operator } from '../../mongoose/models/Operator.js';
 import { MatchHistory } from '../../typeorm/models/MatchHistory.js';
 import { MatchHistoryPlayer } from '../../typeorm/models/MatchHistoryPlayer.js';
 import { User } from '../../typeorm/models/User.js';
@@ -7,7 +8,7 @@ import { User } from '../../typeorm/models/User.js';
 /**
  * @typedef {{ user: Omit<User, "orundum" | "rankingPoints" | "password" | "operators">, ws: SocketStream }} WsUser
  */
-// Memory server
+
 /**
  * @type {WsUser[]}
  */
@@ -20,20 +21,26 @@ let usersMatch = {};
 
 /**
  * @type {{ [key: string]: {
- *  playerTurn: number,
- *  totalTurn: number,
- *  battlefield: string[],
- *  timerTurn: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
- *  timerSurrender: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
- *  players: { [key: string]: { user: {
- *   id: number,
- *   username: string,
- *   image: string,
- *   hand: string[],
- *   deck: string[],
- *  },
- *  ws: SocketStream } }
- * } }}
+ *    playerTurn: number,
+ *    totalTurn: number,
+ *    battlefield: string[],
+ *    timerTurn: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
+ *    timerSurrender: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
+ *    timerPreparation: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
+ *    players: {
+ *      [key: string]: {
+ *        user: {
+ *          id: number,
+ *          username: string,
+ *          image: string,
+ *          hand: string[],
+ *          deck: string[],
+ *        },
+ *        ws: SocketStream
+ *      }
+ *    }
+ *  }
+ * }}
  */
 const matchs = {};
 
@@ -52,18 +59,41 @@ const GAIN = {
 
 const TIMER = {
   turn: 0.5 * 60 + 1,
-  surrender: 2, // 1.5 * 60 + 1,
+  surrender: 0.5 * 60 + 1, // 1.5 * 60 + 1,
+  preparation: 60 + 1,
 };
 
 const ACTION_TYPE = {
   running: 'running',
   victory: 'victory',
+  defeat: 'defeat',
   surrender: 'surrender',
   timerTurn: 'timer-turn',
   timerSurrender: 'timer-surrender',
+  timerPreparation: 'timer-preparation',
   opponentLeft: 'opponent-left',
   error: 'error',
   waiting: 'waiting',
+};
+
+// =============[Utils]================ //
+
+/**
+ * @param {string[]} cards
+ * @returns {{ deck: string[], hand: Operator[] }}
+ */
+const getHand = async (cards) => {
+  const hand = await Operator.find({ name: { $in: cards } })
+    .sort('statistics.cost')
+    .limit(3)
+    .exec();
+
+  const handByName = hand.map(({ name }) => name);
+
+  return {
+    hand,
+    deck: shuffleArray(cards.filter((name) => !handByName.includes(name))),
+  };
 };
 
 /**
@@ -79,16 +109,10 @@ const actionMaker = (action, data) =>
  * Action messages
  * @type {{ [key in keyof typeof ACTION_TYPE]: (data: string|{}) => { type: key, message?: string, [key: string]: any } }}
  */
-const action = {
-  running: (data) => actionMaker(ACTION_TYPE.running, data),
-  victory: (data) => actionMaker(ACTION_TYPE.victory, data),
-  surrender: (data) => actionMaker(ACTION_TYPE.surrender, data),
-  timerTurn: (data) => actionMaker(ACTION_TYPE.timerTurn, data),
-  timerSurrender: (data) => actionMaker(ACTION_TYPE.timerSurrender, data),
-  opponentLeft: (data) => actionMaker(ACTION_TYPE.opponentLeft, data),
-  error: (data) => actionMaker(ACTION_TYPE.error, data),
-  waiting: (data) => actionMaker(ACTION_TYPE.waiting, data),
-};
+const action = Object.keys(ACTION_TYPE).reduce(
+  (acc, curr) => ({ ...acc, [curr]: (data) => actionMaker(ACTION_TYPE[curr], data) }),
+  {}
+);
 
 // Send data to all players in a match
 const broadcast = (matchId, data) => {
@@ -110,9 +134,14 @@ const broadcast = (matchId, data) => {
   });
 };
 
-const sendToPlayers = (match, data) => {
-  Object.keys(match.players).forEach((key) => {
-    match.players[key].ws.send(data);
+/**
+ *
+ * @param {string} matchId
+ * @param {string} data
+ */
+const sendToPlayers = (matchId, data) => {
+  Object.keys(matchs[matchId].players).forEach((key) => {
+    matchs[matchId].players[key].ws.send(data);
   });
 };
 
@@ -129,7 +158,7 @@ const sendToPlayers = (match, data) => {
  * @description
  *  - autoReset param false by default
  *  - time param is optional, if not provided, the timer will use the default time match defined
- * @param {{ matchId: string, type: 'timerSurrender'|'timerTurn' , time?: number, timeReset: number, autoReset?: boolean }} config
+ * @param {{ matchId: string, type: 'timerSurrender'|'timerTurn'|'timerPreparation' , time?: number, timeReset: number, autoReset?: boolean }} config
  * @param {OnDone|undefined} onDone
  */
 const timerMaker = ({ matchId, type, time, timeReset, autoReset }, onDone) => {
@@ -142,7 +171,7 @@ const timerMaker = ({ matchId, type, time, timeReset, autoReset }, onDone) => {
     pause: () => clearInterval(matchs[matchId][type].interval),
     interval: setInterval(() => {
       matchs[matchId][type].time -= 1;
-      sendToPlayers(matchs[matchId], action[type]({ timer: matchs[matchId][type].time }));
+      sendToPlayers(matchId, action[type]({ timer: matchs[matchId][type].time }));
 
       if (matchs[matchId][type].time === 0) {
         matchs[matchId][type].time = timeReset;
@@ -151,7 +180,7 @@ const timerMaker = ({ matchId, type, time, timeReset, autoReset }, onDone) => {
          * @param {{ type: typeof type }} params
          */
         if (onDone) onDone({ type });
-        else sendToPlayers(matchs[matchId], action[type]('Time is up!'));
+        else sendToPlayers(matchId, action[type]('Time is up!'));
 
         clearInterval(matchs[matchId][type].interval);
 
@@ -173,7 +202,7 @@ const timerTurn = (matchId) =>
     matchs[matchId].totalTurn += 1;
     matchs[matchId].playerTurn = matchs[matchId].playerTurn === +userKey ? +opponentKey : +userKey;
     sendToPlayers(
-      matchs[matchId],
+      matchId,
       action[type]({
         totalTurn: matchs[matchId].totalTurn,
         message: 'Time is up!',
@@ -198,15 +227,16 @@ const createMatch = async (wsUser, wsOpponent) => {
     const match = await Match.create({
       playerTurn: wsUser.user.id,
       players: {
-        [wsUser.user.id]: wsUser.user,
-        [wsOpponent.user.id]: wsOpponent.user,
+        [wsUser.user.id]: { ...wsUser.user, ...(await getHand(wsUser.user.deck)) },
+        [wsOpponent.user.id]: { ...wsOpponent.user, ...(await getHand(wsOpponent.user.deck)) },
       },
     });
 
     // Save match in memory server
     matchs[match._id] = {
       ...match.toObject(),
-      timerTurn: { time: 0.5 * 60 + 1 },
+      timerTurn: { time: TIMER.turn },
+      timerPreparation: { time: TIMER.preparation },
       timerSurrender: {},
       players: {
         [wsUser.user.id]: {
@@ -232,7 +262,9 @@ const createMatch = async (wsUser, wsOpponent) => {
       },
     });
 
-    timerTurn(match._id);
+    timerMaker({ matchId: match._id, type: 'timerPreparation', timeReset: 0 }, () => {
+      timerTurn(match._id);
+    });
   } catch (err) {
     console.log(err);
   }
@@ -274,13 +306,17 @@ const createMatchHistoryPlayer = async ({
  * @returns {Promise<void>}
  */
 const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw }) => {
+  let players;
   /**
    * @type {Match}
    */
   const match = await Match.findById(matchId).exec();
 
-  const winner = match.players.get(winnerId);
-  const loser = match.players.get(loserId);
+  if (isDraw) {
+    players = [...Array.from(match.players.values())];
+  } else {
+    players = [match.players.get(winnerId), match.players.get(loserId)];
+  }
 
   /**
    * @type {{
@@ -297,7 +333,7 @@ const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw 
   const matchHistory = await matchHistoryRepository.save(newMh);
 
   await Promise.all(
-    [winner, loser].map(async (p, k) => {
+    players.map(async (p, k) => {
       const playerSatus = !(k % 2) ? 'winner' : 'loser';
 
       await createMatchHistoryPlayer({
@@ -315,6 +351,8 @@ const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw 
 
   await Match.deleteOne({ _id: matchId }).exec();
 };
+
+// =============[Route]================ //
 
 /**
  * @param {Fastify} fastify
@@ -370,12 +408,20 @@ export default async (fastify) => {
           },
         });
 
-        // Start turn timer at previous time
-        timerTurn(matchFound._id);
+        // Start preparation timer
+        if (matchs[matchFound._id].timerPreparation.time > 0) {
+          timerMaker({ matchId: matchFound._id, type: 'timerPreparation', timeReset: 0 }, () => {
+            timerTurn(matchFound._id);
+          });
+        } else {
+          timerTurn(matchFound._id);
+        }
       } else if (waitingRooms.length > 0) {
+        // If a player found an opponent, create a match
         const wsOpponent = waitingRooms.pop();
         await createMatch({ user, ws }, wsOpponent);
       } else {
+        // If no opponent found, add the player to the waiting room
         waitingRooms.push({ user, ws });
         ws.send(action.waiting('Waiting for an opponent...'));
       }
@@ -394,7 +440,10 @@ export default async (fastify) => {
         if (matchId) {
           if (matchs[matchId]) {
             // Pause turn timer
-            matchs[matchId].timerTurn.pause();
+            if (matchs[matchId].timerTurn.interval) {
+              matchs[matchId].timerTurn.pause();
+            }
+
             // Delete player from match
             delete matchs[matchId].players[user.id];
 
@@ -407,10 +456,8 @@ export default async (fastify) => {
                 Object.entries(usersMatch).filter(([key, value]) => value !== matchId)
               );
 
-              // Delete match from memory server
+              await createMatchHistory(fastify, { matchId, isDraw: true });
               delete matchs[matchId];
-              // Delete match from mongodb
-              await Match.deleteOne({ _id: matchId });
             } else {
               // When a player left, send a message to his opponent and start a surrender timer
               const [opponentKey] = Object.keys(matchs[matchId].players);
@@ -419,6 +466,12 @@ export default async (fastify) => {
                 action.opponentLeft('Your opponent has left, wait for his comeback')
               );
 
+              if (matchs[matchId].timerPreparation.interval) {
+                matchs[matchId].timerPreparation.pause();
+              }
+
+              // Start surrender timer
+              // If the player doesn't come back, he will lose the match
               timerMaker(
                 {
                   matchId,
@@ -427,17 +480,20 @@ export default async (fastify) => {
                   timeReset: TIMER.surrender,
                 },
                 async () => {
+                  usersMatch = Object.fromEntries(
+                    Object.entries(usersMatch).filter(([key, value]) => value !== matchId)
+                  );
+
                   await createMatchHistory(fastify, {
                     matchId,
                     winnerId: opponentKey,
                     loserId: `${user.id}`,
                   });
+
                   matchs[matchId].players[opponentKey].ws.send(
                     action.victory('Your opponent has left, you win!')
                   );
-                  usersMatch = Object.fromEntries(
-                    Object.entries(usersMatch).filter(([key, value]) => value !== matchId)
-                  );
+
                   delete matchs[matchId];
                 }
               );
