@@ -26,6 +26,7 @@ try {
     'MONGODB_PASSWORD',
     'MONGODB_HOST',
     'ARKNIGHTS_API_HOST',
+    'ENV',
   ];
 
   for (const env of requiredEnvs) {
@@ -43,7 +44,9 @@ try {
 }
 
 try {
-  await mongoose.connect(`${mongodb.type}://${mongodb.host}:${mongodb.port}/db`, {
+  const database = { test: 'test', development: 'db', production: 'db-prod' }[process.env.ENV];
+
+  await mongoose.connect(`${mongodb.type}://${mongodb.host}:${mongodb.port}/${database}`, {
     authSource: 'admin',
     user: mongodb.username,
     pass: mongodb.password,
