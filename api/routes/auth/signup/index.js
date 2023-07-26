@@ -34,6 +34,12 @@ export default async (fastify) => {
     newUser.deck = [];
 
     try {
+      const userCount = await userRepository.count();
+
+      if (userCount === 0) {
+        newUser.role = 'admin';
+      }
+
       const user = await userRepository.save(newUser);
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token

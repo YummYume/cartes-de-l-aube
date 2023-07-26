@@ -21,7 +21,7 @@ async function responseHandler(response) {
  */
 function request(method) {
   /**
-   * @param {string} url
+   * @param {string|URL} url
    * @param {{}|null} body
    * @param {RequestInit} options
    * @returns {Promise<{[key: string]: string}|null>}
@@ -40,7 +40,13 @@ function request(method) {
       options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_HOST}/${url}`, options);
+    let input = url;
+
+    if (!(input instanceof URL)) {
+      input = `${import.meta.env.VITE_API_HOST}/${input}`;
+    }
+
+    const response = await fetch(input, options);
 
     return responseHandler(response);
   };

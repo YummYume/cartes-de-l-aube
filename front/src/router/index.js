@@ -1,3 +1,4 @@
+import nprogress from 'accessible-nprogress';
 import { createRouter, createWebHistory } from 'vue-router';
 import { toast } from 'vue3-toastify';
 
@@ -7,6 +8,10 @@ import { getStoreItems } from '@/api/store';
 import { useAuth } from '@/stores/auth';
 
 import HomeView from '../views/HomeView.vue';
+
+nprogress.configure({
+  showSpinner: false,
+});
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -91,6 +96,12 @@ const router = createRouter({
       component: () => import('../views/HeadhuntView.vue'),
     },
     {
+      path: '/admin',
+      name: 'admin',
+      meta: { requiresAuth: true, requiresAdmin: true },
+      component: () => import('../views/AdminView.vue'),
+    },
+    {
       path: '/store',
       name: 'store',
       props: true,
@@ -123,8 +134,16 @@ const router = createRouter({
 });
 
 let initialized = false;
+let progressBarTimeout = null;
 
 router.beforeEach(async (to, from, next) => {
+  if (from.name) {
+    window.clearTimeout(progressBarTimeout);
+    progressBarTimeout = window.setTimeout(() => {
+      nprogress.start();
+    }, 100);
+  }
+
   if (!initialized) {
     await useAuth().me();
 
@@ -135,9 +154,16 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth && !store.auth) {
     next({ name: 'home' });
+  } else if (to.meta.requiresAdmin && store.auth.role !== 'admin') {
+    next({ name: 'home' });
   } else {
     next();
   }
+});
+
+router.afterEach(() => {
+  window.clearTimeout(progressBarTimeout);
+  nprogress.done();
 });
 
 export default router;

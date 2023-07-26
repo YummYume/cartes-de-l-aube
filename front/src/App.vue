@@ -9,6 +9,7 @@
     IconCards,
     IconLogin,
     IconLogout,
+    IconLock,
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { useImage, useMagicKeys, useStorage } from '@vueuse/core';
@@ -49,6 +50,12 @@
     { icon: IconHistory, label: 'History', to: '/history', active: !!auth.value },
     { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: !!auth.value },
     { icon: IconShoppingBag, label: 'Store', to: '/store', active: !!auth.value },
+    {
+      icon: IconLock,
+      label: 'Admin',
+      to: '/admin',
+      active: auth.value?.role === 'admin',
+    },
     {
       icon: IconLogin,
       label: 'Login',

@@ -1,6 +1,6 @@
 <script setup>
   import { IconInfoCircle } from '@tabler/icons-vue';
-  import { useField } from 'vee-validate';
+  import { Field, useField } from 'vee-validate';
   import { computed, ref, toRef, watch } from 'vue';
   import { useTippy } from 'vue-tippy';
 
@@ -11,7 +11,7 @@
     },
     type: {
       type: String,
-      required: true,
+      default: 'text',
     },
     label: {
       type: String,
@@ -31,6 +31,10 @@
     },
     initialValue: {
       default: '',
+    },
+    options: {
+      validator: (value) => Array.isArray(value) || value === null,
+      default: null,
     },
     infoTagMsg: String,
   });
@@ -129,7 +133,28 @@
       :aria-errormessage="errorId"
       @input="onInput"
       @blur="handleBlur"
+      v-bind="$attrs"
+      v-if="options === null"
     />
+    <Field
+      as="select"
+      :value="inputValue"
+      :placeholder="placeholder"
+      :required="isRequired"
+      class="form-field__input"
+      :name="id"
+      :id="id"
+      :aria-invalid="isInvalid"
+      :aria-errormessage="errorId"
+      @input="onInput"
+      @blur="handleBlur"
+      v-bind="$attrs"
+      v-else
+    >
+      <option v-for="option in options" :key="option.value" :value="option.value">
+        {{ option.label }}
+      </option>
+    </Field>
     <Transition
       enter-active-class="transition ease-out duration-100"
       enter-from-class="opacity-0"

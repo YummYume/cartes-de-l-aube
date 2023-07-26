@@ -50,6 +50,7 @@ test(`[${url}]: with a token`, async () => {
     image: 'image',
     username: 'test',
     orundum: 12000,
+    role: 'admin',
     deck: [],
     operators: [],
   });

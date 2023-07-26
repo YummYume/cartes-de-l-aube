@@ -2,7 +2,7 @@
  * User types
  * @typedef {{ username: string, password: string, passwordConfirm: string, image: string }} SignupPayload
  * @typedef {{ username: string, password: string }} SigninPayload
- * @typedef {{ username: string, orundum: number, image?: string }} User
+ * @typedef {{ username: string, orundum: number, image?: string, role: 'user' | 'admin' }} User
  * @typedef {import('vue').Ref<User>} Auth
  * @typedef {typeof import('@/utils/api').default} api
  * @typedef {{ message: string }} Message
