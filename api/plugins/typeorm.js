@@ -49,6 +49,6 @@ export default fp(async (fastify) => {
       }
     });
   } catch (err) {
-    fastify.log.error('MariaDB: Error', toString(err));
+    fastify.log.error(err, 'MariaDB: Error');
   }
 });
