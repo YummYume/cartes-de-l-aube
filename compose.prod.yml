@@ -30,8 +30,9 @@ services:
       retries: 30
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.back.rule=Host(`${API_HOST:?err}`)"
+      - "traefik.http.routers.back.rule=Host(`${API_HOST:?err}`, `www.${API_HOST:?err}`)"
       - "traefik.http.routers.back.entrypoints=websecure"
+      - "traefik.http.routers.back.middlewares=strip-www"
       - "traefik.http.routers.back.tls=true"
       - "traefik.http.routers.back.tls.certresolver=defaultresolver"
       - "traefik.http.services.back.loadbalancer.server.port=3000"
@@ -47,8 +48,9 @@ services:
     container_name: vue-game-front
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.front.rule=Host(`${FRONT_HOST:?err}`)"
+      - "traefik.http.routers.front.rule=Host(`${FRONT_HOST:?err}, `www.${FRONT_HOST:?err}`)"
       - "traefik.http.routers.front.entrypoints=websecure"
+      - "traefik.http.routers.front.middlewares=strip-www"
       - "traefik.http.routers.front.tls=true"
       - "traefik.http.routers.front.tls.certresolver=defaultresolver"
       - "traefik.http.services.front.loadbalancer.server.port=4000"
@@ -108,12 +110,15 @@ services:
       - "--certificatesresolvers.defaultresolver.acme.storage=/letsencrypt/acme.json"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`${DASHBOARD_HOST:?err}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.api.rule=Host(`${DASHBOARD_HOST:?err}`, `www.${DASHBOARD_HOST:?err}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=defaultresolver"
       - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.middlewares=auth"
+      - "traefik.http.routers.api.middlewares=strip-www,auth"
       - "traefik.http.middlewares.auth.basicauth.users=${DASHBOARD_USERS:?err}"
+      - "traefik.http.middlewares.strip-www.redirectregex.regex=^https?://(www\\.)(.+)"
+      - "traefik.http.middlewares.strip-www.redirectregex.replacement=https://$${2}"
+      - "traefik.http.middlewares.strip-www.redirectregex.permanent=true"
     ports:
       - "443:443"
       - "80:80"
