@@ -26,3 +26,14 @@ export function shuffleArray(arr) {
 
   return arr;
 }
+
+/**
+ * Find object in array by a key
+ * @param {[]} arr
+ * @param {object} obj
+ * @param {string} targetKey
+ * @returns {boolean}
+ */
+export function objInArr(arr, obj, targetKey) {
+  return arr.some((item) => item[targetKey] === obj[targetKey]);
+}

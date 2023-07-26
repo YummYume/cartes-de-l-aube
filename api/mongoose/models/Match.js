@@ -1,7 +1,5 @@
 import { Schema, model } from 'mongoose';
 
-import { schema as operatorSchema } from './Operator.js';
-
 export const MatchStatusEnum = {
   WAITING: 'waiting',
   RUNNING: 'running',
@@ -13,33 +11,26 @@ export const MatchStatusEnum = {
 const playerSchema = new Schema(
   {
     id: { type: Number, required: true },
+    hp: { type: Number, default: 5, min: 0, max: 5, required: true },
     username: { type: String, required: true },
     picture: { type: String, required: false },
-    energy: { type: Number, default: 2, min: 0, max: 10, required: true },
-    deck: { type: Array, default: [], required: true },
-    hand: { type: Array, default: [], required: true },
+    energy: { type: Number, default: 5, min: 0, max: 10, required: true },
+    deck: [String],
+    gameDeck: [{ type: Schema.Types.ObjectId, ref: 'Operator' }],
   },
   { _id: false }
 );
 
-const cardFieldSchema = {
-  type: Map,
-  of: new Schema(
-    {
-      operator: operatorSchema,
-      position: { type: Number, min: 0, max: 3, required: true },
-    },
-    { _id: false }
-  ),
-  default: [],
-};
+const cardFieldSchema = new Schema({
+  operator: { type: Schema.Types.ObjectId, ref: 'Operator' },
+  position: { type: Number, min: 0, max: 3, required: true },
+});
 
 /**
  * @class Match
  */
 const schema = new Schema({
   startedAt: { type: Date, default: new Date(), required: true },
-  timer: { type: Number, default: 20 * 60 * 60, required: true },
   status: {
     type: String,
     enum: Object.values(MatchStatusEnum),
@@ -52,12 +43,33 @@ const schema = new Schema({
   },
   battlefield: {
     type: Map,
-    of: cardFieldSchema,
-    default: [],
+    of: [cardFieldSchema],
   },
   totalTurn: { type: Number, default: 0, required: true },
   playerTurn: { type: Number, required: true },
 });
+
+// schema.pre('find', async function (next) {
+//   try {
+//     // Get the 'Match' document being queried
+//     const match = this;
+
+//     // Populate the 'player' field to get the referenced 'Player' document
+//     await match.populate('player').execPopulate();
+
+//     // Access the 'Player' document from the 'player' field
+//     const player = match.player;
+
+//     // Modify the 'score' field in the 'Match' document based on the 'score' field of the 'Player'
+//     match.score = player.score * 2; // For example, double the player's score
+
+//     // Proceed to the next step in the middleware chain
+//     next();
+//   } catch (error) {
+//     // Handle the error, if any
+//     next(error);
+//   }
+// });
 
 const modelExport = () => {
   try {
