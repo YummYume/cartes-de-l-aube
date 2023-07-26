@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "ENV='test' vitest run --sequence.shuffle=false",
-    "start": "fastify start -l debug -a 0.0.0.0 -p 3000 -d -P app.js",
+    "start": "fastify start -l error -a 0.0.0.0 -p 3000 app.js",
     "dev": "fastify start -l debug -a 0.0.0.0 -d -I 9320 -w -P app.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

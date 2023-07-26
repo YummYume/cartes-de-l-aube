@@ -113,7 +113,7 @@ services:
       - "traefik.http.routers.api.tls.certresolver=defaultresolver"
       - "traefik.http.routers.api.service=api@internal"
       - "traefik.http.routers.api.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:${DASHBOARD_PASSWORD:?err}"
+      - "traefik.http.middlewares.auth.basicauth.users=${DASHBOARD_USERS:?err}"
     ports:
       - "443:443"
       - "80:80"
