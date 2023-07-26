@@ -50,7 +50,7 @@ services:
     container_name: vue-game-front
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.front.rule=Host(`${FRONT_HOST:?err}, `www.${FRONT_HOST:?err}`)"
+      - "traefik.http.routers.front.rule=Host(`${FRONT_HOST:?err}`, `www.${FRONT_HOST:?err}`)"
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.routers.front.middlewares=strip-www"
       - "traefik.http.routers.front.tls=true"
