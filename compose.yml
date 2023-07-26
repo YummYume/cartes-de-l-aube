@@ -83,6 +83,7 @@ services:
       - ./data/mysql:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
+      MARIADB_ROOT_USERNAME: "${MARIADB_ROOT_USERNAME:?err}"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 30s

@@ -26,6 +26,8 @@ services:
       MONGODB_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?err}"
       MONGODB_HOST: "mongodb"
       STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
+      SECRET: "${SECRET:?err}"
+      DOMAIN_API: "${DOMAIN_API:?err}"
     container_name: vue-game-api
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
@@ -68,6 +70,7 @@ services:
     container_name: vue-game-mariadb
     environment:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
+      MARIADB_ROOT_USERNAME: "${MARIADB_ROOT_USERNAME:?err}"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 30s
