@@ -25,6 +25,7 @@
     "@vee-validate/zod": "^4.10.8",
     "@vueuse/components": "^10.2.1",
     "@vueuse/core": "^10.2.1",
+    "accessible-nprogress": "^2.1.2",
     "gsap": "^3.12.2",
     "pinia": "^2.0.36",
     "socket.io-client": "^4.7.1",

@@ -142,6 +142,7 @@
 
               <PaginationNavigation
                 class="my-6"
+                aria-label="Available operators navigation"
                 :isFirstPage="isFirstPage"
                 :isLastPage="isLastPage"
                 :currentPage="currentPage"

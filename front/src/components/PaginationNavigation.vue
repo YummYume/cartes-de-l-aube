@@ -41,7 +41,7 @@
 </script>
 
 <template>
-  <nav aria-label="Available operators navigation" v-bind="$attrs">
+  <nav v-bind="$attrs">
     <ul class="pagination">
       <li>
         <button

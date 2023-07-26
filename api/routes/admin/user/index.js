@@ -36,6 +36,17 @@ export default async (fastify) => {
   });
 
   fastify.patch('/:id', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['role'],
+        properties: {
+          role: {
+            type: 'string',
+          },
+        },
+      },
+    },
     onRequest: fastify.auth([fastify.tokenVerify, fastify.guard]),
     handler: async (
       /** @type {CustomRequest} request */ request,
@@ -49,13 +60,16 @@ export default async (fastify) => {
       const { body } = request;
 
       try {
-        const user = await userRepository.findOneOrFail(id);
+        const user = await userRepository.findOneOrFail({
+          where: { id },
+        });
 
+        const fullBody = { password: '', confirmPassword: '', ...body };
         // Validation
-        const { error } = userUpdateValidation(body);
+        const { error } = userUpdateValidation(fullBody);
 
         if (error) {
-          return reply.unprocessableEntity(error.issues);
+          return reply.unprocessableEntity(error.issues.msg[0].message);
         }
 
         if (body.password) {
@@ -63,9 +77,7 @@ export default async (fastify) => {
           user.password = await bcrypt.hash(body.password, salt);
         }
 
-        if (body.role) {
-          user.role = body.role;
-        }
+        user.role = body.role;
 
         await userRepository.save(user);
 

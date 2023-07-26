@@ -15,6 +15,7 @@ import './assets/styles/global.scss';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/dist/svg-arrow.css';
 import 'vue3-toastify/dist/index.css';
+import './assets/styles/nprogress.scss';
 
 const app = createApp(App);
 const head = createHead();

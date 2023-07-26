@@ -42,10 +42,8 @@ function request(method) {
 
     let input = url;
 
-    if (input instanceof URL) {
-      input.href = `${import.meta.env.VITE_API_HOST}/${url.href}`;
-    } else {
-      input = `${import.meta.env.VITE_API_HOST}/${url}`;
+    if (!(input instanceof URL)) {
+      input = `${import.meta.env.VITE_API_HOST}/${input}`;
     }
 
     const response = await fetch(input, options);
