@@ -24,8 +24,8 @@ start-ci:
 	$(COMPOSECI) up -d api front mongodb mariadb --remove-orphans --force-recreate
 
 start-prod:
-	$(COMPOSEPROD) down
-	$(COMPOSEPROD) build --force-rm --no-cache
+	$(COMPOSEPROD) down --remove-orphans -v
+	$(COMPOSEPROD) build --force-rm
 	$(COMPOSEPROD) up -d --remove-orphans --force-recreate
 	$(COMPOSEPROD) exec api yarn sync:operators
 
