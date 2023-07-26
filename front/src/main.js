@@ -40,13 +40,13 @@ app.use(Vue3Toasity, {
 app.use(head);
 app.use(id);
 
-await router.isReady();
-
-try {
-  await initStripe();
-} catch (e) {
-  // eslint-disable-next-line no-console
-  console.error('Failed to initialize Stripe, payment will not work.');
-}
-
-app.mount('#app');
+router.isReady().then(() => {
+  initStripe()
+    .catch(() => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize Stripe, payment will not work.');
+    })
+    .finally(() => {
+      app.mount('#app');
+    });
+});

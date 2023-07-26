@@ -2,14 +2,18 @@
   import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue';
   import { useHead } from '@unhead/vue';
   import { useMagicKeys } from '@vueuse/core';
-  import { onBeforeUnmount, ref, watch } from 'vue';
+  import { defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
   import { toast } from 'vue3-toastify';
 
   import { setPlayerSquad } from '@/api/squad';
   import PlayerSquad from '@/components/PlayerSquad.vue';
-  import SquadSelectModal from '@/components/modal/SquadSelectModal.vue';
   import { useAuth } from '@/stores/auth';
+
+  // Async components
+  const SquadSelectModal = defineAsyncComponent(() =>
+    import('@/components/modal/SquadSelectModal.vue')
+  );
 
   const props = defineProps({
     /**

@@ -1,6 +1,6 @@
 <script setup>
   import { useHead } from '@unhead/vue';
-  import { computed, ref } from 'vue';
+  import { computed, defineAsyncComponent, ref } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
   import { useTippy } from 'vue-tippy';
   import { toast } from 'vue3-toastify';
@@ -8,8 +8,10 @@
   import { pull } from '@/api/headhunt';
   import HeadhuntDisclosure from '@/components/disclosure/HeadhuntDisclosure.vue';
   import IconSpinner from '@/components/icon/IconSpinner.vue';
-  import HeadhuntModal from '@/components/modal/HeadhuntModal.vue';
   import { useAuth } from '@/stores/auth';
+
+  // Async components
+  const HeadhuntModal = defineAsyncComponent(() => import('@/components/modal/HeadhuntModal.vue'));
 
   const { auth } = useAuth();
   const pulls = ref(1);

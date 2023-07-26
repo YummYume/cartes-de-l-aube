@@ -1,12 +1,15 @@
 <script setup>
   import { useHead } from '@unhead/vue';
-  import { ref } from 'vue';
+  import { defineAsyncComponent, ref } from 'vue';
 
   import { cancelStorePayment } from '@/api/store';
   import StoreDisclosure from '@/components/disclosure/StoreDisclosure.vue';
-  import OrundumCheckoutModal from '@/components/modal/OrundumCheckoutModal.vue';
   import OrundumStore from '@/components/store/OrundumStore.vue';
   import { useAuth } from '@/stores/auth';
+
+  const OrundumCheckoutModal = defineAsyncComponent(() =>
+    import('@/components/modal/OrundumCheckoutModal.vue')
+  );
 
   defineProps({
     /**

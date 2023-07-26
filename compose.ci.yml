@@ -16,7 +16,7 @@ services:
     tty: true
     restart: unless-stopped
     environment:
-      ENV: "development"
+      ENV: "test"
       MARIADB_DATABASE: "${MARIADB_DATABASE:?err}"
       MARIADB_USERNAME: "${MARIADB_ROOT_USERNAME:?err}"
       MARIADB_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"

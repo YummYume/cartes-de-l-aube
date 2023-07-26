@@ -104,7 +104,7 @@
         <img
           src="/home/near-light.jpg"
           alt="A picture of the Near Light stage"
-          class="intro__image"
+          class="intro__image mr-auto"
           width="600"
           height="338"
           v-if="nearLightImageReady"
@@ -139,7 +139,7 @@
         <img
           src="/home/saga.jpeg"
           alt="A picture of Saga walking with a present"
-          class="intro__image"
+          class="intro__image ml-auto"
           width="600"
           height="338"
           v-if="sagaImageReady"
@@ -173,7 +173,7 @@
         <img
           src="/home/amiya.jpeg"
           alt="A picture of Amiya with a cat on a rooftop"
-          class="intro__image"
+          class="intro__image mr-auto"
           width="600"
           height="338"
           v-if="amiyaImageReady"
