@@ -11,6 +11,11 @@
       type: Object,
       required: true,
     },
+    energy: {
+      validator: (value) => typeof value === 'number' || value === null,
+      required: false,
+      default: null,
+    },
   });
 </script>
 
@@ -20,8 +25,13 @@
     <span :aria-label="`${player.username} has ${player.hp} HP left.`">
       <IconHeart class="mr-1 inline-flex h-4 w-4 fill-white" /> {{ player.hp }} HP
     </span>
-    <span :aria-label="`${player.username} has ${player.energy} energy left.`">
-      <IconDeploymentCost class="mr-1 inline-flex h-4 w-4 fill-white" /> Sanity
+    <span
+      :aria-label="`${player.username} has ${
+        energy !== null ? energy : player.energy
+      } energy left.`"
+    >
+      <IconDeploymentCost class="mr-1 inline-flex h-4 w-4 fill-white" />
+      {{ energy !== null ? energy : player.energy }} Sanity
     </span>
   </div>
 </template>

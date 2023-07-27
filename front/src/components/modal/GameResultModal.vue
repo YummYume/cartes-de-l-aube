@@ -9,6 +9,8 @@
   } from '@headlessui/vue';
   import { computed } from 'vue';
 
+  import BackdropModal from './BackdropModal.vue';
+
   const props = defineProps({
     isOpen: {
       type: Boolean,
@@ -42,15 +44,15 @@
         leave-to="opacity-0 scale-95"
         as="template"
       >
-        <DialogPanel class="dialog__panel max-w-[90vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]">
+        <DialogPanel class="z-50 max-w-[90vw] text-slate-100 lg:max-w-[60vw]">
           <DialogTitle
-            :class="`dialog__panel--title animate-pulse ${
+            :class="`dialog__panel--title animate-bounce text-center text-5xl ${
               isWinner ? 'text-success' : 'text-accent'
             }`"
           >
             {{ isWinner ? 'You won!' : 'You lost!' }}
           </DialogTitle>
-          <DialogDescription class="dialog__panel--description mt-2">
+          <DialogDescription class="dialog__panel--description mt-4 text-white">
             <p>{{ isWinner ? 'Congratulations!' : 'Better luck next time!' }}</p>
             <p>
               You earned {{ isWinner ? '300' : '50' }} orundum and
@@ -58,7 +60,7 @@
             </p>
           </DialogDescription>
 
-          <footer class="relative mt-6 text-center text-2xl">
+          <footer class="relative mt-8 text-center text-2xl">
             <button type="button" @click="$emit('close')">Click anywhere to close</button>
           </footer>
         </DialogPanel>

@@ -1,6 +1,6 @@
 <script setup>
   import { useFps } from '@vueuse/core';
-  import { computed, reactive } from 'vue';
+  import { computed, reactive, ref, watch } from 'vue';
 
   import GamePlayer from './GamePlayer.vue';
 
@@ -70,6 +70,10 @@
     deploys: [],
     attacks: [],
   });
+  const energyCost = ref(0);
+  const selectedOperator = ref(null);
+  const energy = computed(() => props.currentUser.energy - energyCost.value);
+  const hasDeployed = ref(false);
   const currentPlayerTurn = computed(() => {
     if (props.currentTurn === props.currentUser.id) {
       return props.currentUser;
@@ -81,23 +85,64 @@
 
     return null;
   });
-  const isPlayerTurn = computed(() => currentPlayerTurn.value?.id === props.currentUser.id);
+  const isPlayerTurn = computed(
+    () => currentPlayerTurn.value?.id === props.currentUser.id || props.isPreparationPhase
+  );
 
+  const canSelectOperator = (operator) => {
+    const isSelected = cardActions.deploys.some((op) => op._id === operator._id);
+
+    return (
+      isPlayerTurn.value &&
+      (energy.value >= operator.statistics.cost || isSelected) &&
+      (cardActions.deploys.length < 4 || isSelected) &&
+      !(hasDeployed.value && props.isPreparationPhase)
+    );
+  };
+
+  /**
+   * @param {Operator & { _id: string }} operator
+   */
   const handleDeckSelect = (operator) => {
+    if (!canSelectOperator(operator)) {
+      return;
+    }
+
+    if (cardActions.deploys.some((op) => op._id === operator._id)) {
+      cardActions.deploys = cardActions.deploys.filter((op) => op._id !== operator._id);
+
+      energyCost.value -= operator.statistics.cost;
+    } else {
+      if (energy.value < operator.statistics.cost) {
+        return;
+      }
+
+      cardActions.deploys = [...cardActions.deploys, operator];
+
+      energyCost.value += operator.statistics.cost;
+    }
+  };
+
+  const handleTargetSelect = (operator) => {
     if (!isPlayerTurn.value) {
       return;
     }
 
-    if (cardActions.deploys.some((op) => op.id === operator.id)) {
-      cardActions.deploys = cardActions.deploys.filter((op) => op.id !== operator.id);
-    } else {
-      cardActions.deploys.push(operator);
+    if (!selectedOperator.value) {
+      cardActions.attacks = cardActions.attacks.filter((atk) => atk.target !== operator._id);
     }
+
+    cardActions.attacks = [
+      ...cardActions.attacks,
+      { initiator: selectedOperator.value._id, target: operator._id },
+    ];
   };
 
   const handleEndTurn = () => {
     if (props.isPreparationPhase) {
       emit('endPreparationPhase', cardActions.deploys);
+      energyCost.value = 0;
+      hasDeployed.value = true;
 
       return;
     }
@@ -107,10 +152,23 @@
     }
 
     emit('endTurn', cardActions.deploys, cardActions.attacks);
+    energyCost.value = 0;
 
     cardActions.deploys = [];
     cardActions.attacks = [];
   };
+
+  watch(
+    () => isPlayerTurn,
+    (isTurn) => {
+      console.log(isTurn);
+      if (!isTurn) {
+        cardActions.deploys = [];
+        cardActions.attacks = [];
+        energyCost.value = 0;
+      }
+    }
+  );
 </script>
 
 <template>
@@ -121,18 +179,20 @@
         class="themed-scrollbar overflow-auto rounded-lg border border-accent bg-accent/40 p-2 shadow-md drop-shadow-md scrollbar-thumb-accent"
       />
       <button
-        class="btn focus:not(:disabled)]:scale-105 w-40 rounded-md border-accent bg-accent text-white shadow-sm shadow-accent hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-accent focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-accent/75"
+        class="btn focus:not(:disabled)]:scale-105 w-40 rounded-md border-success bg-success text-white shadow-sm shadow-success hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-success focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-success/75"
         type="button"
-        :disabled="!isPlayerTurn || isPreparationPhase"
+        :disabled="isPreparationPhase ? hasDeployed : !isPlayerTurn"
         @click="() => handleEndTurn()"
       >
         End turn
       </button>
       <GamePlayer
         :player="currentUser"
+        :energy="energy"
         class="themed-scrollbar overflow-auto rounded-lg border border-secondary bg-secondary/40 p-2 shadow-md drop-shadow-md"
       />
     </div>
+
     <div class="relative flex flex-grow flex-col overflow-hidden">
       <div class="absolute right-1 top-1 flex flex-col gap-0.5 text-right">
         <span>{{ fps }} FPS</span>
@@ -163,40 +223,67 @@
           </div>
         </Transition>
       </div>
-      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden">
+
+      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
           v-for="operator in opponent.battlefield"
           :key="operator.id"
-          :operator="operator"
+          :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
           :withHighlight="true"
           :id="`opponent-battlefield-${operator.operator._id}`"
+          class="operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52"
+          @select="handleTargetSelect"
         />
       </div>
-      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden">
+      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
           v-for="operator in currentUser.battlefield"
           :key="operator.id"
-          :operator="operator"
+          :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
           :withHighlight="true"
           :id="`user-battlefield-${operator.operator._id}`"
           :aria-disabled="!isPlayerTurn"
+          :class="`operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52 ${
+            isPlayerTurn ? 'cursor-pointer' : 'cursor-not-allowed'
+          } ${selectedOperator._id === operator.operator._id ? 'scale-110' : ''}`"
+          @select="
+            (operator) => {
+              if (!isPlayerTurn) {
+                return;
+              }
+
+              if (selectedOperator._id === operator._id) {
+                selectedOperator = null;
+
+                return;
+              }
+
+              selectedOperator = operator;
+            }
+          "
         />
       </div>
-      <div class="themed-scrollbar flex max-h-56 flex-row gap-4 overflow-x-auto overflow-y-hidden">
+      <div
+        class="themed-scrollbar flex max-h-72 w-full flex-row items-center gap-4 overflow-x-auto overflow-y-clip p-3"
+      >
         <OperatorCard
           v-for="operator in currentUser.gameDeck"
           :key="operator.id"
           :operator="operator"
           :withHighlight="false"
           :active="cardActions.deploys.some((op) => op._id === operator._id)"
-          :description="`Deploy ${operator.name} on the battlefield.`"
+          :description="
+            cardActions.deploys.some((op) => op._id === operator._id)
+              ? `Keep ${operator.name} in your deck.`
+              : `Deploy ${operator.name} on the battlefield.`
+          "
           :id="`user-deck-${operator._id}`"
-          :class="`operator-card--compact h-52 w-44 ${
-            isPlayerTurn ? 'cursor-pointer' : 'cursor-not-allowed'
+          :class="`operator-card--compact h-56 min-w-[12rem] flex-shrink basis-48 ${
+            canSelectOperator(operator) ? 'cursor-pointer' : 'cursor-not-allowed'
           }`"
-          :aria-disabled="!isPlayerTurn"
+          :aria-disabled="!canSelectOperator(operator)"
           @select="handleDeckSelect"
         />
       </div>

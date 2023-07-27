@@ -55,6 +55,7 @@ module.exports = {
     'jsdoc/require-returns-description': 'off',
     'jsdoc/no-undefined-types': 'off',
     'no-restricted-syntax': 'off',
+    'no-underscore-dangle': 'off',
   },
   settings: {
     'import/resolver': {

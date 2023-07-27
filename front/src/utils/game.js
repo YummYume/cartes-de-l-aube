@@ -31,7 +31,6 @@ export const ACTION_TYPE = {
  *      def: number,
  *      cost: number,
  *    },
- *    position: number,
  * }} FieldOperator
  */
 

@@ -128,7 +128,10 @@
            */
           const data = eventData;
 
+          isPreparationPhase.value = false;
           timers.turn = data.time;
+          timers.prepare = null;
+          timers.surrender = null;
 
           break;
         }
@@ -140,6 +143,8 @@
           const data = eventData;
 
           timers.prepare = data.time;
+          timers.surrender = null;
+          timers.turn = null;
 
           break;
         }
@@ -151,6 +156,8 @@
           const data = eventData;
 
           timers.surrender = data.time;
+          timers.prepare = null;
+          timers.turn = null;
 
           break;
         }
