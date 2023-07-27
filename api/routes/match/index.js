@@ -379,18 +379,18 @@ const timerTurn = (matchId, fastify) =>
         );
         player.ws.send(
           action.running({
-            status: matchs[match._id].status,
+            status: 'preparation',
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
+            user: { ...player.user, battlefield: match.battlefield.get(`${player.user.id}`) },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
-              battlefield: matchs[match._id].battlefield[opponent.user.id],
+              battlefield: match.battlefield.get(`${opponent.user.id}`),
             },
           })
         );
@@ -465,18 +465,18 @@ const timerPreparation = (matchId) =>
         );
         player.ws.send(
           action.running({
-            status: matchs[match._id].status,
+            status: 'preparation',
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
+            user: { ...player.user, battlefield: match.battlefield.get(`${player.user.id}`) },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
-              battlefield: matchs[match._id].battlefield[opponent.user.id],
+              battlefield: match.battlefield.get(`${opponent.user.id}`),
             },
           })
         );
@@ -524,8 +524,8 @@ const createMatch = async (wsUser, wsOpponent) => {
       timerPreparation: { time: TIMER.preparation },
       timerSurrender: {},
       battlefield: {
-        [wsUser.user.id]: match.battlefield.get(`${wsUser.user.id}`).toObject(),
-        [wsOpponent.user.id]: match.battlefield.get(`${wsOpponent.user.id}`).toObject(),
+        [wsUser.user.id]: match.battlefield.get(`${wsUser.user.id}`),
+        [wsOpponent.user.id]: match.battlefield.get(`${wsOpponent.user.id}`),
       },
       players: {
         [wsUser.user.id]: {
@@ -548,18 +548,18 @@ const createMatch = async (wsUser, wsOpponent) => {
       );
       player.ws.send(
         action.running({
-          status: matchs[match._id].status,
+          status: 'preparation',
           totalTurn: matchs[match._id].totalTurn,
           playerTurn: matchs[match._id].playerTurn,
           actionTurn: match.actionTurn,
-          user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
+          user: { ...player.user, battlefield: match.battlefield.get(`${wsUser.user.id}`) },
           opponent: {
             id: opponent.user.id,
             username: opponent.user.username,
             hp: opponent.user.hp,
             image: opponent.user.image,
             energy: opponent.user.energy,
-            battlefield: matchs[match._id].battlefield[opponent.user.id],
+            battlefield: match.battlefield.get(`${wsOpponent.user.id}`),
           },
         })
       );
