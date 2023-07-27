@@ -378,12 +378,15 @@ const timerTurn = (matchId, fastify) =>
           (p) => p.user.id !== player.user.id
         );
         player.ws.send(
-          action.running({
-            status: 'preparation',
+          action.turnPhase({
+            status: 'new turn',
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: match.battlefield.get(`${player.user.id}`) },
+            user: {
+              ...match.players.get(`${player.user.id}`).toObject(),
+              battlefield: match.battlefield.get(`${player.user.id}`),
+            },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
@@ -464,12 +467,15 @@ const timerPreparation = (matchId) =>
           (p) => p.user.id !== player.user.id
         );
         player.ws.send(
-          action.running({
-            status: 'preparation',
+          action.preparationPhase({
+            status: 'preparation end',
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: match.battlefield.get(`${player.user.id}`) },
+            user: {
+              ...match.players.get(`${player.user.id}`).toObject(),
+              battlefield: match.battlefield.get(`${player.user.id}`),
+            },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
@@ -548,11 +554,14 @@ const createMatch = async (wsUser, wsOpponent) => {
       );
       player.ws.send(
         action.running({
-          status: 'preparation',
+          status: 'preparation start',
           totalTurn: matchs[match._id].totalTurn,
           playerTurn: matchs[match._id].playerTurn,
           actionTurn: match.actionTurn,
-          user: { ...player.user, battlefield: match.battlefield.get(`${wsUser.user.id}`) },
+          user: {
+            ...match.players.get(`${player.user.id}`).toObject(),
+            battlefield: match.battlefield.get(`${wsUser.user.id}`),
+          },
           opponent: {
             id: opponent.user.id,
             username: opponent.user.username,
