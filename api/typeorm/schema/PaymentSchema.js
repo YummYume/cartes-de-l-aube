@@ -15,7 +15,7 @@ export default new EntitySchema({
       type: 'varchar',
     },
     price: {
-      type: 'int',
+      type: 'float',
     },
     amount: {
       type: 'int',

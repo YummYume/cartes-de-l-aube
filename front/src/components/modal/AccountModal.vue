@@ -104,7 +104,9 @@
           payments.value = (await getPayments()).payments;
         } catch (error) {
           if (error.name !== 'AbortError') {
-            toast.error('Sorry, something went wrong while getting your payments.');
+            toast.error(
+              'Sorry, something went wrong while getting your payments. Please try again later.'
+            );
 
             emit('close');
           }
@@ -121,7 +123,9 @@
           matchHistories.value = (await getMatchHistories()).matches;
         } catch (error) {
           if (error.name !== 'AbortError') {
-            toast.error('Sorry, something went wrong while getting your match history.');
+            toast.error(
+              'Sorry, something went wrong while getting your match history. Please try again later.'
+            );
 
             emit('close');
           }
