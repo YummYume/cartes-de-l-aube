@@ -59,6 +59,7 @@ services:
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?err}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?err}"
     ports:
       - "27017:27017"
     volumes:
@@ -82,7 +83,6 @@ services:
       - ./data/mysql:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
-      MARIADB_ROOT_USERNAME: "${MARIADB_ROOT_USERNAME:?err}"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 30s

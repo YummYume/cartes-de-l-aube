@@ -7,15 +7,8 @@
     TransitionRoot,
     TransitionChild,
   } from '@headlessui/vue';
-  import { useRoute } from 'vue-router';
-
-  import router from '@/router';
-  import { useAuth } from '@/stores/auth';
 
   import BackdropModal from './BackdropModal.vue';
-
-  const { signout } = useAuth();
-  const route = useRoute();
 
   defineProps({
     isOpen: {
@@ -24,27 +17,12 @@
     },
   });
 
-  const emit = defineEmits(['close']);
-
-  /**
-   * @param {boolean} isLogout
-   */
-  const handleClose = async (isLogout = false) => {
-    if (isLogout) {
-      await signout();
-
-      if (route.meta.requiresAuth) {
-        router.push({ name: 'home' });
-      }
-    }
-
-    emit('close');
-  };
+  defineEmits(['close']);
 </script>
 
 <template>
   <TransitionRoot :show="isOpen" as="template">
-    <Dialog @close="handleClose" class="dialog">
+    <Dialog @close="$emit('close')" class="dialog">
       <BackdropModal />
       <TransitionChild
         enter="duration-300 ease-out"
@@ -55,22 +33,22 @@
         leave-to="opacity-0 scale-95"
         as="template"
       >
-        <DialogPanel class="dialog__panel max-w-[90vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]">
-          <DialogTitle class="dialog__panel--title">Log out</DialogTitle>
+        <DialogPanel
+          class="dialog__panel max-w-[95vw] bg-slate-700 text-slate-100 sm:max-w-xl lg:max-w-[60vw]"
+        >
+          <DialogTitle class="dialog__panel--title">Leaderboard</DialogTitle>
           <DialogDescription class="dialog__panel--description mt-2">
-            Are you sure you want to logout?
+            Who is the best player in the world? Find out here!
           </DialogDescription>
+
+          <section class="dialog__panel--section my-6">
+            <span>TODO</span>
+          </section>
 
           <footer class="dialog__panel--actions mt-6">
             <button
               class="btn border-accent text-accent hover:bg-accent hover:text-inherit focus:bg-accent focus:text-inherit"
-              @click="handleClose(true)"
-            >
-              Log out
-            </button>
-            <button
-              class="btn border-success text-success hover:bg-success hover:text-inherit focus:bg-success focus:text-inherit"
-              @click="handleClose()"
+              @click="$emit('close')"
             >
               Close
             </button>

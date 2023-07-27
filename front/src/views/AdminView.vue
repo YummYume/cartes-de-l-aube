@@ -34,7 +34,7 @@
    */
   const selectedUser = ref(null);
   const userEditModalOpened = ref(false);
-  const isLoading = ref(false);
+  const isLoading = ref(true);
   const updatedUser = ref(null);
   const { auth } = useAuth();
 
@@ -46,7 +46,7 @@
     userEditModalOpened.value = true;
   };
 
-  const handleSave = async (values) => {
+  const handleSave = async (values, { resetField }) => {
     isLoading.value = true;
 
     try {
@@ -61,6 +61,9 @@
       }
 
       updatedUser.value = user;
+
+      resetField('password', '');
+      resetField('confirmPassword', '');
 
       toast.success(`Successfully updated user ${user.username}.`);
     } catch (err) {

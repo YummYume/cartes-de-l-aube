@@ -2,7 +2,6 @@ import nprogress from 'accessible-nprogress';
 import { createRouter, createWebHistory } from 'vue-router';
 import { toast } from 'vue3-toastify';
 
-import { getMatchHistories } from '@/api/history';
 import { getPlayerSquad } from '@/api/squad';
 import { getStoreItems } from '@/api/store';
 import { useAuth } from '@/stores/auth';
@@ -51,35 +50,6 @@ const router = createRouter({
         if (res !== null) {
           to.params.squad = res.squad;
           to.params.availableOperators = res.availableOperators;
-
-          next();
-
-          return;
-        }
-
-        next(false);
-      },
-    },
-    {
-      path: '/history',
-      name: 'history',
-      props: true,
-      meta: { requiresAuth: true },
-      component: () => import('../views/HistoryView.vue'),
-      beforeEnter: async (to, from, next) => {
-        /**
-         * @type {{ matches: MatchHistory[] }|null}
-         */
-        let matchHistories = null;
-
-        try {
-          matchHistories = await getMatchHistories();
-        } catch (error) {
-          toast.error('Sorry, something went wrong while fetching your match histories.');
-        }
-
-        if (matchHistories !== null) {
-          to.params.matchHistories = matchHistories.matches;
 
           next();
 

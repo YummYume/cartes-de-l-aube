@@ -2,6 +2,8 @@
   import gsap, { Power4, Back } from 'gsap';
   import { ref } from 'vue';
 
+  import { useAboutModal } from '@/stores/about-modal';
+
   defineProps({
     accepted: {
       type: Boolean,
@@ -16,6 +18,7 @@
    * @type {import('vue').Ref<HTMLDivElement>}
    */
   const cookieBanner = ref(null);
+  const aboutModalStore = useAboutModal();
 
   /**
    * @param {HTMLDivElement} el
@@ -80,7 +83,14 @@
           Cartes de l'aube uses cookies to improve and secure your experience on this website. By
           continuing to use this website, you accept the use of cookies. You can learn more about
           our cookies policy and what each cookie means in our
-          <a href="/privacy">Privacy Policy</a>.
+          <button
+            type="button"
+            class="link text-accent"
+            @click="() => aboutModalStore.openAboutModal()"
+          >
+            cookie policy
+          </button>
+          section.
         </p>
       </div>
       <div class="flex items-center justify-center">
