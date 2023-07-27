@@ -37,3 +37,14 @@ export function shuffleArray(arr) {
 export function objInArr(arr, obj, targetKey) {
   return arr.some((item) => item[targetKey] === obj[targetKey]);
 }
+
+/**
+ * Wait for a time
+ * @param {number} ms
+ * @returns {Promise}
+ */
+export function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

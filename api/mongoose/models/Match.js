@@ -21,10 +21,19 @@ const playerSchema = new Schema(
   { _id: false }
 );
 
-const cardFieldSchema = new Schema({
-  operator: { type: Schema.Types.ObjectId, ref: 'Operator' },
-  position: { type: Number, min: 0, max: 3, required: true },
-});
+const cardFieldSchema = new Schema(
+  {
+    operator: { type: Schema.Types.ObjectId, ref: 'Operator' },
+    statistics: {
+      hp: Number,
+      atk: Number,
+      def: Number,
+      cost: Number,
+    },
+    position: { type: Number, min: 1, max: 4, required: true },
+  },
+  { _id: false }
+);
 
 /**
  * @class Match
@@ -47,6 +56,11 @@ const schema = new Schema({
   },
   totalTurn: { type: Number, default: 0, required: true },
   playerTurn: { type: Number, required: true },
+  actionTurn: {
+    deploys: { type: [{ _id: String, position: Number }], default: [], required: true },
+    attacks: { type: [{ initiator: String, target: String }], default: [], required: true },
+    retreats: { type: [{ _id: String, position: Number }], default: [], required: true },
+  },
 });
 
 // schema.pre('find', async function (next) {
