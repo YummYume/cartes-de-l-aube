@@ -111,9 +111,7 @@
           </DialogDescription>
 
           <section class="dialog__panel--section my-6" :aria-busy="isLoading">
-            <div
-              class="mb-4 max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
-            >
+            <div class="themed-scrollbar mb-4 max-h-[50vh] overflow-y-auto overflow-x-hidden">
               <Transition
                 enter-active-class="transition-opacity duration-300"
                 enter-from-class="opacity-0"

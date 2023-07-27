@@ -97,7 +97,7 @@
       type="button"
       @click="$emit('cancel')"
     >
-      <span>Cancel search</span>
+      Cancel search
     </button>
   </div>
 </template>

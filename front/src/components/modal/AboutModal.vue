@@ -59,7 +59,7 @@
               </TabList>
               <TabPanels>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                 >
                   <h2 class="mb-4 text-2xl font-bold">Cookie Policy</h2>
                   <div class="flex flex-col space-y-4">
@@ -86,7 +86,7 @@
                   </div>
                 </TabPanel>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                 >
                   <h2 class="mb-4 text-2xl font-bold">About us</h2>
 
@@ -128,7 +128,7 @@
                   </div>
                 </TabPanel>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                 >
                   <h2 class="mb-4 text-2xl font-bold">Privacy Policy</h2>
                   <div class="flex flex-col space-y-4">
@@ -153,7 +153,7 @@
                   </div>
                 </TabPanel>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                 >
                   <h2 class="mb-4 text-2xl font-bold">Terms and Conditions</h2>
                   <div class="flex flex-col space-y-4">

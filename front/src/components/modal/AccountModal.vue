@@ -197,7 +197,7 @@
                   </Form>
                 </TabPanel>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                   :aria-busy="paymentsLoading"
                 >
                   <Transition
@@ -265,7 +265,7 @@
                   </Transition>
                 </TabPanel>
                 <TabPanel
-                  class="tab__panel-item max-h-[50vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent"
+                  class="tab__panel-item themed-scrollbar max-h-[50vh] overflow-y-auto overflow-x-hidden"
                   :aria-busy="matchHistoryLoading"
                 >
                   <div v-if="matchHistoryLoading" class="flex flex-col gap-4">

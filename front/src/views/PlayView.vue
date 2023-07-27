@@ -1,6 +1,6 @@
 <script setup>
   import { useWebSocket } from '@vueuse/core';
-  import { ref } from 'vue';
+  import { reactive, ref } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
   import { toast } from 'vue3-toastify';
 
@@ -20,7 +20,26 @@
   const isLoading = ref(false);
   const isSearching = ref(false);
   const isPlaying = ref(false);
-  const { status, send, open, close } = useWebSocket(`${import.meta.env.VITE_WS_HOST}/match`, {
+  /**
+   * @type {import('vue').Ref<import('../utils/game').GameState>}
+   */
+  const gameState = ref({
+    user: null,
+    opponent: null,
+    totalTurn: 0,
+    playerTurn: null,
+    turnTimer: null,
+    prepareTimer: null,
+    surrenderTimer: null,
+    status: 'waiting',
+    actionTurn: {},
+  });
+  const timers = reactive({
+    turn: null,
+    prepare: null,
+    surrender: null,
+  });
+  const { send, open, close } = useWebSocket(`${import.meta.env.VITE_WS_HOST}/match`, {
     autoClose: true,
     autoReconnect: {
       retries: 5,
@@ -36,7 +55,7 @@
     immediate: false,
     onMessage(ws, event) {
       /**
-       * @type {import('../utils/game').GameEvent} data
+       * @type {import('../utils/game').GameEvent<{}>} data
        */
       const eventData = JSON.parse(event.data);
 
@@ -45,6 +64,7 @@
       switch (eventData.type) {
         case 'waiting': {
           isLoading.value = false;
+          isPlaying.value = false;
           isSearching.value = true;
 
           break;
@@ -56,9 +76,44 @@
            */
           const data = eventData;
 
+          gameState.value = data;
+
           isLoading.value = false;
           isSearching.value = false;
           isPlaying.value = true;
+
+          break;
+        }
+
+        case 'timer-turn': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameTimer>}
+           */
+          const data = eventData;
+
+          timers.turn = data.time;
+
+          break;
+        }
+
+        case 'timer-preparation': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameTimer>}
+           */
+          const data = eventData;
+
+          timers.prepare = data.time;
+
+          break;
+        }
+
+        case 'timer-surrender': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameTimer>}
+           */
+          const data = eventData;
+
+          timers.surrender = data.time;
 
           break;
         }
@@ -139,7 +194,16 @@
     mode="out-in"
   >
     <GameSearch v-if="isSearching" @cancel="handleCancelSearch" />
-    <GameBattle v-else-if="isPlaying" />
+    <GameBattle
+      v-else-if="isPlaying"
+      :currentUser="gameState.user"
+      :opponent="gameState.opponent"
+      :totalTurn="gameState.totalTurn"
+      :currentTurn="timers.turn ? gameState.playerTurn : null"
+      :turnTimer="timers.turn"
+      :prepareTimer="timers.prepare"
+      :surrenderTimer="timers.surrender"
+    />
     <GameIntro
       v-else
       :isSubmitting="isLoading"
