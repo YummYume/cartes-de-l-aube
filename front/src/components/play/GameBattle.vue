@@ -124,12 +124,19 @@
   };
 
   const handleTargetSelect = (operator) => {
-    if (!isPlayerTurn.value) {
+    if (
+      !isPlayerTurn.value ||
+      cardActions.attacks.some((atk) => atk.initiator === selectedOperator.value?._id)
+    ) {
       return;
     }
 
     if (!selectedOperator.value) {
       cardActions.attacks = cardActions.attacks.filter((atk) => atk.target !== operator._id);
+    } else if (cardActions.attacks.some((atk) => atk.target === operator._id)) {
+      cardActions.attacks = cardActions.attacks.filter(
+        (atk) => atk.target !== operator._id && atk.initiator === selectedOperator.value?._id
+      );
     }
 
     cardActions.attacks = [
@@ -138,11 +145,25 @@
     ];
   };
 
+  const getAttackedIndexesForOperator = (operator) => {
+    return cardActions.attacks
+      .filter((atk) => atk.initiator === operator._id)
+      .map((atk) => cardActions.deploys.findIndex((op) => op._id === atk.initiator) + 1);
+  };
+
+  const getTargetedIndexesForOperator = (operator) => {
+    return cardActions.attacks
+      .filter((atk) => atk.target === operator._id)
+      .map((atk) => cardActions.deploys.findIndex((op) => op._id === atk.target) + 1);
+  };
+
   const handleEndTurn = () => {
     if (props.isPreparationPhase) {
       emit('endPreparationPhase', cardActions.deploys);
       energyCost.value = 0;
       hasDeployed.value = true;
+      cardActions.deploys = [];
+      cardActions.attacks = [];
 
       return;
     }
@@ -153,22 +174,18 @@
 
     emit('endTurn', cardActions.deploys, cardActions.attacks);
     energyCost.value = 0;
-
+    hasDeployed.value = true;
     cardActions.deploys = [];
     cardActions.attacks = [];
   };
 
-  watch(
-    () => isPlayerTurn,
-    (isTurn) => {
-      console.log(isTurn);
-      if (!isTurn) {
-        cardActions.deploys = [];
-        cardActions.attacks = [];
-        energyCost.value = 0;
-      }
-    }
-  );
+  watch([props.turnTimer, props.prepareTimer, props.surrenderTimer], () => {
+    cardActions.deploys = [];
+    cardActions.attacks = [];
+    energyCost.value = 0;
+    selectedOperator.value = null;
+    hasDeployed.value = false;
+  });
 </script>
 
 <template>
@@ -224,37 +241,39 @@
         </Transition>
       </div>
 
-      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden px-10">
+      <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
           v-for="operator in opponent.battlefield"
           :key="operator.id"
           :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
-          :withHighlight="true"
+          :withHighlight="false"
           :id="`opponent-battlefield-${operator.operator._id}`"
           class="operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52"
           @select="handleTargetSelect"
-        />
+        >
+          <span>{{ getTargetedIndexesForOperator(operator.operator) }}</span>
+        </OperatorCard>
       </div>
-      <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden px-10">
+      <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
           v-for="operator in currentUser.battlefield"
           :key="operator.id"
           :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
-          :withHighlight="true"
+          :withHighlight="false"
           :id="`user-battlefield-${operator.operator._id}`"
           :aria-disabled="!isPlayerTurn"
-          :class="`operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52 ${
+          :class="`operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52 transition-all ${
             isPlayerTurn ? 'cursor-pointer' : 'cursor-not-allowed'
-          } ${selectedOperator._id === operator.operator._id ? 'scale-110' : ''}`"
+          } ${selectedOperator?._id === operator.operator._id ? 'scale-110' : ''}`"
           @select="
             (operator) => {
               if (!isPlayerTurn) {
                 return;
               }
 
-              if (selectedOperator._id === operator._id) {
+              if (selectedOperator?._id === operator._id) {
                 selectedOperator = null;
 
                 return;
@@ -263,7 +282,9 @@
               selectedOperator = operator;
             }
           "
-        />
+        >
+          <span>{{ getAttackedIndexesForOperator(operator.operator) }}</span>
+        </OperatorCard>
       </div>
       <div
         class="themed-scrollbar flex max-h-72 w-full flex-row items-center gap-4 overflow-x-auto overflow-y-clip p-3"

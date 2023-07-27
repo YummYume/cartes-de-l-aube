@@ -259,18 +259,14 @@
     isSearching.value = false;
   };
 
-  const handleEndTurn = (userSelectedDeck, userAttack) => {
+  const handleEndTurn = (deploys, attacks) => {
     send(
       JSON.stringify({
         type: 'action',
         actions: {
-          deploys: userSelectedDeck.map(
-            (deploy) =>
-              // eslint-disable-next-line no-underscore-dangle
-              deploy._id
-          ),
-          attacks: userAttack.map((attack) => ({
-            initiator: attack.operator,
+          deploys: deploys.map((deploy) => deploy._id),
+          attacks: attacks.map((attack) => ({
+            initiator: attack.initiator,
             target: attack.target,
           })),
         },
@@ -282,11 +278,7 @@
     send(
       JSON.stringify({
         type: 'preparation-phase',
-        cards: userSelectedDeck.map(
-          (deploy) =>
-            // eslint-disable-next-line no-underscore-dangle
-            deploy._id
-        ),
+        cards: userSelectedDeck.map((deploy) => deploy._id),
       })
     );
   };
