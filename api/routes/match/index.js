@@ -69,17 +69,14 @@ const TIMER = {
 
 const ACTION_TYPE = {
   running: 'running',
-  victory: 'victory',
-  defeat: 'defeat',
   finish: 'finish',
-  surrender: 'surrender',
+  waiting: 'waiting',
   timerTurn: 'timer-turn',
   timerSurrender: 'timer-surrender',
   timerPreparation: 'timer-preparation',
   opponentLeft: 'opponent-left',
   error: 'error',
   info: 'info',
-  waiting: 'waiting',
   preparationPhase: 'preparation-phase',
   turnPhase: 'turn-phase',
 };
@@ -179,7 +176,7 @@ const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw 
   if (isDraw) {
     players = [...Array.from(match.players.values())];
   } else {
-    players = [match.players.get(winnerId), match.players.get(loserId)];
+    players = [match.players.get(`${winnerId}`), match.players.get(`${loserId}`)];
   }
 
   /**
@@ -320,7 +317,7 @@ const timerTurn = (matchId, fastify) =>
         .populate('battlefield.$*.operator')
         .exec();
 
-      let loser = null;
+      let loserId = null;
       const players = [];
 
       match.players.forEach((player) => {
@@ -334,7 +331,7 @@ const timerTurn = (matchId, fastify) =>
       Array.from(match.players.values()).forEach((p, key) => {
         if ((match.battlefield.get(`${p.id}`).length <= 0 && p.gameDeck.length <= 0) || p.hp <= 0) {
           match.status = MatchStatusEnum.FINISHED;
-          loser = p.id;
+          loserId = p.id;
         }
         players[key] = p.toObject();
       });
@@ -381,19 +378,26 @@ const timerTurn = (matchId, fastify) =>
         );
       });
 
-      if (loser) {
-        const { id: winner } = players.find((p) => p.id !== loser);
-        await createMatchHistory(fastify, { matchId, winner, loser });
+      if (loserId) {
+        const { id: winnerId } = players.find((p) => p.id !== loserId);
+        await createMatchHistory(fastify, { matchId, winnerId, loserId, isDraw: false });
+
+        usersMatch = Object.fromEntries(
+          Object.entries(usersMatch).filter(([key, value]) => value !== matchId)
+        );
 
         Object.values(matchs[matchId].players).forEach((player) => {
           player.ws.send(
             action.finish({
-              result: winner === player.id ? 'win' : 'lose',
-              message: loser === player.id ? 'You lose!' : 'You win!',
+              result: winnerId === player.user.id ? 'win' : 'lose',
+              message: loserId === player.user.id ? 'You lose!' : 'You win!',
             })
           );
+
           player.ws.close();
         });
+
+        delete matchs[matchId];
       } else {
         await wait(10 * 1000);
         timerTurn(matchId, fastify);
@@ -489,6 +493,7 @@ const createMatch = async (wsUser, wsOpponent, fastify) => {
      * @type {Match}
      */
     await Match.create({
+      startedAt: new Date(),
       playerTurn: wsUser.user.id,
       battlefield: {
         [wsUser.user.id]: [],
@@ -603,24 +608,30 @@ export default async (fastify) => {
         .exec();
 
       // Assign the user to the found match in memory server
-      if (match) {
-        if (matchs[match._id]) {
+      if (match && matchs[match._id]) {
+        // Clear surrender timer
+        try {
           matchs[match._id].players[user.id] = {
             user: match.players.get(`${user.id}`).toObject(),
             ws,
           };
-        }
 
-        // Clear surrender timer
-        if (matchs[match._id].timerSurrender?.interval) {
-          matchs[match._id].timerSurrender.stop();
-        }
+          if (matchs[match._id].timerSurrender) {
+            matchs[match._id].timerSurrender.stop();
+          }
 
-        // Start preparation timer
-        if (matchs[match._id].timerPreparation?.time > 0) {
-          timerPreparation(match._id, fastify);
-        } else {
-          timerTurn(match._id, fastify);
+          if (matchs[match._id].timerPreparation?.time > 0) {
+            timerPreparation(match._id, fastify);
+          } else {
+            timerTurn(match._id, fastify);
+          }
+        } catch (err) {
+          usersMatch = Object.fromEntries(
+            Object.entries(usersMatch).filter(([key, value]) => value !== match._id)
+          );
+          delete matchs[match._id];
+          await Match.deleteOne({ _id: match._id });
+          ws.close();
         }
       } else if (waitingRooms.length > 0) {
         // If a player found an opponent, create a match
@@ -632,6 +643,9 @@ export default async (fastify) => {
           ws.send(action.error("Can't create match"));
         }
       } else {
+        if (match && !matchs[match._id]) {
+          await Match.deleteOne({ _id: match._id });
+        }
         // If no opponent found, add the player to the waiting room
         waitingRooms.push({ user, ws });
         ws.send(action.waiting('Waiting for an opponent...'));
@@ -683,7 +697,7 @@ export default async (fastify) => {
                         .get(`${user.id}`)
                         .gameDeck.reduce((acc, curr) => {
                           if (curr._id.toString() !== card) {
-                            acc.push(new mongo.ObjectId(curr._id));
+                            acc.push(curr);
                           }
 
                           return acc;
@@ -756,7 +770,7 @@ export default async (fastify) => {
                           .get(`${user.id}`)
                           .gameDeck.reduce((acc, curr) => {
                             if (curr._id.toString() !== card) {
-                              acc.push(new mongo.ObjectId(curr._id));
+                              acc.push(curr);
                             }
 
                             return acc;
