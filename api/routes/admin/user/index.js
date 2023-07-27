@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { env } from '../../../config/config.js';
-import { userUpdateValidation } from '../../../typeorm/schema/UserSchema.js';
+import { userAdminUpdateValidation } from '../../../typeorm/schema/UserSchema.js';
 
 /**
  * @param {Fastify} fastify
@@ -66,7 +66,7 @@ export default async (fastify) => {
 
         const fullBody = { password: '', confirmPassword: '', ...body };
         // Validation
-        const { error } = userUpdateValidation(fullBody);
+        const { error } = userAdminUpdateValidation(fullBody);
 
         if (error) {
           return reply.unprocessableEntity(error.issues.msg[0].message);

@@ -16,4 +16,5 @@
  * @typedef {Operator[]} Deck
  * Store types
  * @typedef {{ orderTypeId: number, price: number, amount: number, pulls: number, savedPercentage: number }} StoreItem
+ * @typedef {{ id: number, price: number, amount: number, paidAt: string }} Payment
  */

@@ -139,13 +139,51 @@
     }
   }
 
+  .tab {
+    @apply flex flex-col gap-2;
+
+    &__list {
+      @apply flex flex-col gap-1 rounded-xl p-1 sm:flex-row;
+    }
+
+    &__list-item {
+      @apply flex-grow rounded-lg bg-white p-2.5 text-sm font-medium leading-5 text-secondary shadow-md ring-white ring-opacity-60 ring-offset-2 ring-offset-secondary transition-all ui-selected:bg-secondary ui-selected:text-white ui-disabled:opacity-60 hover:bg-secondary hover:text-white focus-visible:bg-secondary focus-visible:text-white;
+    }
+
+    &__panel-item {
+      @apply p-4;
+    }
+  }
+
+  .display-item {
+    @apply flex w-full flex-row items-center gap-2 rounded-lg p-2 shadow-md;
+
+    &__title-container {
+      @apply flex flex-grow flex-col justify-center gap-2;
+    }
+
+    &__title {
+      @apply text-xl font-bold;
+    }
+
+    &__subtitle {
+      @apply text-sm;
+    }
+
+    &__info {
+      @apply text-right text-lg;
+    }
+  }
+
   // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/
   .operator-card {
     perspective: 2500px;
     @apply relative flex h-[22rem] w-72 max-w-[90vw] select-none items-end justify-center;
 
     &__wrapper {
-      transition: transform 0.5s ease-in-out, box-shadow 0.25s ease-in-out;
+      transition:
+        transform 0.5s ease-in-out,
+        box-shadow 0.25s ease-in-out;
       @apply absolute -z-[1] h-full w-full rounded-xl border-8 border-black p-1;
 
       &--highlight-common {

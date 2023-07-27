@@ -8,13 +8,14 @@
     TransitionChild,
   } from '@headlessui/vue';
   import { ref } from 'vue';
+  import { toast } from 'vue3-toastify';
 
   import BackdropModal from './BackdropModal.vue';
 
   import AuthForm from '../form/AuthForm.vue';
   import IconSpinner from '../icon/IconSpinner.vue';
 
-  defineProps({
+  const props = defineProps({
     isOpen: {
       type: Boolean,
       required: true,
@@ -31,6 +32,14 @@
 
   const handleClose = () => {
     if (stateForm.value === 'done' || stateForm.value === 'fail') {
+      if (stateForm.value === 'done') {
+        toast.success(
+          props.isLogin
+            ? 'Logged in successfully!'
+            : 'Registered successfully! You are now logged in.'
+        );
+      }
+
       emit('close');
     }
   };
@@ -50,7 +59,7 @@
         as="template"
       >
         <DialogPanel
-          class="dialog__panel w-[31.25rem] max-w-[80vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]"
+          class="dialog__panel w-[31.25rem] max-w-[90vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]"
         >
           <DialogTitle class="dialog__panel--title">
             {{ isLogin ? 'Login' : 'Register' }}

@@ -103,7 +103,7 @@ export const userSignupValidation = (user) =>
  * @param {object} user
  * @returns {object}
  */
-export const userUpdateValidation = (user) =>
+export const userAdminUpdateValidation = (user) =>
   z
     .object({
       password: z
@@ -121,6 +121,34 @@ export const userUpdateValidation = (user) =>
         .or(z.literal('')),
       confirmPassword: z.string().optional().or(z.literal('')),
       role: z.enum(['user', 'admin']),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ['confirmPassword'],
+    })
+    .safeParse(user);
+
+/**
+ * @param {object} user
+ * @returns {object}
+ */
+export const userUpdateValidation = (user) =>
+  z
+    .object({
+      password: z
+        .string()
+        .min(8, { message: 'Your password must contain at least 8 characters.' })
+        .max(40, { message: 'Your password must contain at mist 40 characters.' })
+        .regex(/(?=.*[a-z])/, {
+          message: 'Your password must contain at least one lowercase letter.',
+        })
+        .regex(/(?=.*[A-Z])/, {
+          message: 'Your password must contain at least one uppercase letter.',
+        })
+        .regex(/(?=.*\d)/, { message: 'Your password must contain at least one digit.' })
+        .optional()
+        .or(z.literal('')),
+      confirmPassword: z.string().optional().or(z.literal('')),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: "Passwords don't match",

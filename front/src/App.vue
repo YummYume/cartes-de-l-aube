@@ -3,13 +3,15 @@
     IconHome,
     IconUserPlus,
     IconPlayerPlay,
-    IconHistory,
     IconShoppingBag,
     IconMoneybag,
     IconCards,
     IconLogin,
     IconLogout,
     IconLock,
+    IconUser,
+    IconTrophy,
+    IconQuestionMark,
   } from '@tabler/icons-vue';
   import { useHead } from '@unhead/vue';
   import { useImage, useMagicKeys, useStorage } from '@vueuse/core';
@@ -23,21 +25,30 @@
   import OrundumCount from './components/OrundumCount.vue';
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
+  import { useAboutModal } from './stores/about-modal';
 
   // Async components
   const CookieBanner = defineAsyncComponent(() => import('./components/CookieBanner.vue'));
   const AuthModal = defineAsyncComponent(() => import('./components/modal/AuthModal.vue'));
   const LogoutModal = defineAsyncComponent(() => import('./components/modal/LogoutModal.vue'));
   const MoneyModal = defineAsyncComponent(() => import('./components/modal/MoneyModal.vue'));
+  const AccountModal = defineAsyncComponent(() => import('./components/modal/AccountModal.vue'));
+  const LeaderboardModal = defineAsyncComponent(() =>
+    import('./components/modal/LeaderboardModal.vue')
+  );
+  const AboutModal = defineAsyncComponent(() => import('./components/modal/AboutModal.vue'));
 
   const store = useAuth();
   const router = useRouter();
-  const moneyModalStore = useMoneyModal();
   const cookieAccepted = useStorage('cookie-accepted', false, localStorage);
   const { auth } = storeToRefs(store);
   const isLogin = ref(true);
+  const moneyModalStore = useMoneyModal();
+  const aboutModalStore = useAboutModal();
   const authModalOpened = ref(false);
   const logoutModalOpened = ref(false);
+  const accountModalOpened = ref(false);
+  const leaderboardModalOpened = ref(false);
   const { isReady: backgroundImageReady } = useImage({ src: '/common/bg.jpg' });
 
   /**
@@ -47,9 +58,30 @@
     { icon: IconHome, label: 'Home', to: '/' },
     { icon: IconPlayerPlay, label: 'Play', to: '/play', active: !!auth.value },
     { icon: IconCards, label: 'Squad', to: '/squad', active: !!auth.value },
-    { icon: IconHistory, label: 'History', to: '/history', active: !!auth.value },
     { icon: IconMoneybag, label: 'Headhunt', to: '/headhunt', active: !!auth.value },
     { icon: IconShoppingBag, label: 'Store', to: '/store', active: !!auth.value },
+    {
+      icon: IconUser,
+      label: 'Account',
+      onClick: () => {
+        accountModalOpened.value = true;
+      },
+      active: !!auth.value,
+    },
+    {
+      icon: IconTrophy,
+      label: 'Leaderboard',
+      onClick: () => {
+        leaderboardModalOpened.value = true;
+      },
+    },
+    {
+      icon: IconQuestionMark,
+      label: 'About',
+      onClick: () => {
+        aboutModalStore.openAboutModal();
+      },
+    },
     {
       icon: IconLock,
       label: 'Admin',
@@ -97,6 +129,10 @@
         as: 'image',
         href: `/operator-bg/${rarity}.jpg`,
       })),
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
+      },
     ],
   });
 
@@ -158,7 +194,7 @@
             <div v-else class="h-full w-full animate-pulse bg-[#0f1520]" aria-hidden="true" />
           </div>
           <main
-            class="container relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10"
+            class="main container relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10"
           >
             <RouterView />
           </main>
@@ -178,6 +214,12 @@
       </div>
 
       <SideBar :items="sidebarItems" />
+      <AccountModal :isOpen="accountModalOpened" @close="accountModalOpened = false" />
+      <LeaderboardModal :isOpen="leaderboardModalOpened" @close="leaderboardModalOpened = false" />
+      <AboutModal
+        :isOpen="aboutModalStore.aboutModalOpened"
+        @close="() => aboutModalStore.closeAboutModal()"
+      />
       <AuthModal :isOpen="authModalOpened" @close="authModalOpened = false" :isLogin="isLogin" />
       <LogoutModal :isOpen="logoutModalOpened" @close="logoutModalOpened = false" />
       <MoneyModal
@@ -187,3 +229,11 @@
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+  @media screen and (max-width: 400px) {
+    .main {
+      @apply px-2;
+    }
+  }
+</style>

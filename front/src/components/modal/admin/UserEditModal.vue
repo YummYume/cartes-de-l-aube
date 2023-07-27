@@ -12,7 +12,7 @@
 
   import InputField from '@/components/form/InputField.vue';
   import IconSpinner from '@/components/icon/IconSpinner.vue';
-  import { userValidation } from '@/utils/validation/admin/user-validation';
+  import { userAdminValidation } from '@/utils/validation/admin/user-validation';
 
   import BackdropModal from '../BackdropModal.vue';
 
@@ -51,17 +51,17 @@
         as="template"
       >
         <DialogPanel
-          class="dialog__panel w-[31.25rem] max-w-[80vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]"
+          class="dialog__panel w-[31.25rem] max-w-[90vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]"
         >
-          <DialogTitle class="dialog__panel--title"> Edit User {{ user.username }} </DialogTitle>
+          <DialogTitle class="dialog__panel--title"> Edit user {{ user.username }} </DialogTitle>
           <DialogDescription class="dialog__panel--description sr-only">
             You can edit {{ user.username }}'s details here. Click save to save the changes.
           </DialogDescription>
 
           <section class="dialog__panel--section mt-6">
             <Form
-              @submit="$emit('save', $event)"
-              :validation-schema="toTypedSchema(userValidation)"
+              @submit="(values, actions) => $emit('save', values, actions)"
+              :validation-schema="toTypedSchema(userAdminValidation)"
               v-slot="{ isSubmitting, meta }"
               class="flex flex-col gap-5"
             >
@@ -74,6 +74,7 @@
                 autocomplete="off"
                 data-lpignore="true"
                 data-form-type="other"
+                :is-required="false"
               />
               <InputField
                 id="confirmPassword"
@@ -84,6 +85,7 @@
                 autocomplete="off"
                 data-lpignore="true"
                 data-form-type="other"
+                :is-required="false"
               />
               <InputField
                 id="role"

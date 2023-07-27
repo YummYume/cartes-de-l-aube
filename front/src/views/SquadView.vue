@@ -196,8 +196,8 @@
         your next matches.
       </h2>
       <SwitchGroup class="mt-6 self-end">
-        <div class="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-0">
-          <SwitchLabel class="mr-4">
+        <div class="flex flex-row items-center gap-3">
+          <SwitchLabel>
             Toggle operator details (<kbd class="kbd bg-secondary">Shift</kbd> +
             <kbd class="kbd bg-secondary">T</kbd>)
           </SwitchLabel>
@@ -207,7 +207,7 @@
           <Switch
             v-model="showDetails"
             :class="showDetails ? 'bg-secondary' : 'bg-gray-200'"
-            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="switch-input relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             aria-keyshortcuts="Shift+T"
           >
             <span
@@ -235,3 +235,11 @@
     @remove="handleRemove"
   />
 </template>
+
+<style lang="scss">
+  @media screen and (max-width: 400px) {
+    .switch-input {
+      @apply w-16;
+    }
+  }
+</style>

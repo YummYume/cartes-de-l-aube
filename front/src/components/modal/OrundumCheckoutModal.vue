@@ -238,7 +238,7 @@
         leave-to="opacity-0 scale-95"
         as="template"
       >
-        <DialogPanel class="dialog__panel max-w-[80vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]">
+        <DialogPanel class="dialog__panel max-w-[90vw] bg-slate-700 text-slate-100 lg:max-w-[60vw]">
           <DialogTitle class="dialog__panel--title">Buy orundum</DialogTitle>
           <DialogDescription class="dialog__panel--description mt-2 max-w-[19rem]">
             Buy <strong>{{ formattedAmount }}</strong> orundum for

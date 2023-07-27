@@ -25,3 +25,13 @@ export const postSignup = async (payload) => api.post('auth/signup', payload);
  * @returns {Promise<Message>}
  */
 export const postSignout = async () => api.post('auth/signout', {});
+
+/**
+ * Update the current user
+ * @param {{ password: string | undefined }} updatedFields
+ * @param {AbortSignal|null} signal
+ * @async
+ * @returns {Promise<User>}
+ */
+export const updateUser = async (updatedFields, signal = null) =>
+  api.patch(`auth/me`, updatedFields, { signal });
