@@ -71,6 +71,7 @@ const ACTION_TYPE = {
   running: 'running',
   finish: 'finish',
   waiting: 'waiting',
+  reconnect: 'reconnect',
   timerTurn: 'timer-turn',
   timerSurrender: 'timer-surrender',
   timerPreparation: 'timer-preparation',
@@ -619,6 +620,33 @@ export default async (fastify) => {
           if (matchs[match._id].timerSurrender) {
             matchs[match._id].timerSurrender.stop();
           }
+
+          Object.values(matchs[match._id].players).forEach((player) => {
+            const opponent = Object.values(matchs[match._id].players).find(
+              (p) => p.user.id !== player.user.id
+            );
+
+            player.ws.send(
+              action.reconnect({
+                status: 'running',
+                totalTurn: match.totalTurn,
+                playerTurn: match.playerTurn,
+                actionTurn: match.actionTurn,
+                user: {
+                  ...match.players.get(`${player.user.id}`).toObject(),
+                  battlefield: match.battlefield.get(`${player.user.id}`),
+                },
+                opponent: {
+                  id: opponent.user.id,
+                  username: opponent.user.username,
+                  hp: opponent.user.hp,
+                  image: opponent.user.image,
+                  energy: opponent.user.energy,
+                  battlefield: match.battlefield.get(`${opponent.user.id}`),
+                },
+              })
+            );
+          });
 
           if (matchs[match._id].timerPreparation?.time > 0) {
             timerPreparation(match._id, fastify);
