@@ -11,10 +11,10 @@ export const MatchStatusEnum = {
 const playerSchema = new Schema(
   {
     id: { type: Number, required: true },
-    hp: { type: Number, default: 5, min: 0, max: 5, required: true },
+    hp: { type: Number, default: 1, min: 0, max: 5, required: true },
     username: { type: String, required: true },
     picture: { type: String, required: false },
-    energy: { type: Number, default: 5, min: 0, max: 10, required: true },
+    energy: { type: Number, default: 10, min: 0, max: 10, required: true },
     deck: [String],
     gameDeck: [{ type: Schema.Types.ObjectId, ref: 'Operator' }],
   },
@@ -30,7 +30,6 @@ const cardFieldSchema = new Schema(
       def: Number,
       cost: Number,
     },
-    position: { type: Number, min: 1, max: 4, required: true },
   },
   { _id: false }
 );
@@ -40,12 +39,6 @@ const cardFieldSchema = new Schema(
  */
 const schema = new Schema({
   startedAt: { type: Date, default: new Date(), required: true },
-  status: {
-    type: String,
-    enum: Object.values(MatchStatusEnum),
-    default: MatchStatusEnum.WAITING,
-    required: true,
-  },
   players: {
     type: Map,
     of: playerSchema,
@@ -57,9 +50,8 @@ const schema = new Schema({
   totalTurn: { type: Number, default: 0, required: true },
   playerTurn: { type: Number, required: true },
   actionTurn: {
-    deploys: { type: [{ _id: String, position: Number }], default: [], required: true },
+    deploys: { type: [String], default: [], required: true },
     attacks: { type: [{ initiator: String, target: String }], default: [], required: true },
-    retreats: { type: [{ _id: String, position: Number }], default: [], required: true },
   },
 });
 

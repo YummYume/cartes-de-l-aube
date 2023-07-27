@@ -64,7 +64,7 @@ const GAIN = {
 const TIMER = {
   turn: 0.5 * 60 + 1,
   surrender: 0.5 * 60 + 1, // 1.5 * 60 + 1,
-  preparation: 15 + 1,
+  preparation: 5,
 };
 
 const ACTION_TYPE = {
@@ -121,25 +121,6 @@ const removeCard = (arr, cardId) => {
   }
 
   return cards;
-};
-
-// Send data to all players in a match
-const broadcast = (matchId, data) => {
-  const match = matchs[matchId];
-
-  Object.keys(match.players).forEach((key) => {
-    const opponentKey = Object.keys(match.players).find((k) => k !== key);
-    match.players[key].ws.send(
-      JSON.stringify({
-        ...data,
-        user: match.players[key].user,
-        opponent: {
-          username: match.players[opponentKey].user.username,
-          image: match.players[opponentKey].user.image,
-        },
-      })
-    );
-  });
 };
 
 /**
@@ -335,8 +316,8 @@ const timerTurn = (matchId, fastify) =>
     timeReset: TIMER.turn,
     onDone: async () => {
       const match = await Match.findById(matchId)
-        .populate('battlefield.$*.operator')
         .populate('players.$*.gameDeck')
+        .populate('battlefield.$*.operator')
         .exec();
 
       let loser = null;
@@ -345,31 +326,32 @@ const timerTurn = (matchId, fastify) =>
       match.players.forEach((player) => {
         match.players.set(`${player.id}`, {
           ...player.toObject(),
+          gameDeck: player.gameDeck,
           energy: player.energy === 10 ? 10 : player.energy + 1,
         });
       });
 
       Array.from(match.players.values()).forEach((p, key) => {
         if ((match.battlefield.get(`${p.id}`).length <= 0 && p.gameDeck.length <= 0) || p.hp <= 0) {
-          matchs[match._id].status = MatchStatusEnum.FINISHED;
+          match.status = MatchStatusEnum.FINISHED;
           loser = p.id;
         }
         players[key] = p.toObject();
       });
 
+      match.totalTurn += 1;
+      match.playerTurn = match.playerTurn === players[0].id ? players[1].id : players[0].id;
+
       matchs[match._id] = {
         ...matchs[match._id],
         ...match.toObject(),
-        totalTurn: match.totalTurn + 1,
-        playerTurn: match.playerTurn === players[0].id ? players[1].id : players[0].id,
+        status: match.status,
+        totalTurn: match.totalTurn,
+        playerTurn: match.playerTurn,
         players: players.reduce((acc, curr) => {
           return { ...acc, [curr.id]: { ...acc[curr.id], user: curr } };
         }, matchs[match._id].players),
       };
-
-      match.status = matchs[match._id].status;
-      match.totalTurn = matchs[match._id].totalTurn;
-      match.playerTurn = matchs[match._id].playerTurn;
 
       await match.save();
 
@@ -379,9 +361,9 @@ const timerTurn = (matchId, fastify) =>
         );
         player.ws.send(
           action.turnPhase({
-            status: 'new turn',
-            totalTurn: matchs[match._id].totalTurn,
-            playerTurn: matchs[match._id].playerTurn,
+            status: 'running',
+            totalTurn: match.totalTurn,
+            playerTurn: match.playerTurn,
             actionTurn: match.actionTurn,
             user: {
               ...match.players.get(`${player.user.id}`).toObject(),
@@ -422,9 +404,10 @@ const timerTurn = (matchId, fastify) =>
 /**
  * Create a preration timer
  * @param {string} matchId
+ * @param {Fastify} fastify
  * @returns {void}
  */
-const timerPreparation = (matchId) =>
+const timerPreparation = (matchId, fastify) =>
   timerMaker({
     matchId,
     type: 'timerPreparation',
@@ -438,27 +421,25 @@ const timerPreparation = (matchId) =>
       match.players.forEach((player) => {
         match.players.set(`${player.id}`, {
           ...player.toObject(),
+          gameDeck: player.gameDeck,
           energy: player.energy === 10 ? 10 : player.energy + 1,
         });
       });
 
       const [player1, player2] = Array.from(match.players.values());
 
+      match.totalTurn += 1;
+      match.playerTurn = match.playerTurn === player1.id ? player2.id : player1.id;
+
       matchs[match._id] = {
         ...matchs[match._id],
         ...match.toObject(),
-        totalTurn: match.totalTurn + 1,
-        playerTurn:
-          match.playerTurn === player1.toObject().id
-            ? player2.toObject().id
-            : player1.toObject().id,
+        totalTurn: match.totalTurn,
+        playerTurn: match.playerTurn,
         players: [player1, player2].reduce((acc, curr) => {
           return { ...acc, [curr.id]: { ...acc[curr.id], user: curr.toObject() } };
         }, matchs[match._id].players),
       };
-
-      match.totalTurn = matchs[match._id].totalTurn;
-      match.playerTurn = matchs[match._id].playerTurn;
 
       await match.save();
 
@@ -466,11 +447,12 @@ const timerPreparation = (matchId) =>
         const opponent = Object.values(matchs[match._id].players).find(
           (p) => p.user.id !== player.user.id
         );
+
         player.ws.send(
           action.preparationPhase({
-            status: 'preparation end',
-            totalTurn: matchs[match._id].totalTurn,
-            playerTurn: matchs[match._id].playerTurn,
+            status: 'running',
+            totalTurn: match.totalTurn,
+            playerTurn: match.playerTurn,
             actionTurn: match.actionTurn,
             user: {
               ...match.players.get(`${player.user.id}`).toObject(),
@@ -488,7 +470,7 @@ const timerPreparation = (matchId) =>
         );
       });
 
-      timerTurn(matchId);
+      timerTurn(matchId, fastify);
     },
   });
 
@@ -499,7 +481,7 @@ const timerPreparation = (matchId) =>
  * @param {Fastify} fastify
  * @returns {Promise<void>}
  */
-const createMatch = async (wsUser, wsOpponent) => {
+const createMatch = async (wsUser, wsOpponent, fastify) => {
   try {
     const userDeck = await Operator.find({ name: { $in: wsUser.user.deck } }, { _id: 1 });
     const opponentDeck = await Operator.find({ name: { $in: wsOpponent.user.deck } }, { _id: 1 });
@@ -519,7 +501,6 @@ const createMatch = async (wsUser, wsOpponent) => {
     });
 
     const match = await Match.findOne({ [`players.${wsUser.user.id}`]: { $exists: true } })
-      .populate('battlefield.$*.operator')
       .populate('players.$*.gameDeck')
       .exec();
 
@@ -530,8 +511,8 @@ const createMatch = async (wsUser, wsOpponent) => {
       timerPreparation: { time: TIMER.preparation },
       timerSurrender: {},
       battlefield: {
-        [wsUser.user.id]: match.battlefield.get(`${wsUser.user.id}`),
-        [wsOpponent.user.id]: match.battlefield.get(`${wsOpponent.user.id}`),
+        [wsUser.user.id]: match.battlefield.get(`${wsUser.user.id}`).length,
+        [wsOpponent.user.id]: match.battlefield.get(`${wsOpponent.user.id}`).length,
       },
       players: {
         [wsUser.user.id]: {
@@ -553,10 +534,10 @@ const createMatch = async (wsUser, wsOpponent) => {
         (p) => p.user.id !== player.user.id
       );
       player.ws.send(
-        action.running({
-          status: 'preparation start',
-          totalTurn: matchs[match._id].totalTurn,
-          playerTurn: matchs[match._id].playerTurn,
+        action.preparationPhase({
+          status: 'running',
+          totalTurn: match.totalTurn,
+          playerTurn: match.playerTurn,
           actionTurn: match.actionTurn,
           user: {
             ...match.players.get(`${player.user.id}`).toObject(),
@@ -574,7 +555,7 @@ const createMatch = async (wsUser, wsOpponent) => {
       );
     });
 
-    timerPreparation(match._id);
+    timerPreparation(match._id, fastify);
   } catch (err) {
     console.log(err);
   }
@@ -631,13 +612,13 @@ export default async (fastify) => {
         }
 
         // Clear surrender timer
-        if (matchs[match._id].timerSurrender.interval) {
+        if (matchs[match._id].timerSurrender?.interval) {
           matchs[match._id].timerSurrender.stop();
         }
 
         // Start preparation timer
-        if (matchs[match._id].timerPreparation.time > 0) {
-          timerPreparation(match._id);
+        if (matchs[match._id].timerPreparation?.time > 0) {
+          timerPreparation(match._id, fastify);
         } else {
           timerTurn(match._id, fastify);
         }
@@ -662,8 +643,6 @@ export default async (fastify) => {
         let updateMatch;
         const { type, ...data } = JSON.parse(message);
         const matchStateMemory = matchs[usersMatch[user.id]];
-        // let match = matchs[usersMatch[user.id]];
-        // const opponent = Object.keys(match.players).find((k) => k !== `${user.id}`);
 
         if (type && data && matchStateMemory) {
           switch (type) {
@@ -671,53 +650,45 @@ export default async (fastify) => {
               // Check if the preparation phase is over
               if (
                 matchStateMemory.timerPreparation.time > 0 &&
-                matchStateMemory.battlefield[user.id].length <= 0 &&
+                matchStateMemory.battlefield[user.id] <= 0 &&
                 data.cards
               ) {
                 updateMatch = await Match.findOne({ _id: usersMatch[user.id] })
                   .populate('battlefield.$*.operator')
                   .populate('players.$*.gameDeck')
                   .exec();
+
                 /**
-                 * @type {{ cards: { _id: string, position: number }[] }}
+                 * @type {{ cards: string[] }}
                  */
                 const { cards } = data;
+
                 cards.forEach((card) => {
-                  if (!objInArr(updateMatch.battlefield.get(`${user.id}`), card, '_id')) {
-                    // Check if the card position is valid
-                    if (
-                      card.position >= 0 &&
-                      card.position <= 3 &&
-                      !objInArr(updateMatch.battlefield.get(`${user.id}`), card, 'position')
-                    ) {
-                      // Add card to battlefield
-                      updateMatch.battlefield.set(`${user.id}`, [
-                        ...updateMatch.battlefield.get(`${user.id}`),
-                        {
-                          operator: new mongo.ObjectId(card._id),
-                          position: card.position,
-                          statistics: updateMatch.players
-                            .get(`${user.id}`)
-                            .gameDeck.find((c) => c._id.toString() === card._id).statistics,
-                        },
-                      ]);
-
-                      // Remove card from user game deck
-                      updateMatch.players.set(`${user.id}`, {
-                        ...updateMatch.players.get(`${user.id}`).toObject(),
-                        gameDeck: updateMatch.players
+                  if (!updateMatch.battlefield.get(`${user.id}`).some((c) => c._id === card)) {
+                    // Add card to user battlefield
+                    updateMatch.battlefield.set(`${user.id}`, [
+                      ...updateMatch.battlefield.get(`${user.id}`),
+                      {
+                        operator: new mongo.ObjectId(card),
+                        statistics: updateMatch.players
                           .get(`${user.id}`)
-                          .gameDeck.reduce((acc, curr) => {
-                            if (curr._id.toString() !== card._id) {
-                              acc.push(new mongo.ObjectId(curr._id));
-                            }
+                          .gameDeck.find((c) => c._id.toString() === card).statistics,
+                      },
+                    ]);
 
-                            return acc;
-                          }, []),
-                      });
-                    } else {
-                      ws.send(action.error('Position already taken'));
-                    }
+                    // Remove card from user game deck
+                    updateMatch.players.set(`${user.id}`, {
+                      ...updateMatch.players.get(`${user.id}`).toObject(),
+                      gameDeck: updateMatch.players
+                        .get(`${user.id}`)
+                        .gameDeck.reduce((acc, curr) => {
+                          if (curr._id.toString() !== card) {
+                            acc.push(new mongo.ObjectId(curr._id));
+                          }
+
+                          return acc;
+                        }, []),
+                    });
                   } else {
                     ws.send(action.error("You can't put the same card twice"));
                   }
@@ -737,7 +708,7 @@ export default async (fastify) => {
 
                   await updateMatch.save();
                 } else {
-                  ws.send(action.error('Cheater: Not enough energy'));
+                  ws.send(action.error('[Cheat]: Not enough energy'));
                 }
               } else {
                 ws.send(action.error('Preparation phase is over'));
@@ -756,64 +727,41 @@ export default async (fastify) => {
                   .populate('players.$*.gameDeck')
                   .exec();
                 /**
-                 * @type {{ actions: { deploys: { _id: string, position: number }[], attacks: { initiator: string, target: string }[], retreats: { _id: string }[] } }}
+                 * @type {{ actions: { deploys: string[], attacks: { initiator: string, target: string }[] } }}
                  */
                 const { actions } = data;
 
                 if (!actions.deploys) actions.deploys = [];
                 if (!actions.attacks) actions.attacks = [];
-                if (!actions.retreats) actions.retreats = [];
 
-                if (
-                  updateMatch.battlefield.get(`${user.id}`).length <= 4 &&
-                  actions.deploys.length - actions.retreats.length <= 4 &&
-                  actions.retreats.length <= 4
-                ) {
-                  // Retreat cards on the battlefield
-                  actions.retreats.forEach((card) => {
-                    updateMatch.battlefield.set(
-                      `${user.id}`,
-                      removeCard(updateMatch.battlefield.get(`${user.id}`), card._id)
-                    );
-                  });
-
+                if (updateMatch.battlefield.get(`${user.id}`).length <= 4) {
                   // Deploys cards on the battlefield
                   actions.deploys.forEach((card) => {
-                    if (!objInArr(updateMatch.battlefield.get(`${user.id}`), card, '_id')) {
-                      // Check if the card position is valid
-                      if (
-                        card.position >= 0 &&
-                        card.position <= 3 &&
-                        !objInArr(updateMatch.battlefield.get(`${user.id}`), card, 'position')
-                      ) {
-                        // Add card to battlefield
-                        updateMatch.battlefield.set(`${user.id}`, [
-                          ...updateMatch.battlefield.get(`${user.id}`),
-                          {
-                            operator: new mongo.ObjectId(card._id),
-                            position: card.position,
-                            statistics: updateMatch.players
-                              .get(`${user.id}`)
-                              .gameDeck.find((c) => c._id.toString() === card._id).statistics,
-                          },
-                        ]);
-
-                        // Remove card from user game deck
-                        updateMatch.players.set(`${user.id}`, {
-                          ...updateMatch.players.get(`${user.id}`).toObject(),
-                          gameDeck: updateMatch.players
+                    if (!updateMatch.battlefield.get(`${user.id}`).some((c) => c._id === card)) {
+                      // Add card to battlefield
+                      updateMatch.battlefield.set(`${user.id}`, [
+                        ...updateMatch.battlefield.get(`${user.id}`),
+                        {
+                          operator: new mongo.ObjectId(card),
+                          statistics: updateMatch.players
                             .get(`${user.id}`)
-                            .gameDeck.reduce((acc, curr) => {
-                              if (curr._id.toString() !== card._id) {
-                                acc.push(new mongo.ObjectId(curr._id));
-                              }
+                            .gameDeck.find((c) => c._id.toString() === card).statistics,
+                        },
+                      ]);
 
-                              return acc;
-                            }, []),
-                        });
-                      } else {
-                        ws.send(action.error('Position already taken'));
-                      }
+                      // Remove card from user game deck
+                      updateMatch.players.set(`${user.id}`, {
+                        ...updateMatch.players.get(`${user.id}`).toObject(),
+                        gameDeck: updateMatch.players
+                          .get(`${user.id}`)
+                          .gameDeck.reduce((acc, curr) => {
+                            if (curr._id.toString() !== card) {
+                              acc.push(new mongo.ObjectId(curr._id));
+                            }
+
+                            return acc;
+                          }, []),
+                      });
                     } else {
                       ws.send(action.error("You can't put the same card twice"));
                     }
@@ -826,7 +774,7 @@ export default async (fastify) => {
 
                   // Attack cards on the battlefieldupdateMatch
                   actions.attacks
-                    .filter((c) => !actions.deploys.some((d) => d._id === c.initiator))
+                    .filter((c) => !actions.deploys.some((d) => d === c.initiator))
                     .forEach((atk) => {
                       const initiator = updateMatch.battlefield
                         .get(`${user.id}`)
@@ -869,7 +817,6 @@ export default async (fastify) => {
                             updateCard[targetIndex] = target;
                             updateMatch.battlefield.set(`${opponent.id}`, updateCard);
                           }
-                          ws.send(action.info({ target }));
                         } else {
                           updateMatch.players.set(`${opponent.id}`, {
                             ...updateMatch.players.get(`${opponent.id}`).toObject(),
@@ -888,7 +835,7 @@ export default async (fastify) => {
                       .reduce(
                         (acc, curr) =>
                           acc +
-                          (actions.deploys.some((c) => c._id === curr.operator.toString())
+                          (actions.deploys.some((c) => c === curr.operator.toString())
                             ? curr.statistics.cost
                             : 0),
                         0
@@ -911,7 +858,8 @@ export default async (fastify) => {
 
                     matchs[usersMatch[user.id]].timerTurn.time = 1;
                   } else {
-                    ws.send(action.error('Not enough energy'));
+                    ws.send(action.error('[Cheat]: Not enough energy'));
+                    matchs[usersMatch[user.id]].timerTurn.time = 1;
                   }
                 } else {
                   ws.send(action.error('Preparation phase is over'));
@@ -936,7 +884,7 @@ export default async (fastify) => {
         if (matchId) {
           if (matchs[matchId]) {
             // Pause turn timer
-            if (matchs[matchId].timerTurn.interval) {
+            if (matchs[matchId].timerTurn?.interval) {
               matchs[matchId].timerTurn.pause();
             }
 
