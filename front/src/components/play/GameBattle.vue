@@ -1,6 +1,6 @@
 <script setup>
   import { useFps } from '@vueuse/core';
-  import { computed } from 'vue';
+  import { computed, reactive } from 'vue';
 
   import GamePlayer from './GamePlayer.vue';
 
@@ -62,7 +62,10 @@
   defineEmits(['endTurn']);
 
   const fps = useFps();
-
+  const cardActions = reactive({
+    userDeck: [],
+    userBattlefield: [],
+  });
   const currentPlayerTurn = computed(() => {
     if (props.currentTurn === props.currentUser.id) {
       return props.currentUser;
@@ -74,6 +77,19 @@
 
     return null;
   });
+  const isPlayerTurn = computed(() => props.currentTurn === props.currentUser.id);
+
+  const handleDeckSelect = (operator) => {
+    if (!isPlayerTurn.value) {
+      return;
+    }
+
+    if (cardActions.userDeck.some((op) => op.id === operator.id)) {
+      cardActions.userDeck = cardActions.userDeck.filter((op) => op.id !== operator.id);
+    } else {
+      cardActions.userDeck.push(operator);
+    }
+  };
 </script>
 
 <template>
@@ -133,6 +149,7 @@
           :operator="operator"
           :active="true"
           :withHighlight="false"
+          :id="`opponent-battlefield-${operator.operator.id}`"
         />
       </div>
       <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden">
@@ -142,17 +159,22 @@
           :operator="operator"
           :active="true"
           :withHighlight="false"
+          :id="`user-battlefield-${operator.operator.id}`"
         />
       </div>
-      <div
-        class="themed-scrollbar flex max-h-[24rem] flex-row gap-4 overflow-x-auto overflow-y-hidden"
-      >
+      <div class="themed-scrollbar flex max-h-56 flex-row gap-4 overflow-x-auto overflow-y-hidden">
         <OperatorCard
           v-for="operator in currentUser.gameDeck"
           :key="operator.id"
           :operator="operator"
-          :withHighlight="false"
-          :description="`Deploy ${operator.name} to the battlefield.`"
+          :withHighlight="true"
+          :active="cardActions.userDeck.some((op) => op.id === operator.id)"
+          :description="`Deploy ${operator.name} on the battlefield.`"
+          :id="`user-deck-${operator.operator.id}`"
+          :class="`operator-card--compact h-52 w-44 ${
+            currentPlayerTurn.id === currentUser.id ? 'cursor-pointer' : 'cursor-not-allowed'
+          }`"
+          @select="handleDeckSelect"
         />
       </div>
     </div>

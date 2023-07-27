@@ -256,6 +256,14 @@
       @apply absolute -z-[1] w-full opacity-0 transition-all duration-500 ease-in-out;
     }
 
+    &--compact {
+      .operator-card {
+        &__title {
+          @apply text-sm;
+        }
+      }
+    }
+
     &--active {
       .operator-card {
         &__wrapper {
