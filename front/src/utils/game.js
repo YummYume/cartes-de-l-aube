@@ -1,15 +1,10 @@
 export const ACTION_TYPE = {
-  'running': 'running',
-  'victory': 'victory',
-  'defeat': 'defeat',
   'finish': 'finish',
-  'surrender': 'surrender',
   'timer-turn': 'timerTurn',
   'timer-surrender': 'timerSurrender',
   'timer-preparation': 'timerPreparation',
   'opponent-left': 'opponentLeft',
   'error': 'error',
-  'info': 'info',
   'waiting': 'waiting',
   'preparation-phase': 'preparationPhase',
   'turn-phase': 'turnPhase',
@@ -22,15 +17,14 @@ export const ACTION_TYPE = {
 
 /**
  * @typedef {{
- *    deploys: { _id: string, position: number }[],
- *    attacks: { initiator: string, target: string }[],
- *    retreats: { _id: string, position: number }[],
+ *    deploys: string[],
+ *    attacks: { initiator: string, target: string | null }[],
  * }} ActionTurn
  */
 
 /**
  * @typedef {{
- *    operator: Operator,
+ *    operator: Operator & { _id: string },
  *    statistics: {
  *      hp: number,
  *      atk: number,
@@ -49,7 +43,19 @@ export const ACTION_TYPE = {
 
 /**
  * @typedef {{
- *    status: 'running' | 'waiting' | 'preparation' | 'surrender' | 'victory' | 'defeat',
+ *    message: string,
+ * }} GameError
+ */
+
+/**
+ * @typedef {{
+ *    result: 'win' | 'lose',
+ * }} GameResult
+ */
+
+/**
+ * @typedef {{
+ *    status: 'running' | 'waiting' | 'finish',
  *    playerTurn: number,
  *    totalTurn: number,
  *    actionTurn: ActionTurn,
@@ -59,7 +65,7 @@ export const ACTION_TYPE = {
  *      username: string,
  *      energy: number,
  *      deck: string[],
- *      gameDeck: Operator[],
+ *      gameDeck: (Operator & { _id: string })[],
  *      battlefield: FieldOperator[],
  *    },
  *    opponent: {

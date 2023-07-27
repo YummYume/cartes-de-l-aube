@@ -29,6 +29,10 @@
       type: Number,
       required: true,
     },
+    isPreparationPhase: {
+      type: Boolean,
+      required: true,
+    },
     /**
      * @type {import('vue').PropType<number | null>}
      */
@@ -59,12 +63,12 @@
     },
   });
 
-  defineEmits(['endTurn']);
+  const emit = defineEmits(['endTurn', 'endPreparationPhase']);
 
   const fps = useFps();
   const cardActions = reactive({
-    userDeck: [],
-    userBattlefield: [],
+    deploys: [],
+    attacks: [],
   });
   const currentPlayerTurn = computed(() => {
     if (props.currentTurn === props.currentUser.id) {
@@ -77,18 +81,35 @@
 
     return null;
   });
-  const isPlayerTurn = computed(() => props.currentTurn === props.currentUser.id);
+  const isPlayerTurn = computed(() => currentPlayerTurn.value?.id === props.currentUser.id);
 
   const handleDeckSelect = (operator) => {
     if (!isPlayerTurn.value) {
       return;
     }
 
-    if (cardActions.userDeck.some((op) => op.id === operator.id)) {
-      cardActions.userDeck = cardActions.userDeck.filter((op) => op.id !== operator.id);
+    if (cardActions.deploys.some((op) => op.id === operator.id)) {
+      cardActions.deploys = cardActions.deploys.filter((op) => op.id !== operator.id);
     } else {
-      cardActions.userDeck.push(operator);
+      cardActions.deploys.push(operator);
     }
+  };
+
+  const handleEndTurn = () => {
+    if (props.isPreparationPhase) {
+      emit('endPreparationPhase', cardActions.deploys);
+
+      return;
+    }
+
+    if (!isPlayerTurn.value) {
+      return;
+    }
+
+    emit('endTurn', cardActions.deploys, cardActions.attacks);
+
+    cardActions.deploys = [];
+    cardActions.attacks = [];
   };
 </script>
 
@@ -102,8 +123,8 @@
       <button
         class="btn focus:not(:disabled)]:scale-105 w-40 rounded-md border-accent bg-accent text-white shadow-sm shadow-accent hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-accent focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-accent/75"
         type="button"
-        :disabled="currentTurn !== currentUser.id"
-        @click="$emit('endTurn')"
+        :disabled="!isPlayerTurn || isPreparationPhase"
+        @click="() => handleEndTurn()"
       >
         End turn
       </button>
@@ -148,8 +169,8 @@
           :key="operator.id"
           :operator="operator"
           :active="true"
-          :withHighlight="false"
-          :id="`opponent-battlefield-${operator.operator.id}`"
+          :withHighlight="true"
+          :id="`opponent-battlefield-${operator.operator._id}`"
         />
       </div>
       <div class="flex flex-grow flex-row gap-4 overflow-x-auto overflow-y-hidden">
@@ -158,8 +179,9 @@
           :key="operator.id"
           :operator="operator"
           :active="true"
-          :withHighlight="false"
-          :id="`user-battlefield-${operator.operator.id}`"
+          :withHighlight="true"
+          :id="`user-battlefield-${operator.operator._id}`"
+          :aria-disabled="!isPlayerTurn"
         />
       </div>
       <div class="themed-scrollbar flex max-h-56 flex-row gap-4 overflow-x-auto overflow-y-hidden">
@@ -167,13 +189,14 @@
           v-for="operator in currentUser.gameDeck"
           :key="operator.id"
           :operator="operator"
-          :withHighlight="true"
-          :active="cardActions.userDeck.some((op) => op.id === operator.id)"
+          :withHighlight="false"
+          :active="cardActions.deploys.some((op) => op._id === operator._id)"
           :description="`Deploy ${operator.name} on the battlefield.`"
-          :id="`user-deck-${operator.operator.id}`"
+          :id="`user-deck-${operator._id}`"
           :class="`operator-card--compact h-52 w-44 ${
-            currentPlayerTurn.id === currentUser.id ? 'cursor-pointer' : 'cursor-not-allowed'
+            isPlayerTurn ? 'cursor-pointer' : 'cursor-not-allowed'
           }`"
+          :aria-disabled="!isPlayerTurn"
           @select="handleDeckSelect"
         />
       </div>

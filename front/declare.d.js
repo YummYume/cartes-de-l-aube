@@ -7,7 +7,7 @@
  * @typedef {typeof import('@/utils/api').default} api
  * @typedef {{ message: string }} Message
  * Operator types
- * @typedef {{ id: number, name: string, rarity: string, alter?: string, description?: string, class: string, statistics: { hp: number, atk: number, def: number, cost: number }, art: { name: string, link: string }[] }} Operator
+ * @typedef {{ name: string, rarity: string, alter?: string, description?: string, class: string, statistics: { hp: number, atk: number, def: number, cost: number }, art: { name: string, link: string }[] }} Operator
  * @typedef {{ operator: Operator, new: boolean, orundum: number }} OperatorPull
  * Match types
  * @typedef {User & { status: 'winner'|'loser'|'abandon', orundum: number, operators: Operator[] }} MatchHistoryPlayer

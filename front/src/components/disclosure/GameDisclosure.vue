@@ -140,7 +140,7 @@
         <DisclosurePanel class="disclosure__content">
           <p>
             If you win, you will get 300 orundum and 20 leaderboard points. If you lose, you will
-            get 100 orundum and lose 20 leaderboard points. If a draw happens, for example if both
+            get 50 orundum and lose 20 leaderboard points. If a draw happens, for example if both
             players disconnect, they will both lose 10 leaderboard points.
           </p>
         </DisclosurePanel>

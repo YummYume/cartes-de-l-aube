@@ -1,15 +1,38 @@
 <script setup>
   import { useWebSocket } from '@vueuse/core';
-  import { reactive, ref } from 'vue';
+  import { defineAsyncComponent, reactive, ref } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
   import { toast } from 'vue3-toastify';
 
-  import ConfirmModal from '@/components/modal/ConfirmModal.vue';
   import GameBattle from '@/components/play/GameBattle.vue';
   import GameIntro from '@/components/play/GameIntro.vue';
   import GameSearch from '@/components/play/GameSearch.vue';
   import router from '@/router';
   import { useAuth } from '@/stores/auth';
+
+  // Async components
+  const ConfirmModal = defineAsyncComponent(() => import('@/components/modal/ConfirmModal.vue'));
+  const GameResultModal = defineAsyncComponent(() =>
+    import('@/components/modal/GameResultModal.vue')
+  );
+
+  // Defaults
+  const defaultGameState = {
+    user: null,
+    opponent: null,
+    totalTurn: 0,
+    playerTurn: null,
+    turnTimer: null,
+    prepareTimer: null,
+    surrenderTimer: null,
+    status: 'waiting',
+    actionTurn: {},
+  };
+  const defaultTimers = {
+    turn: null,
+    prepare: null,
+    surrender: null,
+  };
 
   const { auth } = useAuth();
   const confirmModalOpened = ref(false);
@@ -20,31 +43,33 @@
   const isLoading = ref(false);
   const isSearching = ref(false);
   const isPlaying = ref(false);
+  const isPreparationPhase = ref(false);
   /**
    * @type {import('vue').Ref<import('../utils/game').GameState>}
    */
-  const gameState = ref({
-    user: null,
-    opponent: null,
-    totalTurn: 0,
-    playerTurn: null,
-    turnTimer: null,
-    prepareTimer: null,
-    surrenderTimer: null,
-    status: 'waiting',
-    actionTurn: {},
-  });
+  const gameState = ref(defaultGameState);
   const timers = reactive({
-    turn: null,
-    prepare: null,
-    surrender: null,
+    turn: defaultTimers.turn,
+    prepare: defaultTimers.prepare,
+    surrender: defaultTimers.surrender,
   });
+  const isFinished = ref(false);
+  /**
+   * @type {import('vue').Ref<'win'|'lose'>}
+   */
+  const gameResult = ref('lose');
+
+  // WebSocket
   const { send, open, close } = useWebSocket(`${import.meta.env.VITE_WS_HOST}/match`, {
     autoClose: true,
     autoReconnect: {
       retries: 5,
       delay: 1000,
       onFailed() {
+        if (isFinished.value) {
+          return;
+        }
+
         isLoading.value = false;
         isSearching.value = false;
         isPlaying.value = false;
@@ -70,17 +95,29 @@
           break;
         }
 
-        case 'running': {
+        case 'preparation-phase': {
           /**
            * @type {import('../utils/game').GameEvent<import('../utils/game').GameState>}
            */
           const data = eventData;
 
           gameState.value = data;
-
+          isPreparationPhase.value = true;
           isLoading.value = false;
           isSearching.value = false;
           isPlaying.value = true;
+
+          break;
+        }
+
+        case 'turn-phase': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameState>}
+           */
+          const data = eventData;
+
+          isPreparationPhase.value = false;
+          gameState.value = data;
 
           break;
         }
@@ -118,6 +155,41 @@
           break;
         }
 
+        case 'finish': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameResult>}
+           */
+          const data = eventData;
+
+          gameResult.value = data.result;
+          isFinished.value = true;
+
+          break;
+        }
+
+        case 'opponent-left': {
+          if (isFinished.value) {
+            return;
+          }
+
+          toast.info(
+            'Your opponent has left the match. If they do not reconnect within 90 seconds, you will win the match.'
+          );
+
+          break;
+        }
+
+        case 'error': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameError>}
+           */
+          const data = eventData;
+
+          toast.error(data.message);
+
+          break;
+        }
+
         default:
           break;
       }
@@ -130,6 +202,7 @@
     }
 
     isLoading.value = true;
+
     open();
   };
 
@@ -157,6 +230,18 @@
     confirmModalOpened.value = false;
   };
 
+  const handleGameResultModalClose = () => {
+    close();
+
+    isFinished.value = false;
+    isPlaying.value = false;
+    isLoading.value = false;
+    gameState.value = defaultGameState;
+    timers.turn = defaultTimers.turn;
+    timers.prepare = defaultTimers.prepare;
+    timers.surrender = defaultTimers.surrender;
+  };
+
   const handleCancelSearch = () => {
     if (!isSearching.value) {
       return;
@@ -165,6 +250,38 @@
     close();
 
     isSearching.value = false;
+  };
+
+  const handleEndTurn = (userSelectedDeck, userAttack) => {
+    send(
+      JSON.stringify({
+        type: 'action',
+        actions: {
+          deploys: userSelectedDeck.map(
+            (deploy) =>
+              // eslint-disable-next-line no-underscore-dangle
+              deploy._id
+          ),
+          attacks: userAttack.map((attack) => ({
+            initiator: attack.operator,
+            target: attack.target,
+          })),
+        },
+      })
+    );
+  };
+
+  const handleEndPreparation = (userSelectedDeck) => {
+    send(
+      JSON.stringify({
+        type: 'preparation-phase',
+        cards: userSelectedDeck.map(
+          (deploy) =>
+            // eslint-disable-next-line no-underscore-dangle
+            deploy._id
+        ),
+      })
+    );
   };
 
   onBeforeRouteLeave((to, from, next) => {
@@ -200,9 +317,12 @@
       :opponent="gameState.opponent"
       :totalTurn="gameState.totalTurn"
       :currentTurn="timers.turn ? gameState.playerTurn : null"
+      :isPreparationPhase="isPreparationPhase"
       :turnTimer="timers.turn"
       :prepareTimer="timers.prepare"
       :surrenderTimer="timers.surrender"
+      @endTurn="handleEndTurn"
+      @endPreparationPhase="handleEndPreparation"
     />
     <GameIntro
       v-else
@@ -211,6 +331,7 @@
       @search="handleSearch"
     />
   </Transition>
+  <GameResultModal :isOpen="isFinished" :result="gameResult" @close="handleGameResultModalClose" />
   <ConfirmModal
     title="Hold on!"
     :message="
