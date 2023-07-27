@@ -1,7 +1,7 @@
 import { mongo } from 'mongoose';
 
 import { keysRemover, objInArr, wait } from '../../lib/utils.js';
-import { Match } from '../../mongoose/models/Match.js';
+import { Match, MatchStatusEnum } from '../../mongoose/models/Match.js';
 import { Operator } from '../../mongoose/models/Operator.js';
 import { MatchHistory } from '../../typeorm/models/MatchHistory.js';
 import { MatchHistoryPlayer } from '../../typeorm/models/MatchHistoryPlayer.js';
@@ -23,11 +23,13 @@ let usersMatch = {};
 
 /**
  * @type {{ [key: string]: {
+ *    status: 'running' | 'waiting' | 'preparation' | 'surrender' | 'victory' | 'defeat',
  *    playerTurn: number,
  *    totalTurn: number,
  *    timerTurn: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
  *    timerSurrender: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
  *    timerPreparation: { time: number, stop: () => void, pause: () => void, interval: NodeJS.Timeout },
+ *    battlefield: {},
  *    players: {
  *      [key: string]: {
  *        user: {
@@ -36,6 +38,7 @@ let usersMatch = {};
  *          username: string,
  *          image: string,
  *          energy: number,
+ *          deck: string[],
  *        },
  *        ws: SocketStream
  *      }
@@ -68,6 +71,7 @@ const ACTION_TYPE = {
   running: 'running',
   victory: 'victory',
   defeat: 'defeat',
+  finish: 'finish',
   surrender: 'surrender',
   timerTurn: 'timer-turn',
   timerSurrender: 'timer-surrender',
@@ -147,6 +151,88 @@ const sendToPlayers = (matchId, data) => {
   Object.keys(matchs[matchId].players).forEach((key) => {
     matchs[matchId].players[key].ws.send(data);
   });
+};
+
+/**
+ * @param {{
+ *  matchHistoryPlayerRepository: MatchHistoryPlayerRepository,
+ *  userRepository: UserRepository,
+ *  player: { deck: string[], user: User, matchHistory: MatchHistory },
+ *  status: 'winner'|'loser'|'abandon'
+ * }} params
+ * @returns {Promise<MatchHistoryPlayer>}
+ */
+const createMatchHistoryPlayer = async ({
+  matchHistoryPlayerRepository,
+  userRepository,
+  player,
+  status,
+}) => {
+  const matchHistoryPlayer = new MatchHistoryPlayer();
+  matchHistoryPlayer.deck = player.deck;
+  matchHistoryPlayer.status = status;
+  matchHistoryPlayer.rankingPoints = GAIN.rankingPoints[status];
+  matchHistoryPlayer.user = player.user;
+  matchHistoryPlayer.matchHistory = player.matchHistory;
+
+  await matchHistoryPlayerRepository.save(matchHistoryPlayer);
+
+  await userRepository.updateQuantity(player.user.id, {
+    rankingPoints: GAIN.rankingPoints[status],
+    orundum: GAIN.orundum[status],
+  });
+};
+
+/**
+ * @param {Fastify} fastify
+ * @param {{ matchId: string, winnerId: number, loserId: number, isDraw: boolean }} params
+ * @returns {Promise<void>}
+ */
+const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw }) => {
+  let players;
+  /**
+   * @type {Match}
+   */
+  const match = await Match.findById(matchId).exec();
+
+  if (isDraw) {
+    players = [...Array.from(match.players.values())];
+  } else {
+    players = [match.players.get(winnerId), match.players.get(loserId)];
+  }
+
+  /**
+   * @type {{
+   *  matchHistoryPlayerRepository: MatchHistoryPlayerRepository,
+   *  matchHistoryRepository: MatchHistoryRepository,
+   *  userRepository: UserRepository
+   * }}
+   */
+  const { matchHistoryPlayerRepository, matchHistoryRepository, userRepository } = fastify.typeorm;
+
+  const newMh = new MatchHistory();
+  newMh.startedAt = match.startedAt;
+
+  const matchHistory = await matchHistoryRepository.save(newMh);
+
+  await Promise.all(
+    players.map(async (p, k) => {
+      const playerSatus = !(k % 2) ? 'winner' : 'loser';
+
+      await createMatchHistoryPlayer({
+        matchHistoryPlayerRepository,
+        userRepository,
+        player: {
+          deck: p.deck,
+          user: new User(p.id),
+          matchHistory: new MatchHistory(matchHistory.id),
+        },
+        status: isDraw ? 'abandon' : playerSatus,
+      });
+    })
+  );
+
+  await Match.deleteOne({ _id: matchId }).exec();
 };
 
 /**
@@ -239,52 +325,94 @@ const timerMaker = ({
 /**
  * Create a turn timer
  * @param {string} matchId
+ * @param {Fastify} fastify
  * @returns {void}
  */
-const timerTurn = (matchId) =>
+const timerTurn = (matchId, fastify) =>
   timerMaker({
     matchId,
     type: 'timerTurn',
     timeReset: TIMER.turn,
-    autoReset: true,
-    timeBetweenReset: 10 * 1000,
     onDone: async () => {
       const match = await Match.findById(matchId)
         .populate('battlefield.$*.operator')
         .populate('players.$*.gameDeck')
         .exec();
 
-      const [player1, player2] = Array.from(match.players.values());
+      let loser = null;
+      const players = [];
+
+      match.players.forEach((player) => {
+        match.players.set(`${player.id}`, {
+          ...player.toObject(),
+          energy: player.energy === 10 ? 10 : player.energy + 1,
+        });
+      });
+
+      Array.from(match.players.values()).forEach((p, key) => {
+        if ((match.battlefield.get(`${p.id}`).length <= 0 && p.gameDeck.length <= 0) || p.hp <= 0) {
+          matchs[match._id].status = MatchStatusEnum.FINISHED;
+          loser = p.id;
+        }
+        players[key] = p.toObject();
+      });
 
       matchs[match._id] = {
         ...matchs[match._id],
         ...match.toObject(),
         totalTurn: match.totalTurn + 1,
-        playerTurn:
-          match.playerTurn === player1.toObject().id
-            ? player2.toObject().id
-            : player1.toObject().id,
-        players: [player1, player2].reduce((acc, curr) => {
-          return { ...acc, [curr.id]: { ...acc[curr.id], user: curr.toObject() } };
+        playerTurn: match.playerTurn === players[0].id ? players[1].id : players[0].id,
+        players: players.reduce((acc, curr) => {
+          return { ...acc, [curr.id]: { ...acc[curr.id], user: curr } };
         }, matchs[match._id].players),
       };
 
+      match.status = matchs[match._id].status;
       match.totalTurn = matchs[match._id].totalTurn;
       match.playerTurn = matchs[match._id].playerTurn;
 
       await match.save();
 
-      Object.keys(matchs[matchId].players).forEach((key) => {
-        matchs[matchId].players[key].ws.send(
-          action.turnPhase({
+      Object.values(matchs[match._id].players).forEach((player) => {
+        const opponent = Object.values(matchs[match._id].players).find(
+          (p) => p.user.id !== player.user.id
+        );
+        player.ws.send(
+          action.running({
+            status: matchs[match._id].status,
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: matchs[matchId].players[key].user,
-            battlefield: match.battlefield,
+            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+            opponent: {
+              id: opponent.user.id,
+              username: opponent.user.username,
+              hp: opponent.user.hp,
+              image: opponent.user.image,
+              energy: opponent.user.energy,
+              battlefield: matchs[match._id].battlefield[opponent.id],
+            },
           })
         );
       });
+
+      if (loser) {
+        const { id: winner } = players.find((p) => p.id !== loser);
+        await createMatchHistory(fastify, { matchId, winner, loser });
+
+        Object.values(matchs[matchId].players).forEach((player) => {
+          player.ws.send(
+            action.finish({
+              result: winner === player.id ? 'win' : 'lose',
+              message: loser === player.id ? 'You lose!' : 'You win!',
+            })
+          );
+          player.ws.close();
+        });
+      } else {
+        await wait(10 * 1000);
+        timerTurn(matchId, fastify);
+      }
     },
   });
 
@@ -304,6 +432,13 @@ const timerPreparation = (matchId) =>
         .populate('players.$*.gameDeck')
         .exec();
 
+      match.players.forEach((player) => {
+        match.players.set(`${player.id}`, {
+          ...player.toObject(),
+          energy: player.energy === 10 ? 10 : player.energy + 1,
+        });
+      });
+
       const [player1, player2] = Array.from(match.players.values());
 
       matchs[match._id] = {
@@ -324,14 +459,25 @@ const timerPreparation = (matchId) =>
 
       await match.save();
 
-      Object.keys(matchs[matchId].players).forEach((key) => {
-        matchs[matchId].players[key].ws.send(
-          action.turnPhase({
+      Object.values(matchs[match._id].players).forEach((player) => {
+        const opponent = Object.values(matchs[match._id].players).find(
+          (p) => p.user.id !== player.user.id
+        );
+        player.ws.send(
+          action.running({
+            status: matchs[match._id].status,
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: matchs[matchId].players[key].user,
-            battlefield: match.battlefield,
+            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+            opponent: {
+              id: opponent.user.id,
+              username: opponent.user.username,
+              hp: opponent.user.hp,
+              image: opponent.user.image,
+              energy: opponent.user.energy,
+              battlefield: matchs[match._id].battlefield[opponent.id],
+            },
           })
         );
       });
@@ -344,6 +490,7 @@ const timerPreparation = (matchId) =>
 /**
  * @param {WsUser} wsUser
  * @param {WsUser} wsOpponent
+ * @param {Fastify} fastify
  * @returns {Promise<void>}
  */
 const createMatch = async (wsUser, wsOpponent) => {
@@ -366,6 +513,7 @@ const createMatch = async (wsUser, wsOpponent) => {
     });
 
     const match = await Match.findOne({ [`players.${wsUser.user.id}`]: { $exists: true } })
+      .populate('battlefield.$*.operator')
       .populate('players.$*.gameDeck')
       .exec();
 
@@ -394,105 +542,33 @@ const createMatch = async (wsUser, wsOpponent) => {
     usersMatch[wsUser.user.id] = match._id;
     usersMatch[wsOpponent.user.id] = match._id;
 
-    broadcast(match._id, {
-      type: ACTION_TYPE.running,
-      matchInfo: {
-        playerTurn: match.playerTurn,
-        totalTurn: match.totalTurn,
-        battlefield: match.battlefield,
-      },
+    Object.values(matchs[match._id].players).forEach((player) => {
+      const opponent = Object.values(matchs[match._id].players).find(
+        (p) => p.user.id !== player.user.id
+      );
+      player.ws.send(
+        action.running({
+          status: matchs[match._id].status,
+          totalTurn: matchs[match._id].totalTurn,
+          playerTurn: matchs[match._id].playerTurn,
+          actionTurn: match.actionTurn,
+          user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+          opponent: {
+            id: opponent.user.id,
+            username: opponent.user.username,
+            hp: opponent.user.hp,
+            image: opponent.user.image,
+            energy: opponent.user.energy,
+            battlefield: matchs[match._id].battlefield[opponent.id],
+          },
+        })
+      );
     });
 
-    if (matchs[match._id].timerPreparation.time > 0) {
-      timerPreparation(match._id);
-    } else {
-      timerTurn(match._id);
-    }
+    timerPreparation(match._id);
   } catch (err) {
     console.log(err);
   }
-};
-
-/**
- * @param {{
- *  matchHistoryPlayerRepository: MatchHistoryPlayerRepository,
- *  userRepository: UserRepository,
- *  player: { deck: string[], user: User, matchHistory: MatchHistory },
- *  status: 'winner'|'loser'|'abandon'
- * }} params
- * @returns {Promise<MatchHistoryPlayer>}
- */
-const createMatchHistoryPlayer = async ({
-  matchHistoryPlayerRepository,
-  userRepository,
-  player,
-  status,
-}) => {
-  const matchHistoryPlayer = new MatchHistoryPlayer();
-  matchHistoryPlayer.deck = player.deck;
-  matchHistoryPlayer.status = status;
-  matchHistoryPlayer.rankingPoints = GAIN.rankingPoints[status];
-  matchHistoryPlayer.user = player.user;
-  matchHistoryPlayer.matchHistory = player.matchHistory;
-
-  await matchHistoryPlayerRepository.save(matchHistoryPlayer);
-
-  await userRepository.updateQuantity(player.user.id, {
-    rankingPoints: GAIN.rankingPoints[status],
-    orundum: GAIN.orundum[status],
-  });
-};
-
-/**
- * @param {Fastify} fastify
- * @param {{ matchId: string, winnerId: number, loserId: number, isDraw: boolean }} params
- * @returns {Promise<void>}
- */
-const createMatchHistory = async (fastify, { matchId, winnerId, loserId, isDraw }) => {
-  let players;
-  /**
-   * @type {Match}
-   */
-  const match = await Match.findById(matchId).exec();
-
-  if (isDraw) {
-    players = [...Array.from(match.players.values())];
-  } else {
-    players = [match.players.get(winnerId), match.players.get(loserId)];
-  }
-
-  /**
-   * @type {{
-   *  matchHistoryPlayerRepository: MatchHistoryPlayerRepository,
-   *  matchHistoryRepository: MatchHistoryRepository,
-   *  userRepository: UserRepository
-   * }}
-   */
-  const { matchHistoryPlayerRepository, matchHistoryRepository, userRepository } = fastify.typeorm;
-
-  const newMh = new MatchHistory();
-  newMh.startedAt = match.startedAt;
-
-  const matchHistory = await matchHistoryRepository.save(newMh);
-
-  await Promise.all(
-    players.map(async (p, k) => {
-      const playerSatus = !(k % 2) ? 'winner' : 'loser';
-
-      await createMatchHistoryPlayer({
-        matchHistoryPlayerRepository,
-        userRepository,
-        player: {
-          deck: p.deck,
-          user: new User(p.id),
-          matchHistory: new MatchHistory(matchHistory.id),
-        },
-        status: isDraw ? 'abandon' : playerSatus,
-      });
-    })
-  );
-
-  await Match.deleteOne({ _id: matchId }).exec();
 };
 
 // =============[Route]================ //
@@ -554,12 +630,12 @@ export default async (fastify) => {
         if (matchs[match._id].timerPreparation.time > 0) {
           timerPreparation(match._id);
         } else {
-          timerTurn(match._id);
+          timerTurn(match._id, fastify);
         }
       } else if (waitingRooms.length > 0) {
         // If a player found an opponent, create a match
         const wsOpponent = waitingRooms.pop();
-        await createMatch({ user, ws }, wsOpponent);
+        await createMatch({ user, ws }, wsOpponent, fastify);
       } else {
         // If no opponent found, add the player to the waiting room
         waitingRooms.push({ user, ws });
@@ -579,7 +655,11 @@ export default async (fastify) => {
           switch (type) {
             case 'preparation-phase':
               // Check if the preparation phase is over
-              if (matchStateMemory.timerPreparation.time > 0 && data.cards) {
+              if (
+                matchStateMemory.timerPreparation.time > 0 &&
+                matchStateMemory.battlefield[user.id].length <= 0 &&
+                data.cards
+              ) {
                 updateMatch = await Match.findOne({ _id: usersMatch[user.id] })
                   .populate('battlefield.$*.operator')
                   .populate('players.$*.gameDeck')
@@ -642,8 +722,6 @@ export default async (fastify) => {
                   });
 
                   await updateMatch.save();
-
-                  ws.send(action.info({ updateMatch }));
                 } else {
                   ws.send(action.error('Cheater: Not enough energy'));
                 }
@@ -746,37 +824,44 @@ export default async (fastify) => {
                       targetIndex = 0;
                     }
 
-                    if (initiator && targetIndex !== -1) {
-                      const target = updateMatch.battlefield.get(`${opponent.id}`)[targetIndex];
-                      const targetDef = target.statistics.def;
-                      const initiatorAtk = initiator.statistics.atk;
+                    if (initiator) {
+                      if (targetIndex !== -1) {
+                        const target = updateMatch.battlefield.get(`${opponent.id}`)[targetIndex];
+                        const targetDef = target.statistics.def;
+                        const initiatorAtk = initiator.statistics.atk;
 
-                      const percentReduceAtk =
-                        ((targetDef - initiatorAtk) / initiatorAtk) * 100 * -1;
+                        const percentReduceAtk =
+                          ((targetDef - initiatorAtk) / initiatorAtk) * 100 * -1;
 
-                      if (percentReduceAtk > 75) {
-                        target.statistics.hp -= Math.ceil((initiatorAtk * 75) / 100);
-                      } else if (percentReduceAtk < 75 && percentReduceAtk > 0) {
-                        target.statistics.hp -= Math.ceil(
-                          (initiatorAtk * Math.round(percentReduceAtk)) / 100
-                        );
-                      }
+                        if (percentReduceAtk > 75) {
+                          target.statistics.hp -= Math.ceil((initiatorAtk * 75) / 100);
+                        } else if (percentReduceAtk < 75 && percentReduceAtk > 0) {
+                          target.statistics.hp -= Math.ceil(
+                            (initiatorAtk * Math.round(percentReduceAtk)) / 100
+                          );
+                        }
 
-                      if (target.statistics.hp <= 0) {
-                        updateMatch.battlefield.set(
-                          `${user.id}`,
-                          removeCard(updateMatch.battlefield.get(`${opponent.id}`), atk.target)
-                        );
+                        if (target.statistics.hp <= 0) {
+                          updateMatch.battlefield.set(
+                            `${opponent.id}`,
+                            removeCard(updateMatch.battlefield.get(`${opponent.id}`), atk.target)
+                          );
+                        } else {
+                          const updateCard = [
+                            ...updateMatch.battlefield.get(`${opponent.id}`).toObject(),
+                          ];
+                          updateCard[targetIndex] = target;
+                          updateMatch.battlefield.set(`${opponent.id}`, updateCard);
+                        }
+                        ws.send(action.info({ target }));
                       } else {
-                        const updateCard = [...updateMatch.battlefield.get(`${opponent.id}`)];
-                        updateCard[targetIndex] = target;
-                        updateMatch.battlefield.set(`${opponent.id}`, updateCard);
+                        updateMatch.players.set(`${opponent.id}`, {
+                          ...updateMatch.players.get(`${opponent.id}`).toObject(),
+                          hp: updateMatch.players.get(`${opponent.id}`).hp - 1,
+                        });
                       }
                     } else {
-                      updateMatch.players.set(`${opponent.id}`, {
-                        ...updateMatch.players.get(`${opponent.id}`).toObject(),
-                        hp: updateMatch.players.get(`${opponent.id}`).hp - 1,
-                      });
+                      ws.send(action.error('Card not found'));
                     }
                   });
 
@@ -784,17 +869,26 @@ export default async (fastify) => {
                     updateMatch.players.get(`${user.id}`).energy -
                     updateMatch.battlefield
                       .get(`${user.id}`)
-                      .reduce((acc, curr) => acc + curr.statistics.cost, 0);
+                      .reduce(
+                        (acc, curr) =>
+                          acc +
+                          (actions.deploys.some((c) => c._id === curr.operator.toString())
+                            ? curr.statistics.cost
+                            : 0),
+                        0
+                      );
+
+                  ws.send(action.info({ energyLeft }));
 
                   if (energyLeft >= 0) {
                     updateMatch.players.set(`${user.id}`, {
                       ...updateMatch.players.get(`${user.id}`).toObject(),
-                      energy: energyLeft === 10 ? 10 : energyLeft + 1,
+                      energy: energyLeft === 10 ? 10 : energyLeft,
                     });
 
                     updateMatch.players.set(`${user.id}`, {
                       ...updateMatch.players.get(`${user.id}`).toObject(),
-                      energy: energyLeft === 10 ? 10 : energyLeft + 1,
+                      energy: energyLeft === 10 ? 10 : energyLeft,
                     });
 
                     updateMatch.actionTurn = actions;
@@ -877,7 +971,10 @@ export default async (fastify) => {
                   });
 
                   matchs[matchId].players[opponentKey].ws.send(
-                    action.victory('Your opponent has left, you win!')
+                    action.finish({
+                      result: 'win',
+                      message: 'Your opponent has left, you win!',
+                    })
                   );
 
                   delete matchs[matchId];
