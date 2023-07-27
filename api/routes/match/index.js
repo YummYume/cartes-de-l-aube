@@ -383,14 +383,14 @@ const timerTurn = (matchId, fastify) =>
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
-              battlefield: matchs[match._id].battlefield[opponent.id],
+              battlefield: matchs[match._id].battlefield[opponent.user.id],
             },
           })
         );
@@ -469,14 +469,14 @@ const timerPreparation = (matchId) =>
             totalTurn: matchs[match._id].totalTurn,
             playerTurn: matchs[match._id].playerTurn,
             actionTurn: match.actionTurn,
-            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+            user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
             opponent: {
               id: opponent.user.id,
               username: opponent.user.username,
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
-              battlefield: matchs[match._id].battlefield[opponent.id],
+              battlefield: matchs[match._id].battlefield[opponent.user.id],
             },
           })
         );
@@ -552,14 +552,14 @@ const createMatch = async (wsUser, wsOpponent) => {
           totalTurn: matchs[match._id].totalTurn,
           playerTurn: matchs[match._id].playerTurn,
           actionTurn: match.actionTurn,
-          user: { ...player.user, battlefield: matchs[match._id].battlefield[player.id] },
+          user: { ...player.user, battlefield: matchs[match._id].battlefield[player.user.id] },
           opponent: {
             id: opponent.user.id,
             username: opponent.user.username,
             hp: opponent.user.hp,
             image: opponent.user.image,
             energy: opponent.user.energy,
-            battlefield: matchs[match._id].battlefield[opponent.id],
+            battlefield: matchs[match._id].battlefield[opponent.user.id],
           },
         })
       );
@@ -635,7 +635,12 @@ export default async (fastify) => {
       } else if (waitingRooms.length > 0) {
         // If a player found an opponent, create a match
         const wsOpponent = waitingRooms.pop();
-        await createMatch({ user, ws }, wsOpponent, fastify);
+
+        try {
+          await createMatch({ user, ws }, wsOpponent, fastify);
+        } catch (err) {
+          ws.send(action.error("Can't create match"));
+        }
       } else {
         // If no opponent found, add the player to the waiting room
         waitingRooms.push({ user, ws });
@@ -811,59 +816,61 @@ export default async (fastify) => {
                   );
 
                   // Attack cards on the battlefieldupdateMatch
-                  actions.attacks.forEach((atk) => {
-                    const initiator = updateMatch.battlefield
-                      .get(`${user.id}`)
-                      .find((c) => c.operator._id.toString() === atk.initiator);
+                  actions.attacks
+                    .filter((c) => !actions.deploys.some((d) => d._id === c.initiator))
+                    .forEach((atk) => {
+                      const initiator = updateMatch.battlefield
+                        .get(`${user.id}`)
+                        .find((c) => c.operator._id.toString() === atk.initiator);
 
-                    let targetIndex = updateMatch.battlefield
-                      .get(`${opponent.id}`)
-                      .findIndex((c) => c.operator._id.toString() === atk.target);
+                      let targetIndex = updateMatch.battlefield
+                        .get(`${opponent.id}`)
+                        .findIndex((c) => c.operator._id.toString() === atk.target);
 
-                    if (targetIndex === -1 && updateMatch.battlefield.get(`${opponent.id}`)[0]) {
-                      targetIndex = 0;
-                    }
-
-                    if (initiator) {
-                      if (targetIndex !== -1) {
-                        const target = updateMatch.battlefield.get(`${opponent.id}`)[targetIndex];
-                        const targetDef = target.statistics.def;
-                        const initiatorAtk = initiator.statistics.atk;
-
-                        const percentReduceAtk =
-                          ((targetDef - initiatorAtk) / initiatorAtk) * 100 * -1;
-
-                        if (percentReduceAtk > 75) {
-                          target.statistics.hp -= Math.ceil((initiatorAtk * 75) / 100);
-                        } else if (percentReduceAtk < 75 && percentReduceAtk > 0) {
-                          target.statistics.hp -= Math.ceil(
-                            (initiatorAtk * Math.round(percentReduceAtk)) / 100
-                          );
-                        }
-
-                        if (target.statistics.hp <= 0) {
-                          updateMatch.battlefield.set(
-                            `${opponent.id}`,
-                            removeCard(updateMatch.battlefield.get(`${opponent.id}`), atk.target)
-                          );
-                        } else {
-                          const updateCard = [
-                            ...updateMatch.battlefield.get(`${opponent.id}`).toObject(),
-                          ];
-                          updateCard[targetIndex] = target;
-                          updateMatch.battlefield.set(`${opponent.id}`, updateCard);
-                        }
-                        ws.send(action.info({ target }));
-                      } else {
-                        updateMatch.players.set(`${opponent.id}`, {
-                          ...updateMatch.players.get(`${opponent.id}`).toObject(),
-                          hp: updateMatch.players.get(`${opponent.id}`).hp - 1,
-                        });
+                      if (targetIndex === -1 && updateMatch.battlefield.get(`${opponent.id}`)[0]) {
+                        targetIndex = 0;
                       }
-                    } else {
-                      ws.send(action.error('Card not found'));
-                    }
-                  });
+
+                      if (initiator) {
+                        if (targetIndex !== -1) {
+                          const target = updateMatch.battlefield.get(`${opponent.id}`)[targetIndex];
+                          const targetDef = target.statistics.def;
+                          const initiatorAtk = initiator.statistics.atk;
+
+                          const percentReduceAtk =
+                            ((targetDef - initiatorAtk) / initiatorAtk) * 100 * -1;
+
+                          if (percentReduceAtk > 75) {
+                            target.statistics.hp -= Math.ceil((initiatorAtk * 75) / 100);
+                          } else if (percentReduceAtk < 75 && percentReduceAtk > 0) {
+                            target.statistics.hp -= Math.ceil(
+                              (initiatorAtk * Math.round(percentReduceAtk)) / 100
+                            );
+                          }
+
+                          if (target.statistics.hp <= 0) {
+                            updateMatch.battlefield.set(
+                              `${opponent.id}`,
+                              removeCard(updateMatch.battlefield.get(`${opponent.id}`), atk.target)
+                            );
+                          } else {
+                            const updateCard = [
+                              ...updateMatch.battlefield.get(`${opponent.id}`).toObject(),
+                            ];
+                            updateCard[targetIndex] = target;
+                            updateMatch.battlefield.set(`${opponent.id}`, updateCard);
+                          }
+                          ws.send(action.info({ target }));
+                        } else {
+                          updateMatch.players.set(`${opponent.id}`, {
+                            ...updateMatch.players.get(`${opponent.id}`).toObject(),
+                            hp: updateMatch.players.get(`${opponent.id}`).hp - 1,
+                          });
+                        }
+                      } else {
+                        ws.send(action.error('Card not found'));
+                      }
+                    });
 
                   const energyLeft =
                     updateMatch.players.get(`${user.id}`).energy -
@@ -877,8 +884,6 @@ export default async (fastify) => {
                             : 0),
                         0
                       );
-
-                  ws.send(action.info({ energyLeft }));
 
                   if (energyLeft >= 0) {
                     updateMatch.players.set(`${user.id}`, {
