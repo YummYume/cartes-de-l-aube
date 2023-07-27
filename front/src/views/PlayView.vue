@@ -38,16 +38,31 @@
       /**
        * @type {import('../utils/game').GameEvent} data
        */
-      const data = JSON.parse(event.data);
+      const eventData = JSON.parse(event.data);
 
-      console.log(data);
+      console.log(eventData);
 
-      switch (data.type) {
-        case 'waiting':
+      switch (eventData.type) {
+        case 'waiting': {
           isLoading.value = false;
           isSearching.value = true;
 
           break;
+        }
+
+        case 'running': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameState>}
+           */
+          const data = eventData;
+
+          isLoading.value = false;
+          isSearching.value = false;
+          isPlaying.value = true;
+
+          break;
+        }
+
         default:
           break;
       }
