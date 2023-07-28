@@ -56,7 +56,7 @@
             <p>{{ isWinner ? 'Congratulations!' : 'Better luck next time!' }}</p>
             <p>
               You earned {{ isWinner ? '300' : '50' }} orundum and
-              {{ isWinner ? 'lost 20' : 'gained 20' }} leaderboard points.
+              {{ isWinner ? 'gained 20' : 'lost 20' }} leaderboard points.
             </p>
           </DialogDescription>
 
