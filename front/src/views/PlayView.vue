@@ -1,4 +1,5 @@
 <script setup>
+  import { useHead } from '@unhead/vue';
   import { useWebSocket } from '@vueuse/core';
   import { defineAsyncComponent, reactive, ref } from 'vue';
   import { onBeforeRouteLeave } from 'vue-router';
@@ -299,6 +300,17 @@
       })
     );
   };
+
+  useHead({
+    title: 'Play',
+    meta: [
+      {
+        name: 'description',
+        content:
+          'Are you ready to fight? To climb the leaderboard? Prove to Rhodes Island that you are the best doctor they have ever seen!',
+      },
+    ],
+  });
 
   onBeforeRouteLeave((to, from, next) => {
     if (!isSearching.value && !isPlaying.value) {
