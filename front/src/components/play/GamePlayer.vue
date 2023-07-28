@@ -20,7 +20,8 @@
 </script>
 
 <template>
-  <div class="flex flex-col gap-0.5" v-bind="$attrs">
+  <div class="relative flex flex-col gap-0.5" v-bind="$attrs">
+    <slot />
     <span class="text-ellipsis text-xl font-semibold">{{ player.username }}</span>
     <span :aria-label="`${player.username} has ${player.hp} HP left.`">
       <IconHeart class="mr-1 inline-flex h-4 w-4 fill-white" /> {{ player.hp }} HP

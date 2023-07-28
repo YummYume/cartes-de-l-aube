@@ -84,8 +84,6 @@
        */
       const eventData = JSON.parse(event.data);
 
-      console.log(eventData);
-
       switch (eventData.type) {
         case 'waiting': {
           isLoading.value = false;
@@ -170,6 +168,8 @@
 
           gameResult.value = data.result;
           isFinished.value = true;
+
+          close();
 
           break;
         }

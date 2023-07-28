@@ -95,7 +95,7 @@
     return (
       isPlayerTurn.value &&
       (energy.value >= operator.statistics.cost || isSelected) &&
-      (cardActions.deploys.length < 4 || isSelected) &&
+      (cardActions.deploys.length + props.currentUser.battlefield.length < 4 || isSelected) &&
       !(hasDeployed.value && props.isPreparationPhase)
     );
   };
@@ -124,46 +124,95 @@
   };
 
   const handleTargetSelect = (operator) => {
-    if (
-      !isPlayerTurn.value ||
-      cardActions.attacks.some((atk) => atk.initiator === selectedOperator.value?._id)
-    ) {
+    if (!isPlayerTurn.value) {
       return;
     }
 
-    if (!selectedOperator.value) {
+    if (!operator) {
+      if (props.opponent.battlefield.length > 0) {
+        return;
+      }
+
+      if (!selectedOperator.value) {
+        cardActions.attacks = [];
+      } else if (cardActions.attacks.some((atk) => atk.initiator === selectedOperator.value._id)) {
+        cardActions.attacks = cardActions.attacks.filter(
+          (atk) => atk.initiator !== selectedOperator.value._id
+        );
+      } else {
+        cardActions.attacks = [
+          ...cardActions.attacks,
+          { initiator: selectedOperator.value._id, target: null },
+        ];
+      }
+    } else if (!selectedOperator.value) {
       cardActions.attacks = cardActions.attacks.filter((atk) => atk.target !== operator._id);
-    } else if (cardActions.attacks.some((atk) => atk.target === operator._id)) {
-      cardActions.attacks = cardActions.attacks.filter(
-        (atk) => atk.target !== operator._id && atk.initiator === selectedOperator.value?._id
-      );
+    } else if (cardActions.attacks.some((atk) => atk.initiator === selectedOperator.value._id)) {
+      cardActions.attacks = cardActions.attacks
+        .map((atk) => {
+          if (atk.initiator === selectedOperator.value._id) {
+            if (atk.target === operator._id) {
+              return null;
+            }
+
+            return { initiator: atk.initiator, target: operator._id };
+          }
+
+          return atk;
+        })
+        .filter((atk) => atk !== null);
+    } else {
+      cardActions.attacks = [
+        ...cardActions.attacks,
+        { initiator: selectedOperator.value._id, target: operator._id },
+      ];
     }
 
-    cardActions.attacks = [
-      ...cardActions.attacks,
-      { initiator: selectedOperator.value._id, target: operator._id },
-    ];
+    selectedOperator.value = null;
   };
 
   const getAttackedIndexesForOperator = (operator) => {
     return cardActions.attacks
       .filter((atk) => atk.initiator === operator._id)
-      .map((atk) => cardActions.deploys.findIndex((op) => op._id === atk.initiator) + 1);
+      .map(
+        (atk) =>
+          cardActions.attacks.findIndex(
+            (op) => op.initiator === atk.initiator && op.target === atk.target
+          ) + 1
+      );
   };
 
   const getTargetedIndexesForOperator = (operator) => {
+    if (!operator) {
+      return cardActions.attacks
+        .filter((atk) => atk.target === null)
+        .map(
+          (atk) =>
+            cardActions.attacks.findIndex(
+              (op) => op.initiator === atk.initiator && op.target === atk.target
+            ) + 1
+        );
+    }
+
     return cardActions.attacks
       .filter((atk) => atk.target === operator._id)
-      .map((atk) => cardActions.deploys.findIndex((op) => op._id === atk.target) + 1);
+      .map(
+        (atk) =>
+          cardActions.attacks.findIndex(
+            (op) => op.initiator === atk.initiator && op.target === atk.target
+          ) + 1
+      );
   };
 
   const handleEndTurn = () => {
+    if (hasDeployed.value) {
+      return;
+    }
+
     if (props.isPreparationPhase) {
       emit('endPreparationPhase', cardActions.deploys);
       energyCost.value = 0;
       hasDeployed.value = true;
-      cardActions.deploys = [];
-      cardActions.attacks = [];
 
       return;
     }
@@ -179,13 +228,16 @@
     cardActions.attacks = [];
   };
 
-  watch([props.turnTimer, props.prepareTimer, props.surrenderTimer], () => {
-    cardActions.deploys = [];
-    cardActions.attacks = [];
-    energyCost.value = 0;
-    selectedOperator.value = null;
-    hasDeployed.value = false;
-  });
+  watch(
+    () => props.currentTurn,
+    () => {
+      cardActions.deploys = [];
+      cardActions.attacks = [];
+      energyCost.value = 0;
+      selectedOperator.value = null;
+      hasDeployed.value = false;
+    }
+  );
 </script>
 
 <template>
@@ -194,11 +246,29 @@
       <GamePlayer
         :player="opponent"
         class="themed-scrollbar overflow-auto rounded-lg border border-accent bg-accent/40 p-2 shadow-md drop-shadow-md scrollbar-thumb-accent"
-      />
+        @click="() => handleTargetSelect()"
+      >
+        <Transition
+          enter-active-class="transition-opacity duration-150"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition-opacity duration-150"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+          mode="out-in"
+        >
+          <span
+            class="absolute right-1 top-1 z-50 flex flex-col gap-0.5 text-right"
+            v-if="getTargetedIndexesForOperator(null).length > 0"
+          >
+            {{ getTargetedIndexesForOperator(null).join(' ') }}
+          </span>
+        </Transition>
+      </GamePlayer>
       <button
         class="btn focus:not(:disabled)]:scale-105 w-40 rounded-md border-success bg-success text-white shadow-sm shadow-success hover:[&:not(:disabled)]:scale-105 hover:[&:not(:disabled)]:shadow-lg hover:[&:not(:disabled)]:shadow-success focus:[&:not(:disabled)]:shadow-lg focus:[&:not(:disabled)]:shadow-success/75"
         type="button"
-        :disabled="isPreparationPhase ? hasDeployed : !isPlayerTurn"
+        :disabled="isPreparationPhase ? hasDeployed : !isPlayerTurn || hasDeployed"
         @click="() => handleEndTurn()"
       >
         End turn
@@ -211,7 +281,7 @@
     </div>
 
     <div class="relative flex flex-grow flex-col overflow-hidden">
-      <div class="absolute right-1 top-1 flex flex-col gap-0.5 text-right">
+      <div class="absolute right-1 top-1 z-50 flex flex-col gap-0.5">
         <span>{{ fps }} FPS</span>
         <span>Turn {{ totalTurn }}</span>
         <Transition
@@ -252,7 +322,22 @@
           class="operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52"
           @select="handleTargetSelect"
         >
-          <span>{{ getTargetedIndexesForOperator(operator.operator) }}</span>
+          <Transition
+            enter-active-class="transition-opacity duration-150"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+            mode="out-in"
+          >
+            <span
+              class="absolute left-1 top-1 z-50 flex flex-col gap-0.5 rounded-md border-secondary bg-secondary/80 p-0.5"
+              v-if="getTargetedIndexesForOperator(operator.operator).length > 0"
+            >
+              {{ getTargetedIndexesForOperator(operator.operator).join(' ') }}</span
+            >
+          </Transition>
         </OperatorCard>
       </div>
       <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
@@ -283,7 +368,21 @@
             }
           "
         >
-          <span>{{ getAttackedIndexesForOperator(operator.operator) }}</span>
+          <Transition
+            enter-active-class="transition-opacity duration-150"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+            mode="out-in"
+          >
+            <span
+              class="absolute left-1 top-1 z-50 flex flex-col gap-0.5 rounded-md border-secondary bg-secondary/80 p-0.5"
+              v-if="getAttackedIndexesForOperator(operator.operator).length > 0"
+              >{{ getAttackedIndexesForOperator(operator.operator).join(' ') }}</span
+            >
+          </Transition>
         </OperatorCard>
       </div>
       <div
