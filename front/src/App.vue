@@ -26,6 +26,7 @@
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
   import { useAboutModal } from './stores/about-modal';
+  import { useHasGame } from './stores/has-game';
   import { useMainNav } from './stores/main-nav';
 
   // Async components
@@ -52,6 +53,8 @@
   const leaderboardModalOpened = ref(false);
   const { isReady: backgroundImageReady } = useImage({ src: '/common/bg.jpg' });
   const mainNav = useMainNav();
+  const hasGameStore = useHasGame();
+  const { hasGame } = storeToRefs(hasGameStore);
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
@@ -196,7 +199,9 @@
             <div v-else class="h-full w-full animate-pulse bg-[#0f1520]" aria-hidden="true" />
           </div>
           <main
-            class="main container relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10"
+            :class="`main ${
+              hasGame ? '' : 'container'
+            } relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10`"
           >
             <button
               class="sr-only !absolute left-1 top-1 focus:not-sr-only"
