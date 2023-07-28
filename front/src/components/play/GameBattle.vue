@@ -1,7 +1,9 @@
 <script setup>
   import { useFps } from '@vueuse/core';
   import gsap from 'gsap';
-  import { computed, reactive, ref, watch } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+
+  import { useHasGame } from '@/stores/has-game';
 
   import GamePlayer from './GamePlayer.vue';
 
@@ -73,36 +75,37 @@
 
   const emit = defineEmits(['endTurn', 'endPreparationPhase']);
 
+  const { setHasGame } = useHasGame();
   const fps = useFps();
   const cardActions = reactive({
     deploys: [],
     attacks: [],
+  });
+  const players = reactive({
+    user: props.currentUser,
+    opponent: props.opponent,
   });
   const energyCost = ref(0);
   /**
    * @type {import('vue').Ref<Operator|null>}
    */
   const selectedOperator = ref(null);
-  const energy = computed(() => props.currentUser.energy - energyCost.value);
+  const energy = computed(() => players.user.energy - energyCost.value);
   const hasDeployed = ref(false);
   const currentPlayerTurn = computed(() => {
-    if (props.currentTurn === props.currentUser.id) {
-      return props.currentUser;
+    if (props.currentTurn === players.user.id) {
+      return players.user;
     }
 
-    if (props.currentTurn === props.opponent.id) {
-      return props.opponent;
+    if (props.currentTurn === players.opponent.id) {
+      return players.opponent;
     }
 
     return null;
   });
   const isPlayerTurn = computed(
-    () => currentPlayerTurn.value?.id === props.currentUser.id || props.isPreparationPhase
+    () => currentPlayerTurn.value?.id === players.user.id || props.isPreparationPhase
   );
-  const players = reactive({
-    user: props.currentUser,
-    opponent: props.opponent,
-  });
 
   /**
    * @param {Operator & { _id: string }} operator
@@ -114,7 +117,7 @@
     return (
       isPlayerTurn.value &&
       (energy.value >= operator.statistics.cost || isSelected) &&
-      (cardActions.deploys.length + props.currentUser.battlefield.length < 4 || isSelected) &&
+      (cardActions.deploys.length + players.user.battlefield.length < 4 || isSelected) &&
       !(hasDeployed.value && props.isPreparationPhase)
     );
   };
@@ -151,7 +154,7 @@
     }
 
     if (!operator) {
-      if (props.opponent.battlefield.length > 0) {
+      if (players.opponent.battlefield.length > 0) {
         return;
       }
 
@@ -368,14 +371,22 @@
       hasDeployed.value = false;
     }
   );
+
+  onMounted(() => {
+    setHasGame(true);
+  });
+
+  onBeforeUnmount(() => {
+    setHasGame(false);
+  });
 </script>
 
 <template>
   <div class="absolute inset-0 flex h-full w-full gap-2 overflow-hidden p-1 sm:p-4">
     <div class="flex max-w-[20%] flex-col justify-between">
       <GamePlayer
-        :player="opponent"
-        :aria-label="`${opponent.username} has ${opponent.hp} HP and ${opponent.energy} energy left.`"
+        :player="players.opponent"
+        :aria-label="`${players.opponent.username} has ${players.opponent.hp} HP and ${players.opponent.energy} energy left.`"
         id="opponent-player"
         class="themed-scrollbar overflow-auto rounded-lg border border-accent bg-accent/40 p-2 shadow-md drop-shadow-md scrollbar-thumb-accent"
         role="button"
@@ -408,8 +419,8 @@
         End turn
       </button>
       <GamePlayer
-        :player="currentUser"
-        :aria-label="`You have ${currentUser.hp} HP and ${energy} energy left.`"
+        :player="players.user"
+        :aria-label="`You have ${players.user.hp} HP and ${energy} energy left.`"
         :energy="energy"
         id="user-player"
         tabindex="0"
@@ -439,7 +450,7 @@
             <span>{{ prepareTimer }}</span>
           </div>
           <div class="flex flex-col gap-0.5 text-right text-warning" v-else-if="surrenderTimer">
-            <span>{{ opponent.username }} is disconnected</span>
+            <span>{{ players.opponent.username }} is disconnected</span>
             <span>Game ends in {{ surrenderTimer }}</span>
           </div>
           <div v-else>
@@ -450,7 +461,7 @@
 
       <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
-          v-for="operator in opponent.battlefield"
+          v-for="operator in players.opponent.battlefield"
           :key="operator.id"
           :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
@@ -484,7 +495,7 @@
       </div>
       <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
         <OperatorCard
-          v-for="operator in currentUser.battlefield"
+          v-for="operator in players.user.battlefield"
           :key="operator.id"
           :operator="{ ...operator.operator, statistics: operator.statistics }"
           :active="true"
@@ -535,7 +546,7 @@
         class="themed-scrollbar flex max-h-72 w-full flex-row items-center gap-4 overflow-x-auto overflow-y-clip p-3"
       >
         <OperatorCard
-          v-for="operator in currentUser.gameDeck"
+          v-for="operator in players.user.gameDeck"
           :key="operator.id"
           :operator="operator"
           :withHighlight="false"
