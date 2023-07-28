@@ -11,10 +11,10 @@ export const MatchStatusEnum = {
 const playerSchema = new Schema(
   {
     id: { type: Number, required: true },
-    hp: { type: Number, default: 1, min: 0, max: 5, required: true },
+    hp: { type: Number, default: 5, min: 0, max: 5, required: true },
     username: { type: String, required: true },
     picture: { type: String, required: false },
-    energy: { type: Number, default: 10, min: 0, max: 10, required: true },
+    energy: { type: Number, default: 5, min: 0, max: 10, required: true },
     deck: [String],
     gameDeck: [{ type: Schema.Types.ObjectId, ref: 'Operator' }],
   },

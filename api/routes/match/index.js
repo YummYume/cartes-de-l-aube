@@ -1,6 +1,6 @@
 import { mongo } from 'mongoose';
 
-import { keysRemover, objInArr, wait } from '../../lib/utils.js';
+import { keysRemover, wait } from '../../lib/utils.js';
 import { Match, MatchStatusEnum } from '../../mongoose/models/Match.js';
 import { Operator } from '../../mongoose/models/Operator.js';
 import { MatchHistory } from '../../typeorm/models/MatchHistory.js';
@@ -63,8 +63,8 @@ const GAIN = {
 
 const TIMER = {
   turn: 0.5 * 60 + 1,
-  surrender: 0.5 * 60 + 1, // 1.5 * 60 + 1,
-  preparation: 5,
+  surrender: 1.5 * 60 + 1,
+  preparation: 60 + 1,
 };
 
 const ACTION_TYPE = {
@@ -400,7 +400,7 @@ const timerTurn = (matchId, fastify) =>
 
         delete matchs[matchId];
       } else {
-        await wait(10 * 1000);
+        await wait(5 * 1000);
         timerTurn(matchId, fastify);
       }
     },
@@ -859,7 +859,7 @@ export default async (fastify) => {
                             updateCard[targetIndex] = target;
                             updateMatch.battlefield.set(`${opponent.id}`, updateCard);
                           }
-                        } else {
+                        } else if (updateMatch.players.get(`${opponent.id}`).hp - 1 >= 0) {
                           updateMatch.players.set(`${opponent.id}`, {
                             ...updateMatch.players.get(`${opponent.id}`).toObject(),
                             hp: updateMatch.players.get(`${opponent.id}`).hp - 1,
