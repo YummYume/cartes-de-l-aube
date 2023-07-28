@@ -140,6 +140,7 @@
            */
           const data = eventData;
 
+          isPreparationPhase.value = true;
           timers.prepare = data.time;
           timers.surrender = null;
           timers.turn = null;
@@ -182,6 +183,22 @@
           toast.info(
             'Your opponent has left the match. If they do not reconnect within 90 seconds, you will win the match.'
           );
+
+          break;
+        }
+
+        case 'reconnect': {
+          /**
+           * @type {import('../utils/game').GameEvent<import('../utils/game').GameState>}
+           */
+          const data = eventData;
+
+          gameState.value = data;
+          isLoading.value = false;
+          isSearching.value = false;
+          isPlaying.value = true;
+
+          toast.success('Both players are now connected. Match is resuming.');
 
           break;
         }

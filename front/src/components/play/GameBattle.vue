@@ -293,15 +293,15 @@
           leave-to-class="opacity-0"
           mode="out-in"
         >
-          <div class="flex flex-col" v-if="turnTimer">
+          <div class="flex flex-col text-right" v-if="turnTimer">
             <span v-if="currentPlayerTurn">{{ currentPlayerTurn.username }}'s turn</span>
             <span>{{ turnTimer }}</span>
           </div>
-          <div class="flex flex-col" v-else-if="prepareTimer">
+          <div class="flex flex-col text-right" v-else-if="prepareTimer">
             <span>Prepare for battle</span>
             <span>{{ prepareTimer }}</span>
           </div>
-          <div class="flex flex-col gap-0.5 text-warning" v-else-if="surrenderTimer">
+          <div class="flex flex-col gap-0.5 text-right text-warning" v-else-if="surrenderTimer">
             <span>{{ opponent.username }} is disconnected</span>
             <span>Game ends in {{ surrenderTimer }}</span>
           </div>

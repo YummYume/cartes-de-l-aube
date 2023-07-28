@@ -47,7 +47,7 @@
    */
   const payments = ref([]);
   /**
-   * @type {import('vue').Ref<MatchHistory[]>}
+   * @type {import('vue').Ref<MatchHistoryPlayer[]>}
    */
   const matchHistories = ref([]);
   const isLoading = ref(false);
@@ -81,6 +81,54 @@
     }
 
     isLoading.value = false;
+  };
+
+  const getOrundumForStatus = (status) => {
+    switch (status) {
+      case 'winner':
+        return 300;
+
+      case 'loser':
+        return 50;
+
+      case 'abandon':
+        return 0;
+
+      default:
+        return 0;
+    }
+  };
+
+  const getClassForStatus = (status) => {
+    switch (status) {
+      case 'winner':
+        return 'text-success';
+
+      case 'loser':
+        return 'text-accent';
+
+      case 'abandon':
+        return 'text-warning';
+
+      default:
+        return 'text-slate-100';
+    }
+  };
+
+  const getLabelForStatus = (status) => {
+    switch (status) {
+      case 'winner':
+        return 'Win';
+
+      case 'loser':
+        return 'Lose';
+
+      case 'abandon':
+        return 'Abandon';
+
+      default:
+        return 'Unknown';
+    }
   };
 
   const handleClose = () => {
@@ -120,7 +168,7 @@
           matchHistoryAbortController.abort();
           matchHistoryAbortController = new AbortController();
 
-          matchHistories.value = (await getMatchHistories()).matches;
+          matchHistories.value = await getMatchHistories();
         } catch (error) {
           if (error.name !== 'AbortError') {
             toast.error(
@@ -239,16 +287,16 @@
                             Orundum
                           </span>
                           <span class="display-item__subtitle">
-                            {{ new Date(payment.paidAt).toLocaleString() }}
+                            {{
+                              Intl.NumberFormat(undefined, {
+                                style: 'currency',
+                                currency: 'EUR',
+                              }).format(payment.price)
+                            }}
                           </span>
                         </div>
                         <span class="display-item__info" aria-hidden="true">
-                          {{
-                            Intl.NumberFormat(undefined, {
-                              style: 'currency',
-                              currency: 'EUR',
-                            }).format(payment.price)
-                          }}
+                          {{ new Date(payment.paidAt).toLocaleString() }}
                         </span>
                         <p class="sr-only" :id="`payment-history-${payment.id}`">
                           Paid {{ payment.amount }} Orundum at
@@ -285,9 +333,40 @@
                       class="display-item border border-secondary bg-secondary/10"
                       tabindex="0"
                       aria-label="Match history"
-                      :aria-describedby="`payment-history-${matchHistory.id}`"
+                      :aria-describedby="`match-history-${matchHistory.id}`"
                     >
-                      <span>TODO</span>
+                      <div class="display-item__title-container" aria-hidden="true">
+                        <span
+                          :class="`display-item__title ${getClassForStatus(matchHistory.status)}`"
+                        >
+                          {{ getLabelForStatus(matchHistory.status) }}
+                        </span>
+                        <span class="display-item__subtitle">
+                          Gained
+                          {{
+                            getOrundumForStatus(matchHistory.status).toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })
+                          }}
+                          Orundum and {{ matchHistory.rankingPoints }} ranking points.
+                        </span>
+                      </div>
+                      <span class="display-item__info" aria-hidden="true">
+                        {{ new Date(matchHistory.matchHistory.endedAt).toLocaleString() }}
+                      </span>
+                      <p class="sr-only" :id="`match-history-${matchHistory.id}`">
+                        {{ getLabelForStatus(matchHistory.status) }} a match at
+                        {{ new Date(matchHistory.matchHistory.endedAt).toLocaleString() }} and
+                        gained
+                        {{
+                          getOrundumForStatus(matchHistory.status).toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          })
+                        }}
+                        Orundum and {{ matchHistory.rankingPoints }} ranking points.
+                      </p>
                     </div>
                   </div>
                 </TabPanel>

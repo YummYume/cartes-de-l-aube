@@ -8,6 +8,7 @@ export const ACTION_TYPE = {
   'waiting': 'waiting',
   'preparation-phase': 'preparationPhase',
   'turn-phase': 'turnPhase',
+  'reconnect': 'reconnect',
 };
 
 /**

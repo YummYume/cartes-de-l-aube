@@ -10,8 +10,8 @@
  * @typedef {{ name: string, rarity: string, alter?: string, description?: string, class: string, statistics: { hp: number, atk: number, def: number, cost: number }, art: { name: string, link: string }[] }} Operator
  * @typedef {{ operator: Operator, new: boolean, orundum: number }} OperatorPull
  * Match types
- * @typedef {User & { status: 'winner'|'loser'|'abandon', orundum: number, operators: Operator[] }} MatchHistoryPlayer
- * @typedef {{ startedAt: Date, endedAt: Date, players: MatchHistoryPlayer[] }} MatchHistory
+ * @typedef {{ status: 'winner'|'loser'|'abandon', rankingPoints: number, deck: string[], matchHistory: MatchHistory }} MatchHistoryPlayer
+ * @typedef {{ id: number, startedAt: Date, endedAt: Date }} MatchHistory
  * Deck types
  * @typedef {Operator[]} Deck
  * Store types
