@@ -49,9 +49,9 @@ export const env = {
     config: {
       domain: process.env.DOMAIN_API || 'api.carte.local',
       path: '/',
-      secure: false,
+      secure: process.env.ENV === 'production',
       httpOnly: true,
-      sameSite: false,
+      sameSite: process.env.ENV === 'production' ? `none` : `lax`,
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   },
