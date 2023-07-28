@@ -373,6 +373,7 @@ const timerTurn = (matchId, fastify) =>
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
+              gameDeck: opponent.user.gameDeck,
               battlefield: match.battlefield.get(`${opponent.user.id}`),
             },
           })
@@ -469,6 +470,7 @@ const timerPreparation = (matchId, fastify) =>
               hp: opponent.user.hp,
               image: opponent.user.image,
               energy: opponent.user.energy,
+              gameDeck: opponent.user.gameDeck,
               battlefield: match.battlefield.get(`${opponent.user.id}`),
             },
           })
@@ -555,6 +557,7 @@ const createMatch = async (wsUser, wsOpponent, fastify) => {
             hp: opponent.user.hp,
             image: opponent.user.image,
             energy: opponent.user.energy,
+            gameDeck: opponent.user.gameDeck,
             battlefield: match.battlefield.get(`${wsOpponent.user.id}`),
           },
         })
@@ -642,6 +645,7 @@ export default async (fastify) => {
                   hp: opponent.user.hp,
                   image: opponent.user.image,
                   energy: opponent.user.energy,
+                  gameDeck: opponent.user.gameDeck,
                   battlefield: match.battlefield.get(`${opponent.user.id}`),
                 },
               })
@@ -846,7 +850,7 @@ export default async (fastify) => {
                               (initiatorAtk * Math.round(percentReduceAtk)) / 100
                             );
                           } else {
-                            target.statistics.hp -= initiatorAtk
+                            target.statistics.hp -= initiatorAtk;
                           }
 
                           if (target.statistics.hp <= 0) {
