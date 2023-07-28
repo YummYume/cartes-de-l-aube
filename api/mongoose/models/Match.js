@@ -55,28 +55,6 @@ const schema = new Schema({
   },
 });
 
-// schema.pre('find', async function (next) {
-//   try {
-//     // Get the 'Match' document being queried
-//     const match = this;
-
-//     // Populate the 'player' field to get the referenced 'Player' document
-//     await match.populate('player').execPopulate();
-
-//     // Access the 'Player' document from the 'player' field
-//     const player = match.player;
-
-//     // Modify the 'score' field in the 'Match' document based on the 'score' field of the 'Player'
-//     match.score = player.score * 2; // For example, double the player's score
-
-//     // Proceed to the next step in the middleware chain
-//     next();
-//   } catch (error) {
-//     // Handle the error, if any
-//     next(error);
-//   }
-// });
-
 const modelExport = () => {
   try {
     return model('Match', schema);
