@@ -1,5 +1,6 @@
 <script setup>
   import { useFps } from '@vueuse/core';
+  import gsap from 'gsap';
   import { computed, reactive, ref, watch } from 'vue';
 
   import GamePlayer from './GamePlayer.vue';
@@ -24,6 +25,13 @@
     opponent: {
       type: Object,
       required: true,
+    },
+    /**
+     * @type {import('vue').PropType<GameState['actionTurn']>}
+     */
+    actions: {
+      type: Object,
+      required: false,
     },
     totalTurn: {
       type: Number,
@@ -71,6 +79,9 @@
     attacks: [],
   });
   const energyCost = ref(0);
+  /**
+   * @type {import('vue').Ref<Operator|null>}
+   */
   const selectedOperator = ref(null);
   const energy = computed(() => props.currentUser.energy - energyCost.value);
   const hasDeployed = ref(false);
@@ -88,7 +99,15 @@
   const isPlayerTurn = computed(
     () => currentPlayerTurn.value?.id === props.currentUser.id || props.isPreparationPhase
   );
+  const players = reactive({
+    user: props.currentUser,
+    opponent: props.opponent,
+  });
 
+  /**
+   * @param {Operator & { _id: string }} operator
+   * @returns {boolean}
+   */
   const canSelectOperator = (operator) => {
     const isSelected = cardActions.deploys.some((op) => op._id === operator._id);
 
@@ -123,6 +142,9 @@
     }
   };
 
+  /**
+   * @param {Operator & { _id: string }} operator
+   */
   const handleTargetSelect = (operator) => {
     if (!isPlayerTurn.value) {
       return;
@@ -171,6 +193,10 @@
     selectedOperator.value = null;
   };
 
+  /**
+   * @param {Operator & { _id: string }} operator
+   * @returns {number[]}
+   */
   const getAttackedIndexesForOperator = (operator) => {
     return cardActions.attacks
       .filter((atk) => atk.initiator === operator._id)
@@ -182,6 +208,10 @@
       );
   };
 
+  /**
+   * @param {Operator & { _id: string } | null} operator
+   * @returns {number[]}
+   */
   const getTargetedIndexesForOperator = (operator) => {
     if (!operator) {
       return cardActions.attacks
@@ -229,6 +259,106 @@
   };
 
   watch(
+    () => props.actions,
+    () => {
+      if (!props.actions) {
+        players.user = props.currentUser;
+        players.opponent = props.opponent;
+      }
+
+      // We want to create a gsap timeline replaying the actions that happened during the turn
+      // After the timeline is done, we want to update the players' state
+      // After each animation is done, we want to update the affected cards' statistics
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          players.user = props.currentUser;
+          players.opponent = props.opponent;
+        },
+        paused: true,
+      });
+
+      if (props.actions?.deploys) {
+        props.actions.deploys.forEach((deploy) => {
+          if (currentPlayerTurn.value?.id === props.currentUser.id) {
+            players.user = {
+              ...players.user,
+              gameDeck: (players.user.gameDeck ?? []).filter((op) => op._id !== deploy._id),
+              battlefield: [...players.user.battlefield, deploy],
+            };
+          } else {
+            players.opponent = {
+              ...players.opponent,
+              gameDeck: (players.opponent.gameDeck ?? []).filter((op) => op._id !== deploy._id),
+              battlefield: [...players.opponent.battlefield, deploy],
+            };
+          }
+
+          const operatorCard = document.querySelector(`#user-deck-${deploy._id}`);
+
+          if (!operatorCard) {
+            return;
+          }
+
+          operatorCard.style.opacity = '0';
+
+          // Make them fade in
+          tl.fromTo(
+            operatorCard,
+            {
+              opacity: 0,
+            },
+            {
+              opacity: 1,
+              duration: 0.5,
+            },
+            0
+          );
+        });
+      }
+
+      if (props.actions?.attacks) {
+        props.actions.attacks.forEach((attack) => {
+          const initiator =
+            currentPlayerTurn.value?.id === props.currentUser.id ? 'user' : 'opponent';
+          const target = currentPlayerTurn.value?.id === props.currentUser.id ? 'opponent' : 'user';
+
+          const initiatorCard = document.querySelector(
+            `#${initiator}-battlefield-${attack.initiator}`
+          );
+          const targetCard = document.querySelector(
+            attack.target ? `#${target}-battlefield-${attack.target}` : `#${target}-player`
+          );
+
+          if (!initiatorCard || !targetCard) {
+            return;
+          }
+
+          tl.to(
+            initiatorCard,
+            {
+              x: targetCard.offsetLeft - initiatorCard.offsetLeft,
+              y: targetCard.offsetTop - initiatorCard.offsetTop,
+              duration: 0.5,
+            },
+            0
+          ).to(
+            initiatorCard,
+            {
+              x: 0,
+              y: 0,
+              duration: 0.5,
+            },
+            0.5
+          );
+        });
+      }
+
+      tl.play();
+    }
+  );
+
+  watch(
     () => props.currentTurn,
     () => {
       cardActions.deploys = [];
@@ -245,7 +375,11 @@
     <div class="flex max-w-[20%] flex-col justify-between">
       <GamePlayer
         :player="opponent"
+        :aria-label="`${opponent.username} has ${opponent.hp} HP and ${opponent.energy} energy left.`"
+        id="opponent-player"
         class="themed-scrollbar overflow-auto rounded-lg border border-accent bg-accent/40 p-2 shadow-md drop-shadow-md scrollbar-thumb-accent"
+        role="button"
+        tabindex="0"
         @click="() => handleTargetSelect()"
       >
         <Transition
@@ -275,13 +409,16 @@
       </button>
       <GamePlayer
         :player="currentUser"
+        :aria-label="`You have ${currentUser.hp} HP and ${energy} energy left.`"
         :energy="energy"
+        id="user-player"
+        tabindex="0"
         class="themed-scrollbar overflow-auto rounded-lg border border-secondary bg-secondary/40 p-2 shadow-md drop-shadow-md"
       />
     </div>
 
     <div class="relative flex flex-grow flex-col overflow-hidden">
-      <div class="absolute right-1 top-1 z-50 flex flex-col gap-0.5">
+      <div class="absolute right-1 top-1 z-50 flex flex-col gap-0.5 text-right">
         <span>{{ fps }} FPS</span>
         <span>Turn {{ totalTurn }}</span>
         <Transition
@@ -319,10 +456,12 @@
           :active="true"
           :withHighlight="false"
           :id="`opponent-battlefield-${operator.operator._id}`"
-          class="operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52"
+          :class="`operator-card--compact h-60 min-w-[13rem] flex-shrink basis-52 ${
+            isPlayerTurn ? 'cursor-pointer' : 'cursor-not-allowed'
+          }`"
           @select="handleTargetSelect"
         >
-          <Transition
+          <TransitionGroup
             enter-active-class="transition-opacity duration-150"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
@@ -330,14 +469,17 @@
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
             mode="out-in"
+            tag="div"
+            class="absolute left-1 top-1 z-50 flex flex-col gap-0.5"
           >
             <span
-              class="absolute left-1 top-1 z-50 flex flex-col gap-0.5 rounded-md border-secondary bg-secondary/80 p-0.5"
-              v-if="getTargetedIndexesForOperator(operator.operator).length > 0"
+              class="rounded-full border-secondary bg-secondary/80 p-0.5"
+              v-for="num in getTargetedIndexesForOperator(operator.operator)"
+              :key="num"
             >
-              {{ getTargetedIndexesForOperator(operator.operator).join(' ') }}</span
-            >
-          </Transition>
+              {{ num }}
+            </span>
+          </TransitionGroup>
         </OperatorCard>
       </div>
       <div class="flex flex-grow flex-row gap-8 overflow-x-auto overflow-y-hidden px-10">
@@ -368,7 +510,7 @@
             }
           "
         >
-          <Transition
+          <TransitionGroup
             enter-active-class="transition-opacity duration-150"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
@@ -376,13 +518,17 @@
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
             mode="out-in"
+            tag="div"
+            class="absolute left-1 top-1 z-50 flex flex-col gap-0.5"
           >
             <span
-              class="absolute left-1 top-1 z-50 flex flex-col gap-0.5 rounded-md border-secondary bg-secondary/80 p-0.5"
-              v-if="getAttackedIndexesForOperator(operator.operator).length > 0"
-              >{{ getAttackedIndexesForOperator(operator.operator).join(' ') }}</span
+              class="rounded-full border-secondary bg-secondary/80 p-0.5"
+              v-for="num in getAttackedIndexesForOperator(operator.operator)"
+              :key="num"
             >
-          </Transition>
+              {{ num }}
+            </span>
+          </TransitionGroup>
         </OperatorCard>
       </div>
       <div

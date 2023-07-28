@@ -241,15 +241,11 @@
     }
 
     &__stats {
-      @apply flex flex-col items-end justify-center gap-0.5 rounded-xl p-1 text-slate-50 transition-all duration-300;
+      @apply flex flex-col items-end justify-center gap-0.5 rounded-xl bg-slate-800/40 p-1 text-slate-50 transition-all duration-300;
     }
 
     &__stat {
       @apply flex flex-row items-center justify-center gap-2;
-
-      &--cost {
-        @apply opacity-0 transition-all duration-500 ease-in-out;
-      }
     }
 
     &__character {
@@ -308,14 +304,6 @@
 
         &__character {
           transform: translate3d(0%, -30%, 6.25rem);
-          @apply opacity-100;
-        }
-
-        &__stats {
-          @apply bg-slate-800/40;
-        }
-
-        &__stat--cost {
           @apply opacity-100;
         }
       }

@@ -68,7 +68,7 @@
 
           users.value = leaderboard.users;
 
-          const userRank = leaderboard.users.findIndex((user) => user.id === auth.id);
+          const userRank = leaderboard.users.findIndex((user) => user.id === auth?.id);
 
           currentUserRank.value = userRank === -1 ? null : userRank + 1;
         } catch (error) {
@@ -91,7 +91,7 @@
 
 <template>
   <TransitionRoot :show="isOpen" as="template">
-    <Dialog @close="$emit('close')" class="dialog">
+    <Dialog @close="$emit('close')" class="dialog overflow-y-hidden">
       <BackdropModal />
       <TransitionChild
         enter="duration-300 ease-out"
@@ -111,7 +111,9 @@
           </DialogDescription>
 
           <section class="dialog__panel--section my-6" :aria-busy="isLoading">
-            <div class="themed-scrollbar mb-4 max-h-[50vh] overflow-y-auto overflow-x-hidden">
+            <div
+              class="themed-scrollbar mb-4 max-h-[50vh] overflow-y-auto overflow-x-hidden px-1 py-0.5"
+            >
               <Transition
                 enter-active-class="transition-opacity duration-300"
                 enter-from-class="opacity-0"

@@ -13,6 +13,9 @@
     },
   });
 
+  /**
+   * @type {import('vue').Ref<VNodeRef>} plusBtn
+   */
   const plusBtn = ref(null);
   const tweened = reactive({
     number: props.count,
@@ -39,12 +42,13 @@
         maximumFractionDigits: 0,
       })
     }}</span>
-    <RouterLink to="/store">
-      <IconPlus
-        class="h-5 w-5 cursor-pointer rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50"
-        ref="plusBtn"
-        aria-label="Buy Orundum"
-      />
+    <RouterLink custom to="/store" v-slot="{ href, navigate }">
+      <a :href="href" @click="navigate" aria-label="Buy Orundum" ref="plusBtn">
+        <IconPlus
+          class="h-5 w-5 cursor-pointer rounded-full transition-all hover:bg-accent/50 focus-visible:bg-accent/50"
+          aria-hidden="true"
+        />
+      </a>
     </RouterLink>
   </div>
 </template>

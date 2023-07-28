@@ -30,7 +30,7 @@
 
 <template>
   <TransitionRoot :show="isOpen" as="template">
-    <Dialog @close="$emit('close')" class="dialog">
+    <Dialog @close="$emit('close')" class="dialog overflow-y-hidden">
       <BackdropModal />
       <TransitionChild
         enter="duration-300 ease-out"

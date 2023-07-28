@@ -11,6 +11,9 @@
       type: Object,
       required: true,
     },
+    /**
+     * @type {import('vue').PropType<number | null>}
+     */
     energy: {
       validator: (value) => typeof value === 'number' || value === null,
       required: false,

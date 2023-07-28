@@ -26,6 +26,7 @@
   import SideBar from './components/SideBar.vue';
   import IconLogo from './components/icon/IconLogo.vue';
   import { useAboutModal } from './stores/about-modal';
+  import { useMainNav } from './stores/main-nav';
 
   // Async components
   const CookieBanner = defineAsyncComponent(() => import('./components/CookieBanner.vue'));
@@ -50,6 +51,7 @@
   const accountModalOpened = ref(false);
   const leaderboardModalOpened = ref(false);
   const { isReady: backgroundImageReady } = useImage({ src: '/common/bg.jpg' });
+  const mainNav = useMainNav();
 
   /**
    * @type {import('./components/SideBar.vue').SidebarItem[]} sidebarItems
@@ -196,6 +198,13 @@
           <main
             class="main container relative inset-0 z-10 m-auto flex h-full flex-col items-center gap-10 object-cover px-5 py-10"
           >
+            <button
+              class="sr-only !absolute left-1 top-1 focus:not-sr-only"
+              @click="mainNav.focusMainNav()"
+              type="button"
+            >
+              Skip to main navigation
+            </button>
             <RouterView />
           </main>
           <button
