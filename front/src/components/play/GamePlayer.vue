@@ -37,5 +37,9 @@
       <IconDeploymentCost class="mr-1 inline-flex h-4 w-4 fill-white" />
       {{ energy !== null ? energy : player.energy }} Sanity
     </span>
+    <span
+      >{{ player.gameDeck.length }} {{ player.gameDeck.length > 1 ? 'cards' : 'card' }} in
+      deck</span
+    >
   </div>
 </template>
