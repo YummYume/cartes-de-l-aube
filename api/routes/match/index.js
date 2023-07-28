@@ -845,6 +845,8 @@ export default async (fastify) => {
                             target.statistics.hp -= Math.ceil(
                               (initiatorAtk * Math.round(percentReduceAtk)) / 100
                             );
+                          } else {
+                            target.statistics.hp -= initiatorAtk
                           }
 
                           if (target.statistics.hp <= 0) {
