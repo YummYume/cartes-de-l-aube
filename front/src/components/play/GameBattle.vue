@@ -1,7 +1,7 @@
 <script setup>
   import { useFps } from '@vueuse/core';
-  import gsap from 'gsap';
-  import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+  import gsap, { Power2 } from 'gsap';
+  import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
   import { useHasGame } from '@/stores/has-game';
 
@@ -269,10 +269,6 @@
         players.opponent = props.opponent;
       }
 
-      // We want to create a gsap timeline replaying the actions that happened during the turn
-      // After the timeline is done, we want to update the players' state
-      // After each animation is done, we want to update the affected cards' statistics
-
       const tl = gsap.timeline({
         onComplete: () => {
           players.user = props.currentUser;
@@ -280,45 +276,6 @@
         },
         paused: true,
       });
-
-      if (props.actions?.deploys) {
-        props.actions.deploys.forEach((deploy) => {
-          if (currentPlayerTurn.value?.id === props.currentUser.id) {
-            players.user = {
-              ...players.user,
-              gameDeck: (players.user.gameDeck ?? []).filter((op) => op._id !== deploy._id),
-              battlefield: [...players.user.battlefield, deploy],
-            };
-          } else {
-            players.opponent = {
-              ...players.opponent,
-              gameDeck: (players.opponent.gameDeck ?? []).filter((op) => op._id !== deploy._id),
-              battlefield: [...players.opponent.battlefield, deploy],
-            };
-          }
-
-          const operatorCard = document.querySelector(`#user-deck-${deploy._id}`);
-
-          if (!operatorCard) {
-            return;
-          }
-
-          operatorCard.style.opacity = '0';
-
-          // Make them fade in
-          tl.fromTo(
-            operatorCard,
-            {
-              opacity: 0,
-            },
-            {
-              opacity: 1,
-              duration: 0.5,
-            },
-            0
-          );
-        });
-      }
 
       if (props.actions?.attacks) {
         props.actions.attacks.forEach((attack) => {
@@ -337,23 +294,19 @@
             return;
           }
 
-          tl.to(
-            initiatorCard,
-            {
-              x: targetCard.offsetLeft - initiatorCard.offsetLeft,
-              y: targetCard.offsetTop - initiatorCard.offsetTop,
-              duration: 0.5,
-            },
-            0
-          ).to(
-            initiatorCard,
-            {
-              x: 0,
-              y: 0,
-              duration: 0.5,
-            },
-            0.5
-          );
+          tl.to(initiatorCard, {
+            x: targetCard.offsetLeft - initiatorCard.offsetLeft,
+            y: targetCard.offsetTop - initiatorCard.offsetTop,
+            duration: 0.5,
+            zIndex: 999,
+            ease: Power2.easeOut,
+          }).to(initiatorCard, {
+            x: 0,
+            y: 0,
+            duration: 0.5,
+            zIndex: 0,
+            ease: Power2.easeIn,
+          });
         });
       }
 
