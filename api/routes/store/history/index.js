@@ -11,7 +11,11 @@ export default async (fastify) => {
       const { paymentRepository } = fastify.typeorm;
 
       const payments = await paymentRepository.find({
-        where: { user: request.user.id },
+        where: {
+          user: {
+            id: request.user.id,
+          },
+        },
         order: { paidAt: 'DESC' },
       });
 
