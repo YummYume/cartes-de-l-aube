@@ -190,7 +190,7 @@
 
 <template>
   <TransitionRoot :show="isOpen" as="template">
-    <Dialog @close="() => handleClose()" class="dialog">
+    <Dialog @close="() => handleClose()" class="dialog overflow-y-hidden">
       <BackdropModal />
       <TransitionChild
         enter="duration-300 ease-out"
@@ -349,23 +349,23 @@
                               maximumFractionDigits: 0,
                             })
                           }}
-                          Orundum and {{ matchHistory.rankingPoints }} ranking points.
+                          orundum and {{ matchHistory.rankingPoints }} ranking points.
                         </span>
                       </div>
                       <span class="display-item__info" aria-hidden="true">
                         {{ new Date(matchHistory.matchHistory.endedAt).toLocaleString() }}
                       </span>
                       <p class="sr-only" :id="`match-history-${matchHistory.id}`">
-                        {{ getLabelForStatus(matchHistory.status) }} a match at
-                        {{ new Date(matchHistory.matchHistory.endedAt).toLocaleString() }} and
-                        gained
+                        Match date is
+                        {{ new Date(matchHistory.matchHistory.endedAt).toLocaleString() }}. Match
+                        status is {{ getLabelForStatus(matchHistory.status) }}. You gained
                         {{
                           getOrundumForStatus(matchHistory.status).toLocaleString(undefined, {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
                           })
                         }}
-                        Orundum and {{ matchHistory.rankingPoints }} ranking points.
+                        orundum and {{ matchHistory.rankingPoints }} ranking points.
                       </p>
                     </div>
                   </div>

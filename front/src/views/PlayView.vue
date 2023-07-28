@@ -344,6 +344,7 @@
       :currentUser="gameState.user"
       :opponent="gameState.opponent"
       :totalTurn="gameState.totalTurn"
+      :actions="gameState.actionTurn"
       :currentTurn="timers.turn ? gameState.playerTurn : null"
       :isPreparationPhase="isPreparationPhase"
       :turnTimer="timers.turn"

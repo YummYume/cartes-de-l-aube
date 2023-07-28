@@ -3,6 +3,8 @@
   import { onClickOutside, useActiveElement, useElementHover, useStorage } from '@vueuse/core';
   import { ref, onMounted, onBeforeUnmount, computed, watch, toRefs } from 'vue';
 
+  import { useMainNav } from '@/stores/main-nav';
+
   /**
    * @typedef {{ icon: import('@tabler/icons-vue').IconComponent; label: string; to?: string; onClick?: (event: Event) => void; active?: boolean; }} SidebarItem
    */
@@ -29,6 +31,7 @@
   const itemClass =
     'flex items-center gap-2 transition-all duration-200 ease-in-out hover:scale-110 focus-visible:scale-110 h-8';
   const defaultLabelClass = isLocked.value ? '' : 'w-0';
+  const mainNav = useMainNav();
 
   const isExpanded = computed(() => {
     return (isHovered.value || isLocked.value) && !isMobile.value;
@@ -186,7 +189,11 @@
       <IconLock v-if="isLocked" class="h-6 w-6" />
       <IconLockOpen v-else class="h-6 w-6" />
     </button>
-    <nav class="flex grow flex-col items-center justify-center">
+    <nav
+      class="flex grow flex-col items-center justify-center"
+      aria-label="Main navigation"
+      :ref="(nav) => mainNav.setMainNavRef(nav)"
+    >
       <ol class="flex flex-row flex-wrap justify-center gap-4 md:flex-col">
         <li v-for="item in activeSidebarItems" :key="item.label">
           <RouterLink :to="item.to" :class="itemClass" active-class="text-accent" v-if="item.to">

@@ -39,6 +39,7 @@
     :aria-label="`Buy ${formattedAmount} orundum for ${formattedPrice}${
       savedPercentage ? `, including ${savedPercentage}% bonus orundum` : ''
     }.`"
+    tabindex="0"
     role="button"
     v-bind="$attrs"
   >
