@@ -6,10 +6,10 @@ export class MatchHistoryPlayer {
   id;
 
   /**
-   * The operators used by the player.
-   * @type {string[]} operators
+   * The deck used by the player.
+   * @type {string[]} deck
    */
-  operators;
+  deck;
 
   /**
    * The status of the player (winner or not).
@@ -18,10 +18,10 @@ export class MatchHistoryPlayer {
   status;
 
   /**
-   * The orundum earned by the player.
-   * @type {number} orundum
+   * The rankingPoints earned by the player.
+   * @type {number} rankingPoints
    */
-  orundum;
+  rankingPoints;
 
   /**
    * The user who played the match.
@@ -39,18 +39,24 @@ export class MatchHistoryPlayer {
    * Creates an instance of MatchHistoryPlayer.
    * @class
    * @param {typeof MatchHistoryPlayer.prototype.id} id
-   * @param {typeof MatchHistoryPlayer.prototype.operators} operators
+   * @param {typeof MatchHistoryPlayer.prototype.deck} deck
    * @param {typeof MatchHistoryPlayer.prototype.status} status
-   * @param {typeof MatchHistoryPlayer.prototype.orundum} orundum
+   * @param {typeof MatchHistoryPlayer.prototype.rankingPoints} rankingPoints
    * @param {typeof MatchHistoryPlayer.prototype.user} user
    * @param {typeof MatchHistoryPlayer.prototype.matchHistory} matchHistory
    */
-  constructor(id, operators, status, orundum, user, matchHistory) {
+  constructor(id, deck, status, rankingPoints, user, matchHistory) {
     this.id = id;
-    this.operators = operators;
+    this.deck = deck;
     this.status = status;
-    this.orundum = orundum;
+    this.rankingPoints = rankingPoints;
     this.user = user;
     this.matchHistory = matchHistory;
   }
 }
+
+export const MatchStatusEnum = {
+  WINNER: 'winner',
+  LOSER: 'loser',
+  ABANDON: 'abandon',
+};

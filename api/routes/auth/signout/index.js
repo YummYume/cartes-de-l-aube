@@ -18,7 +18,7 @@ export default async (fastify) => {
         .code(200)
         .send({ message: 'disconected' });
     } catch (err) {
-      reply.code(404).send({ message: 'No user logged in.' });
+      reply.notFound({ message: 'No user logged in.' });
     }
   });
 };

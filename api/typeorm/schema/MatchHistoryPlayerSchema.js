@@ -12,7 +12,7 @@ export default new EntitySchema({
       type: 'int',
       generated: true,
     },
-    operators: {
+    deck: {
       type: 'simple-array',
       default: '',
     },
@@ -20,7 +20,7 @@ export default new EntitySchema({
       type: 'enum',
       enum: ['winner', 'loser', 'abandon'],
     },
-    orundum: {
+    rankingPoints: {
       type: 'int',
     },
   },
@@ -47,7 +47,7 @@ export const matchHistoryPlayerValidation = (matchHistoryPlayer) => {
     .object({
       operators: z.array(z.string()),
       status: z.enum(['winner', 'loser', 'abandon']),
-      orundum: z.number(),
+      rankingPoints: z.number(),
     })
     .safeParse(matchHistoryPlayer);
 };

@@ -40,7 +40,7 @@ export const typeorm = {
 
 export const env = {
   secretKey: process.env.SECRET || 'eshbfuiesuibsb2uh4vhj23h4jvb2h4',
-  tokenExpireIn: '30min',
+  tokenExpireIn: '1d',
   refreshTokenExpireIn: '7d',
   saltFactor: process.env.salt || 14,
   cookie: {

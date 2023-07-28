@@ -28,7 +28,6 @@
     "accessible-nprogress": "^2.1.2",
     "gsap": "^3.12.2",
     "pinia": "^2.0.36",
-    "socket.io-client": "^4.7.1",
     "tailwind-scrollbar": "^3.0.4",
     "tippy.js": "^6.3.7",
     "vee-validate": "^4.10.8",

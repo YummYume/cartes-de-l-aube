@@ -40,6 +40,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    'no-case-declarations': 'off',
     'no-underscore-dangle': 'off',
     'import/no-dynamic-require': 'off',
     'import/prefer-default-export': 'off',

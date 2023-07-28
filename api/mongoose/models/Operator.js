@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 /**
  * @class Operator
  */
-const schema = new Schema({
+export const schema = new Schema({
   name: {
     type: String,
     required: true,
