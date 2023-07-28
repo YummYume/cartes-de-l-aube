@@ -116,41 +116,44 @@
                 Remove {{ toReplace.name }}
               </button>
 
-              <section
-                class="my-6 flex w-full flex-wrap items-center justify-center gap-14 overflow-x-clip"
-                @click.self="handleClose"
-              >
-                <div
-                  v-for="(operator, key) in availableOperators"
-                  :key="`${operator.name}-${key}`"
-                  class="flex flex-col items-center justify-center gap-4"
+              <div class="contents" v-if="availableOperators.length > 0">
+                <section
+                  class="my-6 flex w-full flex-wrap items-center justify-center gap-14 overflow-x-clip"
+                  @click.self="handleClose"
                 >
-                  <OperatorCard
-                    :operator="operator"
-                    :active="active"
-                    :description="`Click to select ${operator.name}${
-                      toReplace ? ` and replace ${toReplace.name}.` : '.'
-                    } ${operator.name} is a ${operator.rarity} stars operator with ${
-                      operator.statistics.hp
-                    } health points, ${operator.statistics.atk} attack, ${
-                      operator.statistics.def
-                    } defense and costs ${operator.statistics.cost} points to deploy.`"
-                    @select="() => handleSelect(operator, toReplace)"
-                  />
-                </div>
-              </section>
+                  <div
+                    v-for="(operator, key) in availableOperators"
+                    :key="`${operator.name}-${key}`"
+                    class="flex flex-col items-center justify-center gap-4"
+                  >
+                    <OperatorCard
+                      :operator="operator"
+                      :active="active"
+                      :description="`Click to select ${operator.name}${
+                        toReplace ? ` and replace ${toReplace.name}.` : '.'
+                      } ${operator.name} is a ${operator.rarity} stars operator with ${
+                        operator.statistics.hp
+                      } health points, ${operator.statistics.atk} attack, ${
+                        operator.statistics.def
+                      } defense and costs ${operator.statistics.cost} points to deploy.`"
+                      @select="() => handleSelect(operator, toReplace)"
+                    />
+                  </div>
+                </section>
 
-              <PaginationNavigation
-                class="my-6"
-                aria-label="Available operators navigation"
-                :isFirstPage="isFirstPage"
-                :isLastPage="isLastPage"
-                :currentPage="currentPage"
-                :pageCount="pageCount"
-                @navigate="(page) => (currentPage = page)"
-                @prev="prev"
-                @next="next"
-              />
+                <PaginationNavigation
+                  class="my-6"
+                  aria-label="Available operators navigation"
+                  :isFirstPage="isFirstPage"
+                  :isLastPage="isLastPage"
+                  :currentPage="currentPage"
+                  :pageCount="pageCount"
+                  @navigate="(page) => (currentPage = page)"
+                  @prev="prev"
+                  @next="next"
+                />
+              </div>
+              <span class="text-lg font-semibold" v-else>No operator available.</span>
 
               <footer class="relative mt-6 text-center text-2xl">
                 <button aria-label="Click to close" type="button" @click="handleClose">

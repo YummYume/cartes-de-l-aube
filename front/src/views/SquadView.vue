@@ -114,6 +114,7 @@
 
       operators.value = availableOperators;
       playerSquad.value = newSquad;
+      auth.deck = newSquad.map((o) => o.name);
     } catch (error) {
       if (error.name === 'AbortError') {
         return;
@@ -193,7 +194,10 @@
     <div class="m-auto mb-6 flex w-[62rem] max-w-full flex-col">
       <h2 class="text-2xl">
         Define your best squad here, from the operators you pulled. This squad will be used during
-        your next matches.
+        your next matches. You currently have <strong>{{ operators.length }}</strong>
+        {{ operators.length === 1 ? 'operator' : 'operators' }} available and
+        {{ playerSquad.length }} {{ playerSquad.length === 1 ? 'operator' : 'operators' }} in your
+        squad.
       </h2>
       <SwitchGroup class="mt-6 self-end">
         <div class="flex flex-row items-center gap-3">

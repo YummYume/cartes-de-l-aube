@@ -184,6 +184,7 @@
       </Transition>
     </div>
     <div class="operator-card__info">
+      <slot />
       <span
         v-unique-id="{ prefix: 'operator-name-' }"
         ref="operatorNameRef"

@@ -15,7 +15,7 @@
   import AuthForm from '../form/AuthForm.vue';
   import IconSpinner from '../icon/IconSpinner.vue';
 
-  const props = defineProps({
+  defineProps({
     isOpen: {
       type: Boolean,
       required: true,
@@ -32,14 +32,6 @@
 
   const handleClose = () => {
     if (stateForm.value === 'done' || stateForm.value === 'fail') {
-      if (stateForm.value === 'done') {
-        toast.success(
-          props.isLogin
-            ? 'Logged in successfully!'
-            : 'Registered successfully! You are now logged in.'
-        );
-      }
-
       emit('close');
     }
   };
@@ -76,6 +68,12 @@
                   stateForm = value;
 
                   if (value === 'done') {
+                    toast.success(
+                      isLogin
+                        ? 'Logged in successfully!'
+                        : 'Registered successfully! You are now logged in.'
+                    );
+
                     emit('close');
                   }
                 }

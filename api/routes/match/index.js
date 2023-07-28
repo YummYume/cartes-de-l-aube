@@ -64,7 +64,7 @@ const GAIN = {
 const TIMER = {
   turn: 0.5 * 60 + 1,
   surrender: 1.5 * 60 + 1,
-  preparation: 60 + 1,
+  preparation: 30 + 1,
 };
 
 const ACTION_TYPE = {

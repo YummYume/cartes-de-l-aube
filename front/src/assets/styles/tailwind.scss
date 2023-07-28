@@ -175,6 +175,10 @@
     }
   }
 
+  .themed-scrollbar {
+    @apply scrollbar-thin scrollbar-track-transparent scrollbar-thumb-secondary scrollbar-corner-transparent;
+  }
+
   // Inspired from https://www.codepel.com/cards/css-cards-with-3d-image-view-on-hover/
   .operator-card {
     perspective: 2500px;
@@ -250,6 +254,14 @@
 
     &__character {
       @apply absolute -z-[1] w-full opacity-0 transition-all duration-500 ease-in-out;
+    }
+
+    &--compact {
+      .operator-card {
+        &__title {
+          @apply text-sm;
+        }
+      }
     }
 
     &--active {
