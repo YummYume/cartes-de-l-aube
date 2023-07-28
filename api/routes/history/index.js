@@ -20,6 +20,11 @@ export default async (fastify) => {
               id: request.user.id,
             },
           },
+          order: {
+            matchHistory: {
+              endedAt: 'DESC',
+            },
+          },
           relations: {
             matchHistory: true,
           },
