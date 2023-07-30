@@ -36,10 +36,26 @@ afterAll(async () => {
   await teardown(app);
 });
 
+test(`[${url}]: empty payload`, async () => {
+  const res = await api.post(url, {});
+
+  const { statusCode, error } = JSON.parse(res.body);
+
+  expect({ statusCode, error }).toStrictEqual({
+    error: 'Unprocessable Entity',
+    statusCode: 422,
+  });
+});
+
 test(`[${url}]: wrong credentials`, async () => {
   const res = await api.post(url, { username: 'test', password: 'bob' });
 
-  expect(JSON.parse(res.body)).toStrictEqual({ code: 401, message: 'Invalid credentials' });
+  const { statusCode, error } = JSON.parse(res.body);
+
+  expect({ statusCode, error }).toStrictEqual({
+    error: 'Unauthorized',
+    statusCode: 401,
+  });
 });
 
 test(`[${url}]: good credentials`, async () => {
@@ -50,5 +66,9 @@ test(`[${url}]: good credentials`, async () => {
     image: 'image',
     username: 'test',
     orundum: 12000,
+    rankingPoints: 0,
+    deck: [],
+    operators: [],
+    role: 'admin',
   });
 });

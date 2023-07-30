@@ -4,7 +4,7 @@
 /**
  * @typedef {import('fastify').FastifyInstance & {
  * typeorm: import('typeorm').DataSource,
- * mongoose: import('mongoose').Connection
+ * mongoose: import('mongoose').Connection,
  * }} Fastify
  * @typedef {import('fastify').FastifyPluginOptions} FpOptions
  * @typedef {import("fastify").FastifyRequest} RequestFastify

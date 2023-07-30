@@ -28,7 +28,7 @@ export default async (fastify) => {
         where: {
           username: body.username,
         },
-        select: ['id', 'username', 'image', 'orundum', 'password', 'deck', 'role', 'operators'],
+        select: ['id', 'username', 'image', 'orundum', 'rankingPoints', 'password', 'deck', 'role', 'operators'],
       });
 
       // Check credentials

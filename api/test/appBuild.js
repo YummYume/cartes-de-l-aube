@@ -1,6 +1,8 @@
 import autoload from '@fastify/autoload';
+import { config } from 'dotenv';
 import fastify from 'fastify';
 import fp from 'fastify-plugin';
+import fs from 'graceful-fs';
 
 import { resolve } from 'path';
 
@@ -11,6 +13,10 @@ const options = {
 };
 
 const register = fp(async (fastify, opts) => {
+  if (fs.existsSync(resolve('.env.local'))) {
+    config({ path: resolve('.env.local'), override: true });
+  }
+
   fastify.register(autoload, {
     dir: resolve('plugins'),
     options: opts,
@@ -36,12 +42,15 @@ export async function build() {
 
 /**
  * @param {Fastify} app
+ * @param {boolean} mongodbDrop
  * @description Unmount the app, drop the database and close the connection
  */
-export async function teardown(app) {
+export async function teardown(app, { mongodbDrop = false } = {}) {
   if (process.env.NODE_ENV === 'test') {
     await dropDatabase(app);
-    await app.mongoose.dropDatabase();
+    if (mongodbDrop) {
+      await app.mongoose.dropDatabase();
+    }
   }
 
   await app.close();

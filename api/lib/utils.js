@@ -1,3 +1,6 @@
+import { spawn } from 'child_process';
+import process from 'process';
+
 /**
  * @param {object} obj
  * @param {string[]} keys
@@ -46,5 +49,25 @@ export function objInArr(arr, obj, targetKey) {
 export function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
+  });
+}
+
+/**
+ * Launch a command
+ * @param {...string[]} command
+ * @returns {Promise<void>}
+ */
+export function cmd(...command) {
+  const p = spawn(command[0], command.slice(1));
+  return new Promise((resolveFunc) => {
+    p.stdout.on('data', (x) => {
+      process.stdout.write(x.toString());
+    });
+    p.stderr.on('data', (x) => {
+      process.stderr.write(x.toString());
+    });
+    p.on('exit', (code) => {
+      resolveFunc(code);
+    });
   });
 }

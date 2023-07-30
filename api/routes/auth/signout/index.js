@@ -13,12 +13,9 @@ export default async (fastify) => {
         await RefreshToken.deleteOne({ tk: oldToken });
       }
 
-      reply
-        .clearCookie(env.cookie.name, env.cookie.config)
-        .code(200)
-        .send({ message: 'disconected' });
+      reply.clearCookie(env.cookie.name, env.cookie.config).code(200).send('disconected');
     } catch (err) {
-      reply.notFound({ message: 'No user logged in.' });
+      reply.notFound('No user logged in.');
     }
   });
 };

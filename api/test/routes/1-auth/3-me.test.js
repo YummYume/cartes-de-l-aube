@@ -39,7 +39,12 @@ afterAll(async () => {
 test(`[${url}]: without a token`, async () => {
   const res = await api.get(url, { cookie: '' });
 
-  expect(JSON.parse(res.body)).toStrictEqual({ message: 'No Session, please sign up' });
+  const { statusCode, error } = JSON.parse(res.body);
+
+  expect({ statusCode, error }).toStrictEqual({
+    error: 'Not Found',
+    statusCode: 404,
+  });
 });
 
 test(`[${url}]: with a token`, async () => {
@@ -50,8 +55,9 @@ test(`[${url}]: with a token`, async () => {
     image: 'image',
     username: 'test',
     orundum: 12000,
-    role: 'admin',
+    rankingPoints: 0,
     deck: [],
     operators: [],
+    role: 'admin',
   });
 });
