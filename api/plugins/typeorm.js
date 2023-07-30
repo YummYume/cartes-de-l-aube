@@ -25,6 +25,7 @@ export default fp(async (fastify) => {
     // Get all custom repository
     const repositories = await [...(await readdir(repositoriesPath))].reduce(async (acc, curr) => {
       const module = await import(path.join(repositoriesPath, curr));
+
       return { ...acc, [path.parse(curr).name]: module.default };
     }, {});
 
@@ -50,7 +51,6 @@ export default fp(async (fastify) => {
       }
     });
   } catch (err) {
-    console.log(err);
     fastify.log.error(err, 'MariaDB: Error');
   }
 });

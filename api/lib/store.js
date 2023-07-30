@@ -32,6 +32,6 @@ export const getStoreItems = () =>
     return {
       ...item,
       pulls: getPullsForAmount(item.amount),
-      savedPercentage: getPercentagePriceSavedForAmount(item.price, item.amount),
+      savedPercentage: Math.max(getPercentagePriceSavedForAmount(item.price, item.amount), 0),
     };
   });

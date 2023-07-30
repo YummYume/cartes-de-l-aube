@@ -28,14 +28,24 @@ export default async (fastify) => {
         where: {
           username: body.username,
         },
-        select: ['id', 'username', 'image', 'orundum', 'rankingPoints', 'password', 'deck', 'role', 'operators'],
+        select: [
+          'id',
+          'username',
+          'image',
+          'orundum',
+          'rankingPoints',
+          'password',
+          'deck',
+          'role',
+          'operators',
+        ],
       });
 
       // Check credentials
       const isValited = await bcrypt.compare(body.password, password);
 
       if (!isValited) {
-        return reply.unauthorized({ message: 'Invalid credentials', code: 401 });
+        return reply.unauthorized('Invalid credentials');
       }
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token
@@ -49,7 +59,7 @@ export default async (fastify) => {
 
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(200).send(user);
     } catch (err) {
-      return reply.unauthorized({ message: 'Invalid credentials', code: 401 });
+      return reply.unauthorized('Invalid credentials');
     }
   });
 };
