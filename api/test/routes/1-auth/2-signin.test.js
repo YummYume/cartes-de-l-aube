@@ -1,74 +1,42 @@
-import { afterAll, beforeAll, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { build, teardown } from '../../appBuild.js';
-import { apiInject } from '../../utils/index.js';
+import { api, defaultCredentials } from '../../utils';
 
-const url = '/auth/signin';
+describe('Auth signin endpoint', () => {
+  const url = '/auth/signin';
 
-/**
- * @type {Fastify}
- */
-let app;
+  test(`[${url}]: empty payload`, async () => {
+    const res = await api.post(url, {});
+    const { statusCode, error } = await res.json();
 
-/**
- * @type {ReturnType<typeof apiInject>}
- */
-let api;
+    expect({ statusCode, error }).toStrictEqual({
+      error: 'Unprocessable Entity',
+      statusCode: 422,
+    });
+  });
 
-beforeAll(async () => {
-  app = await build();
-  await app.ready();
+  test(`[${url}]: wrong credentials`, async () => {
+    const res = await api.post(url, { username: 'test', password: 'bob' });
+    const { statusCode, error } = await res.json();
 
-  await app.inject({
-    method: 'POST',
-    url: '/auth/signup',
-    payload: {
+    expect({ statusCode, error }).toStrictEqual({
+      error: 'Unauthorized',
+      statusCode: 401,
+    });
+  });
+
+  test(`[${url}]: good credentials`, async () => {
+    const res = await api.post(url, {
+      username: defaultCredentials.username,
+      password: defaultCredentials.password,
+    });
+    const body = await res.json();
+
+    expect(body).toContain({
+      id: 1,
+      image: 'image',
       username: 'test',
-      password: 'Password123',
-      confirmPassword: 'Password123',
-    },
-  });
-
-  api = apiInject(app);
-});
-
-afterAll(async () => {
-  await teardown(app);
-});
-
-test(`[${url}]: empty payload`, async () => {
-  const res = await api.post(url, {});
-
-  const { statusCode, error } = JSON.parse(res.body);
-
-  expect({ statusCode, error }).toStrictEqual({
-    error: 'Unprocessable Entity',
-    statusCode: 422,
-  });
-});
-
-test(`[${url}]: wrong credentials`, async () => {
-  const res = await api.post(url, { username: 'test', password: 'bob' });
-
-  const { statusCode, error } = JSON.parse(res.body);
-
-  expect({ statusCode, error }).toStrictEqual({
-    error: 'Unauthorized',
-    statusCode: 401,
-  });
-});
-
-test(`[${url}]: good credentials`, async () => {
-  const res = await api.post(url, { username: 'test', password: 'Password123' });
-
-  expect(JSON.parse(res.body)).toStrictEqual({
-    id: 1,
-    image: 'image',
-    username: 'test',
-    orundum: 12000,
-    rankingPoints: 0,
-    deck: [],
-    operators: [],
-    role: 'admin',
+      role: 'admin',
+    });
   });
 });

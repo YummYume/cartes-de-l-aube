@@ -1,63 +1,46 @@
-import { afterAll, beforeAll, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
-import { build, teardown } from '../../appBuild.js';
-import { apiInject } from '../../utils/index.js';
+import { api, resetGlobalHeaders, defaultCredentials, addGlobalHeaders } from '../../utils';
 
-const url = '/auth/me';
+describe('Auth me endpoint', () => {
+  const url = '/auth/me';
 
-/**
- * @type {Fastify}
- */
-let app;
+  beforeAll(async () => {
+    const res = await api.post('/auth/signin', {
+      username: defaultCredentials.username,
+      password: defaultCredentials.password,
+    });
 
-/**
- * @type {ReturnType<typeof apiInject>}
- */
-let api;
+    addGlobalHeaders({ cookie: res.headers.getSetCookie().join(';') });
+  });
 
-beforeAll(async () => {
-  app = await build();
-  await app.ready();
+  afterAll(async () => {
+    resetGlobalHeaders();
+  });
 
-  const res = await app.inject({
-    method: 'POST',
-    url: '/auth/signup',
-    payload: {
+  test(`[${url}]: without a token`, async () => {
+    const res = await api.get(url, { cookie: '' });
+    const { statusCode, error } = await res.json();
+
+    expect({ statusCode, error }).toStrictEqual({
+      error: 'Not Found',
+      statusCode: 404,
+    });
+  });
+
+  test(`[${url}]: with a token`, async () => {
+    const res = await api.get(url);
+    const body = await res.json();
+
+    expect(body).toStrictEqual({
+      id: 1,
+      image: 'image',
       username: 'test',
-      password: 'Password123',
-      confirmPassword: 'Password123',
-    },
-  });
-
-  api = apiInject(app, { cookie: res.headers['set-cookie'] });
-});
-
-afterAll(async () => {
-  await teardown(app);
-});
-
-test(`[${url}]: without a token`, async () => {
-  const res = await api.get(url, { cookie: '' });
-
-  const { statusCode, error } = JSON.parse(res.body);
-
-  expect({ statusCode, error }).toStrictEqual({
-    error: 'Not Found',
-    statusCode: 404,
-  });
-});
-
-test(`[${url}]: with a token`, async () => {
-  const res = await api.get(url);
-
-  expect(JSON.parse(res.body)).toStrictEqual({
-    id: 1,
-    image: 'image',
-    username: 'test',
-    orundum: 12000,
-    rankingPoints: 0,
-    deck: [],
-    operators: [],
-    role: 'admin',
+      orundum: 12000,
+      rankingPoints: 0,
+      deck: [],
+      operators: [],
+      role: 'admin',
+    });
   });
 });

@@ -23,6 +23,7 @@ export const createDatabase = async (fastify) => {
     fastify.log.info('MySQL: Connected');
 
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${typeorm.database};`);
+    await connection.changeUser({ database: typeorm.database });
 
     fastify.log.info(`MySQL: "${typeorm.database}" Database created or successfully checked`);
 
@@ -47,6 +48,7 @@ export const dropDatabase = async (fastify) => {
       host: typeorm.host,
       port: typeorm.port,
       namedPlaceholders: true,
+      database: typeorm.database,
     });
 
     fastify.log.info('MySQL: Connected');

@@ -1,7 +1,7 @@
 <script setup>
   import { useFps } from '@vueuse/core';
   import gsap, { Power2 } from 'gsap';
-  import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
   import { useHasGame } from '@/stores/has-game';
 
