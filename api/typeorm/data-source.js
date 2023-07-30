@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 
 import { typeorm } from '../config/config.js';
 
-export default new DataSource(typeorm);
+export default () => new DataSource(typeorm);
 
 /**
  * @param {Fastify} fastify

@@ -40,7 +40,7 @@ export default async (fastify) => {
         newUser.role = 'admin';
       }
 
-      const user = await userRepository.save(newUser);
+      const { password, ...user } = await userRepository.save(newUser);
 
       // Create Cookie HTTP Jwt & Refresh Jwt Token
       const tk = await reply.jwtSign({ id: user.id }, { expiresIn: env.tokenExpireIn });
@@ -54,10 +54,10 @@ export default async (fastify) => {
       return reply.setCookie(env.cookie.name, tk, env.cookie.config).code(201).send(user);
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') {
-        return reply.conflict({ message: 'Username already taken, please choose another one.' });
+        return reply.conflict('Username already taken, please choose another one.');
       }
 
-      return reply.internalServerError({ message: 'Error while trying to sign you up.' });
+      return reply.internalServerError('Error while trying to sign you up.');
     }
   });
 };
