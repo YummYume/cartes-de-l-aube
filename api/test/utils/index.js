@@ -43,7 +43,8 @@ export const api = {
   post: async (url, payload, headers = {}) => apiMethod(url, 'POST', payload, headers),
   get: async (url, headers = {}) => apiMethod(url, 'GET', undefined, headers),
   put: async (url, payload, headers = {}) => apiMethod(url, 'PUT', payload, headers),
-  delete: async (url, headers = {}) => apiMethod(url, 'DELETE', undefined, headers),
+  patch: async (url, payload, headers = {}) => apiMethod(url, 'PATCH', payload, headers),
+  delete: async (url, payload, headers = {}) => apiMethod(url, 'DELETE', payload, headers),
 };
 
 /**
