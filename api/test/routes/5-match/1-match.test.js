@@ -1,3 +1,3 @@
 import { describe } from 'vitest';
 
-describe.skip('Match endpoint', () => {});
+describe.todo('Need to implement real-time tests for the match endpoint');
