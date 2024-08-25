@@ -1,0 +1,23 @@
+{
+	auto_https off
+}
+
+http://api.carte.local {
+    reverse_proxy * api:3000
+}
+
+http://front.carte.local {
+	reverse_proxy * front:5173
+}
+
+http://mongodb.carte.local {
+	reverse_proxy * mongodb:27017
+}
+
+http://phpmyadmin.carte.local {
+	reverse_proxy * phpmyadmin:80
+}
+
+http:// {
+    respond "Not found" 404
+}
