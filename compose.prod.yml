@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   api:
     build:
@@ -26,18 +24,17 @@ services:
       DOMAIN_API: "${DOMAIN_API:?err}"
     container_name: vue-game-api
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
-      timeout: 30s
-      interval: 15s
-      retries: 30
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.back.rule=Host(`${API_HOST:?err}`, `www.${API_HOST:?err}`)"
-      - "traefik.http.routers.back.entrypoints=websecure"
-      - "traefik.http.routers.back.middlewares=strip-www"
-      - "traefik.http.routers.back.tls=true"
-      - "traefik.http.routers.back.tls.certresolver=defaultresolver"
-      - "traefik.http.services.back.loadbalancer.server.port=3000"
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/healthz || exit 1
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      webserver:
+        aliases:
+          - cartes-api
+      mongodb:
+      mariadb:
 
   front:
     build:
@@ -48,14 +45,10 @@ services:
         condition: service_healthy
     restart: unless-stopped
     container_name: vue-game-front
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.front.rule=Host(`${FRONT_HOST:?err}`, `www.${FRONT_HOST:?err}`)"
-      - "traefik.http.routers.front.entrypoints=websecure"
-      - "traefik.http.routers.front.middlewares=strip-www"
-      - "traefik.http.routers.front.tls=true"
-      - "traefik.http.routers.front.tls.certresolver=defaultresolver"
-      - "traefik.http.services.front.loadbalancer.server.port=4000"
+    networks:
+      webserver:
+        aliases:
+          - cartes-front
 
   mongodb:
     image: mongo
@@ -68,11 +61,12 @@ services:
     container_name: vue-game-mongodb
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/ping --quiet
-      timeout: 30s
-      interval: 15s
-      retries: 30
-    labels:
-      - "traefik.enable=false"
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - mongodb
 
   mariadb:
     image: mariadb:10.10.2
@@ -84,47 +78,15 @@ services:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?err}"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      timeout: 30s
-      interval: 15s
-      retries: 30
-    labels:
-      - "traefik.enable=false"
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - mariadb
 
-  traefik-proxy:
-    image: traefik:v2.10
-    restart: unless-stopped
-    container_name: vue-game-traefik
-    depends_on:
-      api:
-        condition: service_healthy
-    command:
-      - "--log.level=ERROR"
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.defaultresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.defaultresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.defaultresolver.acme.email=${LETSENCRYPT_EMAIL:?err}"
-      - "--certificatesresolvers.defaultresolver.acme.storage=/letsencrypt/acme.json"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`${DASHBOARD_HOST:?err}`, `www.${DASHBOARD_HOST:?err}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=defaultresolver"
-      - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.middlewares=strip-www,auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${DASHBOARD_USERS:?err}"
-      - "traefik.http.middlewares.strip-www.redirectregex.regex=^https?://(www\\.)(.+)"
-      - "traefik.http.middlewares.strip-www.redirectregex.replacement=https://$${2}"
-      - "traefik.http.middlewares.strip-www.redirectregex.permanent=true"
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - ./letsencrypt:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  webserver:
+    external: true
+  mongodb:
+  mariadb:
