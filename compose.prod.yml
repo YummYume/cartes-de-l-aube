@@ -29,12 +29,6 @@ services:
       timeout: 20s
       retries: 5
       start_period: 60s
-    networks:
-      webserver:
-        aliases:
-          - cartes-api
-      mongodb:
-      mariadb:
 
   front:
     build:
@@ -45,10 +39,6 @@ services:
         condition: service_healthy
     restart: unless-stopped
     container_name: vue-game-front
-    networks:
-      webserver:
-        aliases:
-          - cartes-front
 
   mongodb:
     image: mongo
@@ -65,8 +55,6 @@ services:
       timeout: 20s
       retries: 5
       start_period: 60s
-    networks:
-      - mongodb
 
   mariadb:
     image: mariadb:10.10.2
@@ -82,11 +70,3 @@ services:
       timeout: 20s
       retries: 5
       start_period: 60s
-    networks:
-      - mariadb
-
-networks:
-  webserver:
-    external: true
-  mongodb:
-  mariadb:
