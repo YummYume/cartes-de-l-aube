@@ -1,5 +1,9 @@
 FROM node:20-alpine3.17 as BUILD
 
+ARG VITE_STRIPE_PUBLIC_KEY
+ARG VITE_API_HOST
+ARG VITE_WS_HOST
+
 WORKDIR /home/node/front
 
 COPY ./front ./

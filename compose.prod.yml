@@ -36,13 +36,13 @@ services:
     build:
       context: .
       dockerfile: docker/prod/front/Dockerfile
+      args:
+        VITE_STRIPE_PUBLIC_KEY: "${VITE_STRIPE_PUBLIC_KEY:?err}"
+        VITE_API_HOST: "${VITE_API_HOST:?err}"
+        VITE_WS_HOST: "${VITE_WS_HOST:?err}"
     depends_on:
       api:
         condition: service_healthy
-    environment:
-      VITE_STRIPE_PUBLIC_KEY: "${VITE_STRIPE_PUBLIC_KEY:?err}"
-      VITE_API_HOST: "${VITE_API_HOST:?err}"
-      VITE_WS_HOST: "${VITE_WS_HOST:?err}"
     restart: unless-stopped
     container_name: vue-game-front
 
