@@ -11,7 +11,7 @@ Card game about Arknights made with Vue3 & Fastify.
 This project was made as the final project of our ESGI 4th year. The constraints were to use Vue3 and Fastify.
 We could choose between three different project ideas, and we chose the game, because it was the most interesting one.
 
-## Installation
+## Installation (very easy)
 
 Steps to install and run the project locally.
 
