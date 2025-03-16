@@ -40,6 +40,7 @@
     "fastify-cli": "^5.7.1",
     "fastify-plugin": "^4.0.0",
     "graceful-fs": "^4.2.11",
+    "happy-dom": "^17.4.4",
     "mongoose": "^7.4.1",
     "mysql2": "^3.3.3",
     "reflect-metadata": "^0.1.13",

@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+import { Window } from 'happy-dom';
+
 /**
  * All supported operator classes
  */
@@ -16,6 +19,21 @@ export const OPERATOR_CLASSES = [
  * All supported operator rarities
  */
 export const OPERATOR_RARITIES = [3, 4, 5, 6];
+
+/**
+ * List of operator names that should be overridden when trying to fetch their art
+ */
+export const OPERATOR_NAME_OVERRIDES = {
+  'Rosa (Poca)': 'Rosa',
+};
+
+/**
+ * List of possible art names to use when trying to fetch an operator's art
+ */
+export const OPERATOR_ART_NAMES_OVERRIDES = {
+  E1: ['Base', 'Default', 'Basic', 'Elite 1'],
+  E2: ['Elite 2'],
+};
 
 /**
  * Defines the multiplier for each statistic of an operator, based on their class
@@ -171,4 +189,95 @@ export const getOperators = async () => {
         art: operator.art,
       }))
   );
+};
+
+/**
+ * Find all operator arts from the Arknights Wiki. This is mostly because the art links returned from the RhodesAPI are dead.
+ * @param {import('../mongoose/models/Operator').OperatorModel} operator
+ * @returns {Promise<{ name: string; link: string }[]|null>}
+ */
+export const findOperatorArts = async (operator) => {
+  const operatorName = OPERATOR_NAME_OVERRIDES[operator.name] ?? operator.name;
+  const url = `${process.env.ARKNIGHTS_ARTS_WIKI_HOST}/wiki/${operatorName}`;
+  const artsRequest = await fetch(url);
+
+  if (!artsRequest.ok) {
+    // eslint-disable-next-line no-console
+    console.error(
+      chalk.red(
+        `Error while fetching operator art for "${operatorName}" (${operator.name}) from the Arknights Wiki (status code ${artsRequest.status}).`
+      )
+    );
+
+    return null;
+  }
+
+  const artsHtml = await artsRequest.text();
+  const { art } = operator;
+  const window = new Window({
+    url: `${process.env.ARKNIGHTS_ARTS_WIKI_HOST}/wiki/${operatorName}`,
+    settings: {
+      disableJavaScriptEvaluation: true,
+      disableJavaScriptFileLoading: true,
+      disableCSSFileLoading: true,
+      disableComputedStyleRendering: true,
+    },
+  });
+  const { document } = window;
+
+  document.body.innerHTML = artsHtml;
+
+  const artsContainer =
+    document.querySelector('.druid-main-images-files') ??
+    document.querySelector('.druid-main-image');
+
+  if (!artsContainer) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      chalk.yellow(
+        `Art for operator "${operatorName}" (${operator.name}) could not be retrieved. This operator might have outdated pictures as a result.`
+      )
+    );
+
+    window.close();
+
+    return null;
+  }
+
+  art.forEach((operatorArt, index) => {
+    const possibleArtNames = OPERATOR_ART_NAMES_OVERRIDES[operatorArt.name] ?? [operatorArt.name];
+
+    /**
+     * @type {HTMLImageElement|null}
+     */
+    let concernedArt;
+
+    possibleArtNames.forEach((artName) => {
+      if (concernedArt) {
+        return;
+      }
+
+      if (artsContainer.firstChild && artsContainer.firstChild.nodeName === 'A') {
+        concernedArt = artsContainer.querySelector('img');
+      } else {
+        const artContainer = artsContainer.querySelector(`[data-druid-tab-key*="${artName}"]`);
+
+        if (artContainer) {
+          concernedArt = artContainer.querySelector(`img`);
+        }
+      }
+
+      if (concernedArt) {
+        const src = concernedArt.getAttribute('src');
+
+        if (src) {
+          art[index].link = `${process.env.ARKNIGHTS_ARTS_WIKI_HOST}${src}`;
+        }
+      }
+    });
+  });
+
+  window.close();
+
+  return art;
 };

@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 
 import { mongodb } from '../config/config.js';
-import { getOperators } from '../lib/api.js';
+import { findOperatorArts, getOperators } from '../lib/api.js';
 import { Operator } from '../mongoose/models/Operator.js';
 
 try {
@@ -73,7 +73,13 @@ try {
 
   for (const operator of operators) {
     try {
-      await Operator.updateOne({ name: operator.name }, operator, { upsert: true });
+      const arts = await findOperatorArts(operator);
+
+      await Operator.updateOne(
+        { name: operator.name },
+        { ...operator, art: arts ?? operator.art },
+        { upsert: true }
+      );
 
       console.log(chalk.green(`Operator "${operator.name}" synced successfully.`));
 
